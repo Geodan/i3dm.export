@@ -24,6 +24,11 @@ namespace i3dm.export
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 var glbBytes = File.ReadAllBytes(o.Model);
 
+                if (!Directory.Exists(o.Output))
+                {
+                    Directory.CreateDirectory(o.Output);
+                }
+
                 var conn = new NpgsqlConnection(o.ConnectionString);
 
                 // 1] Get boundingbox 3d for all positions in table in 3857 coordinates
@@ -58,11 +63,12 @@ namespace i3dm.export
                             }
 
                             var i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
-                            I3dmWriter.Write(o.Output, i3dm);
+                            var i3dmFile = $"{o.Output}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm";
+                            I3dmWriter.Write(i3dmFile, i3dm);
                         }
                     }
                 }
-                // 7] write tileset.json
+                // 7] todo: write tileset.json
 
                 Console.WriteLine("");
                 Console.WriteLine("Export finished");
