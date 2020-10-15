@@ -14,7 +14,7 @@ Input database table contains following columns:
 
 . rotation - double with horizontal rotation angle (0 - 360 degreees)
 
-. 
+. properties (json)
 
 
 
