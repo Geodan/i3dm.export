@@ -10,6 +10,20 @@ namespace i3dm.export
         [Option('t', "table", Required = true, HelpText = "table")]
         public string Table { get; set; }
 
-        // todo: add -m model, -g geometricErrors, -e, --extenttile, -o, --output 
+        [Option('m', "model", Required = true, HelpText = "glb model")]
+        public string Model { get; set; }
+
+        [Option('g', "geometricerrors", Required = false, Default = "500,0", HelpText = "Geometric errors")]
+        public string GeometricErrors { get; set; }
+
+        [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
+        public string Output { get; set; }
+
+        [Option('e', "extenttile", Required = false, Default = 1000.0, HelpText = "Extent per tile")]
+        public double ExtentTile { get; set; }
+
+        // add for next release
+        //[Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
+        //public string Query { get; set; }
     }
 }
