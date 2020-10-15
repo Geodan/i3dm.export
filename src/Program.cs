@@ -22,14 +22,16 @@ namespace i3dm.export
                 // 2] determine number of tiles in x- and y- direction
 
                 // 3] foreach tile in x- and y- direction do:
+                
+                //      4] calculate bounding box of tile
 
-                //      4] get positions (in 3857), scale, rotations, properties for tile
+                //      5] get positions (in 3857), scale, rotations, properties for tile
                 
                 //       when there are positions in tile do:
 
-                //          5] write tile_xy.i3dm
+                //          6] write tile_xy.i3dm
 
-                // 6] write tileset.json
+                // 7] write tileset.json
 
                 Console.WriteLine("");
                 Console.WriteLine("Export finished");
