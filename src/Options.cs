@@ -10,6 +10,6 @@ namespace i3dm.export
         [Option('t', "table", Required = true, HelpText = "table")]
         public string Table { get; set; }
 
-        // todo: add -m model, -g geometricErrors, -e, --extenttile 
+        // todo: add -m model, -g geometricErrors, -e, --extenttile, -o, --output 
     }
 }

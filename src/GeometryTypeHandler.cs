@@ -1,5 +1,7 @@
 ﻿
 using Dapper;
+using System.Data;
+using Wkx;
 
 namespace i3dm.export
 {

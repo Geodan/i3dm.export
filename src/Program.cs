@@ -14,7 +14,6 @@ namespace i3dm.export
                 Console.WriteLine($"Exporting i3dm's from {o.Table}.");
                 Console.WriteLine($"Exporting tileset.json...");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
-
                 // todo:
                 //var tileset = TilesRepository.GetTilesetJson(o.ConnectionString, o.Table);
                 //var json = tileset.GetTileSetJson();
@@ -28,6 +27,5 @@ namespace i3dm.export
                 Console.WriteLine("Export finished");
             });
         }
-    }
     }
 }
