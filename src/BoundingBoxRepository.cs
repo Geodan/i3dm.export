@@ -37,18 +37,5 @@ namespace i3dm.export
             conn.Close();
             return new BoundingBox3D() { XMin = xmin, YMin = ymin, ZMin = zmin, XMax = xmax, YMax = ymax, ZMax = zmax };
         }
-
-        public static bool HasFeaturesInBox(NpgsqlConnection conn, string geometry_table, string geometry_column, Point from, Point to, int epsg)
-        {
-            var sql = $"select exists(select {geometry_column} from {geometry_table} where ST_Intersects(ST_Centroid(ST_Envelope({geometry_column})), ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, {epsg})))";
-            conn.Open();
-            var cmd = new NpgsqlCommand(sql, conn);
-            var reader = cmd.ExecuteReader();
-            reader.Read();
-            var exists = reader.GetBoolean(0);
-            reader.Close();
-            conn.Close();
-            return exists;
-        }
     }
 }

@@ -46,17 +46,15 @@ namespace i3dm.export
                         // 4] calculate bounding box of tile
                         var from = new Point(box3d.XMin + o.ExtentTile * x, box3d.YMin + o.ExtentTile * y);
                         var to = new Point(box3d.XMin + o.ExtentTile * (x + 1), box3d.YMin + o.ExtentTile * (y + 1));
+                        //  5] get positions (in 3857), scale, rotations, properties for tile
+                        // possible improvement: do not use wkx but convert to Vector3 immediatly 
+                        var instances = BoundingBoxRepository.GetTileInstances(conn, o.Table, from, to);
 
-                        var hasFeatures = BoundingBoxRepository.HasFeaturesInBox(conn, o.Table, geom_column, from, to, epsg);
-                        if (hasFeatures)
+                        if(instances.Count > 0)
                         {
-                            //  5] get positions (in 3857), scale, rotations, properties for tile
-                            // possible improvement: do not use wkx but convert to Vector3 immediatly 
-                            var instances = BoundingBoxRepository.GetTileInstances(conn, o.Table, from, to);
-
                             // todo: handle rotations + scale + other instance properties
                             var positions = new List<Vector3>();
-                            foreach(var instance in instances)
+                            foreach (var instance in instances)
                             {
                                 var p = (Point)instance.Position;
                                 positions.Add(new Vector3((float)p.X, (float)p.Y, (float)p.Z));
