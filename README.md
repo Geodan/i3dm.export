@@ -31,6 +31,7 @@ Tool parameters:
 
 -e, --extenttile(Default: 1000) extent per tile
 
+ -o, --output (Default: ./tiles) Output directory, will be created if not exists
 ```
 
 
