@@ -24,8 +24,10 @@ namespace i3dm.export
                 // 3] foreach tile in x- and y- direction do:
 
                 //      4] get positions (in 3857), scale, rotations, properties for tile
+                
+                //       when there are positions in tile do:
 
-                //      5] write tile_xy.i3dm
+                //          5] write tile_xy.i3dm
 
                 // 6] write tileset.json
 
