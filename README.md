@@ -20,6 +20,7 @@ Input database table contains following columns:
 
 Tool parameters:
 
+``
 -c: (required) connection string to PostGIS database
 
 -t: (required) table with instance positions
@@ -27,6 +28,11 @@ Tool parameters:
 -m, --model: (required) glTF model (glb)
 
 -g: (Default: 500, 0) Geometric errors
+
+-e, --extenttile(Default: 1000) extent per tile
+
+```
+
 
 
 
