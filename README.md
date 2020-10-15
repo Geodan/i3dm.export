@@ -16,7 +16,7 @@ Input database table contains following columns:
 
 . properties (json)
 
-See [testdata/create_testdata.sql] for script creating sample table. 
+See [testdata/create_testdata.sql](testdata/create_testdata.sql) for script creating sample table. 
 
 ## Parameters
 
