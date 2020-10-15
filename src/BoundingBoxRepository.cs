@@ -1,11 +1,25 @@
-﻿using Npgsql;
-using System;
+﻿using Dapper;
+using Npgsql;
+using System.Collections.Generic;
 using Wkx;
 
 namespace i3dm.export
 {
     public static class BoundingBoxRepository
     {
+        public static List<Instance> GetTileInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to)
+        {
+            conn.Open();
+
+            // todo: add intersects from, to
+            var sql = $"SELECT ST_ASBinary(geom) as position, scale, rotation FROM {geometry_table}";
+            var cmd = new NpgsqlCommand(sql, conn);
+            var res = conn.Query<Instance>(sql).AsList();
+            conn.Close();
+            return res;
+        }
+
+
         public static BoundingBox3D GetBoundingBox3DForTable(NpgsqlConnection conn, string geometry_table, string geometry_column)
         {
             conn.Open();

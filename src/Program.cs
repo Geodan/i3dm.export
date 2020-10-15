@@ -14,6 +14,7 @@ namespace i3dm.export
 
             Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
             {
+
                 string geom_column = "geom";
                 int epsg = 3857;
                 Console.WriteLine($"Exporting i3dm's from {o.Table}.");
@@ -21,6 +22,7 @@ namespace i3dm.export
                 var glbBytes = File.ReadAllBytes(o.Model);
 
                 var conn = new NpgsqlConnection(o.ConnectionString);
+
                 // 1] Get boundingbox 3d for all positions in table in 3857 coordinates
                 var box3d = BoundingBoxRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column);
 
@@ -40,7 +42,10 @@ namespace i3dm.export
                         var hasFeatures = BoundingBoxRepository.HasFeaturesInBox(conn, o.Table, geom_column, from, to, epsg);
                         if (hasFeatures)
                         {
+                            var instances = BoundingBoxRepository.GetTileInstances(conn, o.Table, from, to);
+
                             //      5] get positions (in 3857), scale, rotations, properties for tile
+
 
                             //       when there are positions in tile do:
 
