@@ -13,7 +13,7 @@ namespace i3dm.export
         [Option('m', "model", Required = true, HelpText = "glb model")]
         public string Model { get; set; }
 
-        [Option('g', "geometricerrors", Required = false, Default = "500,0", HelpText = "Geometric errors")]
+        [Option('g', "geometricerrors", Required = false, Default = "500,150", HelpText = "Geometric errors")]
         public string GeometricErrors { get; set; }
 
         [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
