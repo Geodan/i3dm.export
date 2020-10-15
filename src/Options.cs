@@ -1,7 +1,4 @@
 ﻿using CommandLine;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace i3dm.export
 {
@@ -13,7 +10,6 @@ namespace i3dm.export
         [Option('t', "table", Required = true, HelpText = "table")]
         public string Table { get; set; }
 
-        // todo: 
-
+        // todo: add -m model, -g geometricErrors, -e, --extenttile 
     }
 }
