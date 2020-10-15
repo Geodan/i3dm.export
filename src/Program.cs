@@ -19,7 +19,7 @@ namespace i3dm.export
 
                 // 1] Get boundingbox 3d for all positions in table in 3857 coordinates
 
-                // 2] determine numer of tiles in x- and y- direction
+                // 2] determine number of tiles in x- and y- direction
 
                 // 3] foreach tile in x- and y- direction do:
 
