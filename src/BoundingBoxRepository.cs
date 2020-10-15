@@ -8,9 +8,8 @@ namespace i3dm.export
     {
         public static BoundingBox3D GetBoundingBox3DForTable(NpgsqlConnection conn, string geometry_table, string geometry_column)
         {
-            conn.Open();
-            // todo: add conversion to 3857 in database?
-            var sql = $"SELECT st_xmin(geom1), st_ymin(geom1), st_zmin(geom1), st_xmax(geom1), st_ymax(geom1), st_zmax(geom1) FROM (select ST_3DExtent({geometry_column}) as geom1 from {geometry_table}";
+            conn.Open();            
+            var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, 3857)) AS box from {geometry_table}) as total";
             var cmd = new NpgsqlCommand(sql, conn);
             var reader = cmd.ExecuteReader();
             reader.Read();
