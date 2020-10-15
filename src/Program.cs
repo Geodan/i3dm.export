@@ -1,8 +1,11 @@
 ﻿using CommandLine;
 using Dapper;
+using I3dm.Tile;
 using Npgsql;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using Wkx;
 
 namespace i3dm.export
@@ -42,14 +45,19 @@ namespace i3dm.export
                         var hasFeatures = BoundingBoxRepository.HasFeaturesInBox(conn, o.Table, geom_column, from, to, epsg);
                         if (hasFeatures)
                         {
+                            //  5] get positions (in 3857), scale, rotations, properties for tile
+                            // possible improvement: do not use wkx but convert to Vector3 immediatly 
                             var instances = BoundingBoxRepository.GetTileInstances(conn, o.Table, from, to);
 
-                            //      5] get positions (in 3857), scale, rotations, properties for tile
+                            var positions = new List<Vector3>();
+                            foreach(var instance in instances)
+                            {
+                                var p = (Point)instance.Position;
+                                positions.Add(new Vector3((float)p.X, (float)p.Y, (float)p.Z));
+                            }
 
-
-                            //       when there are positions in tile do:
-
-                            //          6] write tile_xy.i3dm
+                            var i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
+                            I3dmWriter.Write(o.Output, i3dm);
                         }
                     }
                 }
