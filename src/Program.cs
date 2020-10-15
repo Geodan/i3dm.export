@@ -17,9 +17,7 @@ namespace i3dm.export
 
             Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
             {
-
                 string geom_column = "geom";
-                int epsg = 3857;
                 Console.WriteLine($"Exporting i3dm's from {o.Table}.");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 var glbBytes = File.ReadAllBytes(o.Model);
@@ -50,7 +48,10 @@ namespace i3dm.export
                         // possible improvement: do not use wkx but convert to Vector3 immediatly 
                         var instances = BoundingBoxRepository.GetTileInstances(conn, o.Table, from, to);
 
-                        if(instances.Count > 0)
+                        //Develop debug line
+                        //Console.WriteLine($"{instances.Count} intersected with tile {x}/{y}");
+
+                        if (instances.Count > 0)
                         {
                             // todo: handle rotations + scale + other instance properties
                             var positions = new List<Vector3>();
@@ -68,8 +69,7 @@ namespace i3dm.export
                 }
                 // 7] todo: write tileset.json
 
-                Console.WriteLine("");
-                Console.WriteLine("Export finished");
+                Console.WriteLine("\nExport finished");
             });
         }
     }

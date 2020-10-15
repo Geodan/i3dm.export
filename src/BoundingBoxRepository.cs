@@ -10,8 +10,8 @@ namespace i3dm.export
         public static List<Instance> GetTileInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to)
         {
             conn.Open();
-            // todo: add intersects from, to
-            var sql = $"SELECT ST_ASBinary(geom) as position, scale, rotation FROM {geometry_table}";
+            var tileBound = $"POLYGON(({from.X} {from.Y}, {to.X} {from.Y}, {to.X} {to.Y}, {from.X} {to.Y}, {from.X} {from.Y}))";
+            var sql = $"SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation FROM {geometry_table} WHERE ST_Intersects(ST_Force2D(geom), ST_Transform(ST_GeomfromText('{tileBound}', 3857), 4326))";
             var res = conn.Query<Instance>(sql).AsList();
             conn.Close();
             return res;
