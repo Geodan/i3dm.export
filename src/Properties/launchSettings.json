@@ -2,7 +2,7 @@
   "profiles": {
     "i3dm.export": {
       "commandName": "Project",
-      "commandLineArgs": "-c \"Host=leda;Username=postgres;Database=research;Port=5432\" -t i3dm.mydata -m tree.glb"
+      "commandLineArgs": "-c \"Host=leda;Username=postgres;Database=research;Port=5432\" -t i3dm.velsen -m tree.glb"
     }
   }
 }

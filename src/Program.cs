@@ -2,6 +2,7 @@
 using Dapper;
 using I3dm.Tile;
 using Npgsql;
+using ShellProgressBar;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +19,7 @@ namespace i3dm.export
             Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
             {
                 string geom_column = "geom";
-                Console.WriteLine($"Exporting i3dm's from {o.Table}.");
+                Console.WriteLine($"Exporting i3dm's from {o.Table}...");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 var glbBytes = File.ReadAllBytes(o.Model);
 
@@ -35,6 +36,14 @@ namespace i3dm.export
                 // 2] determine number of tiles in x- and y- direction
                 var xrange = (int)Math.Ceiling(box3d.ExtentX() / o.ExtentTile);
                 var yrange = (int)Math.Ceiling(box3d.ExtentY() / o.ExtentTile);
+
+                var totalTicks = xrange * yrange;
+                var options = new ProgressBarOptions
+                {
+                    ProgressCharacter = '-',
+                    ProgressBarOnBottom = true
+                };
+                var pbar = new ProgressBar(totalTicks, "Exporting i3dm tiles...", options);
 
                 // 3] foreach tile in x- and y- direction do:
                 for (var x = 0; x < xrange; x++)
@@ -65,11 +74,13 @@ namespace i3dm.export
                             var i3dmFile = $"{o.Output}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm";
                             I3dmWriter.Write(i3dmFile, i3dm);
                         }
+
+                        pbar.Tick();
                     }
                 }
                 // 7] todo: write tileset.json
-
-                Console.WriteLine("\nExport finished");
+                Console.WriteLine();
+                Console.WriteLine("\nExport finished!");
             });
         }
     }
