@@ -13,4 +13,10 @@
     <PackageReference Include="Wkx" Version="0.5.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="tree.glb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
