@@ -14,15 +14,21 @@ namespace i3dm.export
                 Console.WriteLine($"Exporting i3dm's from {o.Table}.");
                 Console.WriteLine($"Exporting tileset.json...");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
+
                 // todo:
-                //var tileset = TilesRepository.GetTilesetJson(o.ConnectionString, o.Table);
-                //var json = tileset.GetTileSetJson();
-                //File.WriteAllText("tileset.json", json);
-                //foreach (var tile in tileset.Tiles)
-                //{
-                //    var i3dmBytes = TilesRepository.GetI3dm(o.ConnectionString, o.Table, tile.Id);
-                //    File.WriteAllBytes($"{tile.Id}.i3dm", i3dmBytes);
-                // }
+
+                // 1] Get boundingbox 3d for all positions in table in 3857 coordinates
+
+                // 2] determine numer of tiles in x- and y- direction
+
+                // 3] foreach tile in x- and y- direction do:
+
+                //      4] get positions (in 3857), scale, rotations, properties for tile
+
+                //      5] write tile_xy.i3dm
+
+                // 6] write tileset.json
+
                 Console.WriteLine("");
                 Console.WriteLine("Export finished");
             });
