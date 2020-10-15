@@ -40,7 +40,7 @@ Tool parameters:
 ## Sample running
 
 ```
-$ i3dm.export -c "Host=leda;Username=postgres;Password=postgres;Database=research;Port=5432" -t public.trees -m tree.glb
+$ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=test;Port=5432" -t public.trees -m tree.glb
 ```
 
 
