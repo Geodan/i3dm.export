@@ -16,6 +16,21 @@ Input database table contains following columns:
 
 . properties (json)
 
+## Parameters
+
+Tool parameters:
+
+-c: (required) connection string to PostGIS database
+
+-t: (required) table with instance positions
+
+-m, --model: (required) glTF model (glb)
+
+-g: (Default: 500, 0) Geometric errors
+
+
+
+
 
 
 
