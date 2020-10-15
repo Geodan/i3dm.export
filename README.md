@@ -20,7 +20,7 @@ Input database table contains following columns:
 
 Tool parameters:
 
-``
+```
 -c: (required) connection string to PostGIS database
 
 -t: (required) table with instance positions
