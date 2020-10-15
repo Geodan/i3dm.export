@@ -2,6 +2,7 @@
 using Dapper;
 using Npgsql;
 using System;
+using System.IO;
 using Wkx;
 
 namespace i3dm.export
@@ -16,8 +17,8 @@ namespace i3dm.export
                 string geom_column = "geom";
                 int epsg = 3857;
                 Console.WriteLine($"Exporting i3dm's from {o.Table}.");
-                Console.WriteLine($"Exporting tileset.json...");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
+                var glbBytes = File.ReadAllBytes(o.Model);
 
                 var conn = new NpgsqlConnection(o.ConnectionString);
                 // 1] Get boundingbox 3d for all positions in table in 3857 coordinates
