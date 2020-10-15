@@ -49,6 +49,7 @@ namespace i3dm.export
                             // possible improvement: do not use wkx but convert to Vector3 immediatly 
                             var instances = BoundingBoxRepository.GetTileInstances(conn, o.Table, from, to);
 
+                            // todo: handle rotations + scale + other instance properties
                             var positions = new List<Vector3>();
                             foreach(var instance in instances)
                             {
