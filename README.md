@@ -31,7 +31,7 @@ Tool parameters:
 
 -g: (Default: 500, 0) Geometric errors
 
--e:: (Default: 1000) extent per tile
+-e: (Default: 1000) extent per tile
 
 -o: (Default: ./tiles) Output directory, will be created if not exists
 
