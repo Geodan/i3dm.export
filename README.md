@@ -1,20 +1,20 @@
 # i3dm.export
 
-Tool for exporting i3dm's from PostGIS table. This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles)
+Console tool for exporting instanced 3D Tiles (i3dm's) and tileset.json from PostGIS table. The input table contains instance information like location (4326), scale, rotation and instance attributes. The used 3D model (glTF - glb) for visualizing the instances is one of input parameters.
+
+This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles)
 
 ## Input database table
 
 Input database table contains following columns: 
 
-. id
-
 . geom - geometry with PointZ (4326) for i3dm positions
 
-. scale - double 
+. scale - double (not supported yet)
 
-. rotation - double with horizontal rotation angle (0 - 360 degreees)
+. rotation - double with horizontal rotation angle (0 - 360 degrees) (not supported yet)
 
-. properties (json)
+. properties (json) (not supported yet)
 
 See [testdata/create_testdata.sql](testdata/create_testdata.sql) for script creating sample table. 
 
@@ -27,13 +27,15 @@ Tool parameters:
 
 -t: (required) table with instance positions
 
--m, --model: (required) glTF model (glb)
+-m: (required) glTF model (glb)
 
 -g: (Default: 500, 0) Geometric errors
 
--e, --extenttile(Default: 1000) extent per tile
+-e:: (Default: 1000) extent per tile
 
--o, --output (Default: ./tiles) Output directory, will be created if not exists
+-o: (Default: ./tiles) Output directory, will be created if not exists
+
+-q: query (not supported yet)
 ```
 
 
@@ -43,7 +45,11 @@ Tool parameters:
 $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=test;Port=5432" -t public.trees -m tree.glb
 ```
 
+## Roadmap
 
+- support instance scale, rotation, properties, scale_non_uniform;
+
+- add support for uri references to external glTF's.
 
 
 
