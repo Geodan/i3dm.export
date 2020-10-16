@@ -29,7 +29,7 @@ Tool parameters:
 
 -m: (required) glTF model (glb)
 
--g: (Default: 500, 0) Geometric errors
+-g: (Default: 500, 50) Geometric errors
 
 -e: (Default: 1000) extent per tile
 

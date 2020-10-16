@@ -40,7 +40,7 @@ namespace i3dm.export.Tileset
 
             var root = new Root
             {
-                geometricError = geometricErrors[1],
+                geometricError = geometricErrors[0],
                 refine = "REPLACE",
                 transform = MathUtils.Round(GetRootTransform(rootBounds), 8),
                 boundingVolume = boundingVolume
@@ -51,7 +51,7 @@ namespace i3dm.export.Tileset
             foreach (var tile in tiles)
             {
                 var child = new Child();
-                child.geometricError = 0;
+                child.geometricError = geometricErrors[1];
                 child.content = new Content() { uri = tile.Filename };
                 var tileTransform = tile.GetTransform(centroid);
                 child.transform = MathUtils.Round(tileTransform, 8);
@@ -64,7 +64,6 @@ namespace i3dm.export.Tileset
 
             root.children = children;
             tileset.root = root;
-            tileset.geometricError = geometricErrors[0];
             return tileset;
         }
     }
