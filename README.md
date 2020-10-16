@@ -12,7 +12,7 @@ $ dotnet tool install -g i3dm.export
 
 Or update
 
-````
+```
 $ dotnet tool update -g i3dm.export
 ```
 
