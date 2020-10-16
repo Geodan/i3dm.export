@@ -25,12 +25,8 @@ namespace i3dm.export
                 Console.WriteLine($"Exporting i3dm's from {o.Table}...");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 var glbBytes = File.ReadAllBytes(o.Model);
-
-                if (!Directory.Exists(o.Output))
-                {
-                    Directory.CreateDirectory(o.Output);
-                }
                 var tilefolder = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}";
+
                 if (!Directory.Exists(tilefolder))
                 {
                     Directory.CreateDirectory(tilefolder);
@@ -76,7 +72,7 @@ namespace i3dm.export
 
                             tiles.Add(new TileInfo
                             {
-                                Filename = $"{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm",
+                                Filename = $"{tileFolder}/tile_{x}_{y}.i3dm",
                                 Bounds = new BoundingBox3D((float)from.X, (float)from.Y, 0, (float)to.X, (float)to.Y, 0)
                             });
                         }
@@ -84,7 +80,6 @@ namespace i3dm.export
                         pbar.Tick();
                     }
                 }
-                // 7] todo: write tileset.json
                 Console.WriteLine();
                 Console.WriteLine("Writing tileset.json...");
                 WriteJson(o.Output, rootBounds, tiles, o.GeometricErrors);

@@ -1,5 +1,4 @@
-﻿
-using Wkx;
+﻿using Wkx;
 
 namespace i3dm.export
 {
@@ -7,7 +6,6 @@ namespace i3dm.export
     {
         public Instance()
         {
-
         }
 
         public Instance(Geometry Position, double Scale, double Rotation)
