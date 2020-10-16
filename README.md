@@ -4,6 +4,20 @@ Console tool for exporting instanced 3D Tiles (i3dm's) and tileset.json from Pos
 
 This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles)
 
+## Installation
+
+Install
+
+````
+$ dotnet tool install -g i3dm.export
+```
+
+Or update
+
+````
+$ dotnet tool update -g i3dm.export
+```
+
 ## Input database table
 
 Input database table contains following columns: 
@@ -37,6 +51,12 @@ Tool parameters:
 
 -q: query (not supported yet)
 ```
+
+## Demo
+
+30000 trees in instanced tiles
+
+https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/trees/
 
 
 ## Sample running
