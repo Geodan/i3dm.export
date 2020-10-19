@@ -22,9 +22,16 @@ namespace i3dm.export
             {
                 string tileFolder = "tiles";
                 string geom_column = "geom";
+                byte[] glbBytes = null;
                 Console.WriteLine($"Exporting i3dm's from {o.Table}...");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
-                var glbBytes = File.ReadAllBytes(o.Model);
+
+                var isExternalGltf = Uri.IsWellFormedUriString(o.Model, UriKind.Absolute);
+
+                if (!isExternalGltf)
+                {
+                    glbBytes = File.ReadAllBytes(o.Model);
+                }
                 var tilefolder = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}";
 
                 if (!Directory.Exists(tilefolder))
@@ -66,7 +73,7 @@ namespace i3dm.export
                                 positions.Add(new Vector3((float)p.X, (float)p.Y, (float)p.Z));
                             }
 
-                            var i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
+                            var i3dm = isExternalGltf? new I3dm.Tile.I3dm(positions, o.Model): new I3dm.Tile.I3dm(positions, glbBytes);
                             var i3dmFile = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm";
                             I3dmWriter.Write(i3dmFile, i3dm);
 

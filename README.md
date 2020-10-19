@@ -41,7 +41,7 @@ Tool parameters:
 
 -t: (required) table with instance positions
 
--m: (required) glTF model (glb)
+-m: (required) glTF model (glb). When an uri is given, the i3dm will contain a reference to the model, otherwise an embedded local glb is expected.
 
 -g: (Default: 500, 50) Geometric errors
 
@@ -69,9 +69,12 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 
 - support instance scale, rotation, properties, scale_non_uniform;
 
-- add support for uri references to external glTF's.
 
+## History
 
+2020-10-19: add support for uri references to external glTF's.
+
+2020-10-15: Initial coding
 
 
 

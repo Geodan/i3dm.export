@@ -6,12 +6,13 @@
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
+	<Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Dapper" Version="2.0.35" />
-    <PackageReference Include="i3dm.tile" Version="0.3.2" />
+    <PackageReference Include="i3dm.tile" Version="0.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Npgsql" Version="4.1.5" />
     <PackageReference Include="ShellProgressBar" Version="5.0.0" />
