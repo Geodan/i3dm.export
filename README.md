@@ -65,10 +65,12 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 
 ## Roadmap
 
-- support instance scale, rotation, properties, scale_non_uniform;
+- support instance rotation, properties, scale_non_uniform;
 
 
 ## History
+
+2020-10-19: release 1.2 with instance scale support
 
 2020-10-19: add support for uri references to external glTF's.
 
