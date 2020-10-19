@@ -6,15 +6,13 @@ This tool is intended to be used in combination with 3D Tiles support in MapBox 
 
 ## Installation
 
-Install
-
-````
+```
 $ dotnet tool install -g i3dm.export
 ```
 
 Or update
 
-````
+```
 $ dotnet tool update -g i3dm.export
 ```
 
