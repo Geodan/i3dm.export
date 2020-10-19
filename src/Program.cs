@@ -103,12 +103,8 @@ namespace i3dm.export
             var errors = geometricErrors.Split(',').Select(Double.Parse).ToList();
             var tilesetJSON = TilesetGenerator.GetTileSetJson(rootBounds, tiles, errors);
             var jsonFile = $"{output}{Path.DirectorySeparatorChar}tileset.json";
-
-            using (StreamWriter outputFile = new StreamWriter(jsonFile))
-            {
-                outputFile.WriteLine(tilesetJSON);
-                Console.WriteLine("tileset.json exported");
-            }
+            File.WriteAllText(jsonFile, tilesetJSON);
+            Console.WriteLine("\n\ntileset.json exported.");
         }
     }
 }
