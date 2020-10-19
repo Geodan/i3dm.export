@@ -2,7 +2,7 @@
   "profiles": {
     "i3dm.export": {
       "commandName": "Project",
-      "commandLineArgs": "-c \"Host=leda;Username=postgres;Database=research;Port=5432\" -t i3dm.velsen -m https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/trees_external_gltf/tree.glb"
+      "commandLineArgs": "-c \"Host=leda;Username=postgres;Database=research;Port=5432\" -t i3dm.velsen -m tree.glb"
     }
   }
 }

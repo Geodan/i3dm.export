@@ -67,13 +67,17 @@ namespace i3dm.export
                         {
                             // todo: handle rotations + scale + other instance properties
                             var positions = new List<Vector3>();
+                            var scales = new List<float>();
                             foreach (var instance in instances)
                             {
                                 var p = (Point)instance.Position;
                                 positions.Add(new Vector3((float)p.X, (float)p.Y, (float)p.Z));
+                                scales.Add((float)instance.Scale);
                             }
 
                             var i3dm = isExternalGltf? new I3dm.Tile.I3dm(positions, o.Model): new I3dm.Tile.I3dm(positions, glbBytes);
+                            i3dm.Scales = scales;
+
                             var i3dmFile = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm";
                             I3dmWriter.Write(i3dmFile, i3dm);
 

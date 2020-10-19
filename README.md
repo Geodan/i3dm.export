@@ -22,7 +22,7 @@ Input database table contains following columns:
 
 . geom - geometry with PointZ (4326) for i3dm positions
 
-. scale - double (not supported yet)
+. scale - double
 
 . rotation - double with horizontal rotation angle (0 - 360 degrees) (not supported yet)
 
@@ -41,7 +41,7 @@ Tool parameters:
 
 -m: (required) glTF model (glb). When an uri is given, the i3dm will contain a reference to the model, otherwise an embedded local glb is expected.
 
--g: (Default: 500, 50) Geometric errors
+-g: (Default: 500,0) Geometric errors
 
 -e: (Default: 1000) extent per tile
 
