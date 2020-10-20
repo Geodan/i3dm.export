@@ -4,6 +4,9 @@ Console tool for exporting instanced 3D Tiles (i3dm's) and tileset.json from Pos
 
 This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles)
 
+[![NuGet Status](http://img.shields.io/nuget/v/i3dm.export.svg?style=flat
+)](https://www.nuget.org/packages/i3dm.export/)
+
 ## Installation
 
 ```
