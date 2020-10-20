@@ -71,10 +71,16 @@ namespace i3dm.export
                             var normalUps = new List<Vector3>();
                             var normalRights = new List<Vector3>();
 
+                            var firstPosition = (Point)instances[0].Position;
+
                             foreach (var instance in instances)
                             {
                                 var p = (Point)instance.Position;
-                                positions.Add(new Vector3((float)p.X, (float)p.Y, (float)p.Z));
+
+                                var vec= o.UseRtcCenter?
+                                    new Vector3((float)(p.X - firstPosition.X),(float)(p.Y - firstPosition.Y), (float)(p.Z - firstPosition.Z)):
+                                    new Vector3((float)p.X, (float)p.Y, (float)p.Z);
+                                positions.Add(vec);
                                 scales.Add((float)instance.Scale);
                                 var enuLocal = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
                                 normalUps.Add(enuLocal.Up);
@@ -85,6 +91,11 @@ namespace i3dm.export
                             i3dm.Scales = scales;
                             i3dm.NormalUps = normalUps;
                             i3dm.NormalRights = normalRights;
+
+                            if (o.UseRtcCenter)
+                            {
+                                i3dm.RtcCenter = new Vector3((float)firstPosition.X, (float)firstPosition.Y, (float)firstPosition.Z);
+                            }
 
                             var i3dmFile = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm";
                             I3dmWriter.Write(i3dmFile, i3dm);

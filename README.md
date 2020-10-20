@@ -41,11 +41,13 @@ Tool parameters:
 
 -m: (required) glTF model (glb). When an uri is given, the i3dm will contain a reference to the model, otherwise an embedded local glb is expected.
 
--g: (Default: 500,0) Geometric errors
+-g: (optional - Default: 500,0) Geometric errors
 
--e: (Default: 1000) extent per tile
+-e: (optional - Default: 1000) extent per tile
 
--o: (Default: ./tiles) Output directory, will be created if not exists
+-o: (optional - Default: ./tiles) Output directory, will be created if not exists
+
+-r: (optional = Default: false) Use RTC_CENTER for high precision relative positions
 
 -q: query (not supported yet)
 ```
@@ -65,7 +67,7 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 
 ## Roadmap
 
-- support instance properties, rtc_Center, scale_non_uniform, lod;
+- support instance properties, scale_non_uniform, lod;
 
 
 ## History
