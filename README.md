@@ -70,7 +70,7 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 
 ```
 $ git clone https://github.com/Geodan/i3dm.export.git
-$ cd cd i3dm.export/src
+$ cd i3dm.export/src
 $ dotnet run
 ```
 
