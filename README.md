@@ -102,10 +102,12 @@ The batch table information in the i3dm tile is stored as follows (for 2 instanc
 
 ## Developing
 
+Run from source code:
+
 ```
 $ git clone https://github.com/Geodan/i3dm.export.git
 $ cd i3dm.export/src
-$ dotnet run
+$ dotnet run -- -c "Host=myserver;Username=postgres;Password=postgres;Database=test;Port=5432" -t public.trees -m tree.glb
 ```
 
 To develop in Visual Studio Code, open .vscode/launch.json and adjust the 'args' parameter to your environment
