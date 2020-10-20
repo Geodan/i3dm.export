@@ -34,7 +34,7 @@ Input database table contains following columns:
 
 . rotation - double with horizontal rotation angle (0 - 360 degrees)
 
-. properties (json) (not supported yet)
+. tags (json)
 
 See [testdata/create_testdata.sql](testdata/create_testdata.sql) for script creating sample table. 
 
@@ -104,7 +104,6 @@ and load the tileset:
 
 To add batch info to instanced tiles fill the 'tags' type json column in the input table.
 
-
 For example:
 
 ```
@@ -116,7 +115,7 @@ In the MapBox GL JS client this attribute information can be displayed when sele
 Note: 
 
 . all instance records should have the same properties (in the above case 'customer' and 'id'). 
-The list properties is determined from the first instance record;
+The list of properties is determined from the first instance record;
 
 . only key - value is supported, not more complex structures.
 
