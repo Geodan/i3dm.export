@@ -5,9 +5,9 @@ using Wkx;
 
 namespace i3dm.export
 {
-    public static class BoundingBoxRepository
+    public static class InstancesRepository
     {
-        public static List<Instance> GetTileInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to)
+        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to)
         {
             conn.Open();
             var sql = $"SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation FROM {geometry_table} WHERE ST_Intersects(ST_Force2D(geom), ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))";

@@ -41,7 +41,7 @@ namespace i3dm.export
 
                 var conn = new NpgsqlConnection(o.ConnectionString);
 
-                var rootBounds = BoundingBoxRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column);
+                var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column);
                 var tiles = new List<TileInfo>();
 
                 var xrange = (int)Math.Ceiling(rootBounds.ExtentX() / o.ExtentTile);
@@ -61,7 +61,7 @@ namespace i3dm.export
                     {
                         var from = new Point(rootBounds.XMin + o.ExtentTile * x, rootBounds.YMin + o.ExtentTile * y);
                         var to = new Point(rootBounds.XMin + o.ExtentTile * (x + 1), rootBounds.YMin + o.ExtentTile * (y + 1));
-                        var instances = BoundingBoxRepository.GetTileInstances(conn, o.Table, from, to);
+                        var instances = InstancesRepository.GetInstances(conn, o.Table, from, to);
 
                         if (instances.Count > 0)
                         {
@@ -82,9 +82,9 @@ namespace i3dm.export
                                     new Vector3((float)p.X, (float)p.Y, (float)p.Z);
                                 positions.Add(vec);
                                 scales.Add((float)instance.Scale);
-                                var enuLocal = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
-                                normalUps.Add(enuLocal.Up);
-                                normalRights.Add(enuLocal.East);
+                                var (East, North, Up) = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
+                                normalUps.Add(Up);
+                                normalRights.Add(East);
                             }
 
                             var i3dm = isExternalGltf? new I3dm.Tile.I3dm(positions, o.Model): new I3dm.Tile.I3dm(positions, glbBytes);

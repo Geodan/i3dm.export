@@ -16,6 +16,14 @@ Or update
 $ dotnet tool update -g i3dm.export
 ```
 
+## Live demo 3D instanced tiles
+
+30k trees in instanced tiles (1000m by 1000m) with random scales/rotations:
+
+https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/trees/
+
+
+
 ## Input database table
 
 Input database table contains following columns: 
@@ -52,13 +60,6 @@ Tool parameters:
 -q: query (not supported yet)
 ```
 
-## Demo
-
-30000 trees in instanced tiles
-
-https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/trees/
-
-
 ## Sample running
 
 ```
@@ -71,6 +72,8 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 
 
 ## History
+
+2020-10-20: release 1.3 adding instance rotation + rtc_Center support 
 
 2020-10-19: release 1.2 with instance scale support
 
