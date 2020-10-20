@@ -6,7 +6,8 @@ CREATE TABLE mydata(
   id serial PRIMARY KEY, 
   geom geometry(POINTZ, 4326),
   scale double precision,
-  rotation double precision
+  rotation double precision,
+  tags json
 );
 
 CREATE INDEX geom_idx

@@ -2,6 +2,7 @@
 using Dapper;
 using i3dm.export.Tileset;
 using I3dm.Tile;
+using Newtonsoft.Json.Linq;
 using Npgsql;
 using ShellProgressBar;
 using System;
@@ -25,6 +26,7 @@ namespace i3dm.export
                 byte[] glbBytes = null;
                 Console.WriteLine($"Exporting i3dm's from {o.Table}...");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
+                SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
                 var isExternalGltf = Uri.IsWellFormedUriString(o.Model, UriKind.Absolute);
 
@@ -65,11 +67,12 @@ namespace i3dm.export
 
                         if (instances.Count > 0)
                         {
-                            // todo: handle rotations + other instance properties
                             var positions = new List<Vector3>();
                             var scales = new List<float>();
                             var normalUps = new List<Vector3>();
                             var normalRights = new List<Vector3>();
+                            var tags = new List<JArray>();
+                            var batchInfo2 = new List<string>();
 
                             var firstPosition = (Point)instances[0].Position;
 
@@ -85,6 +88,7 @@ namespace i3dm.export
                                 var (East, North, Up) = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
                                 normalUps.Add(Up);
                                 normalRights.Add(East);
+                                tags.Add(instance.Tags);
                             }
 
                             var i3dm = isExternalGltf? new I3dm.Tile.I3dm(positions, o.Model): new I3dm.Tile.I3dm(positions, glbBytes);
@@ -95,6 +99,12 @@ namespace i3dm.export
                             if (o.UseRtcCenter)
                             {
                                 i3dm.RtcCenter = new Vector3((float)firstPosition.X, (float)firstPosition.Y, (float)firstPosition.Z);
+                            }
+
+                            if (tags[0] != null)
+                            {
+                                var properties = TinyJson.GetProperties(tags[0]);
+                                i3dm.BatchTableJson = TinyJson.ToJson(tags, properties);
                             }
 
                             var i3dmFile = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm";

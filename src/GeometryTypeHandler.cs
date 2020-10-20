@@ -1,5 +1,6 @@
 ﻿
 using Dapper;
+using Newtonsoft.Json.Linq;
 using System.Data;
 using Wkx;
 
@@ -20,4 +21,18 @@ namespace i3dm.export
             parameter.Value = value;
         }
     }
+
+
+    public class JArrayTypeHandler : SqlMapper.TypeHandler<JArray>
+    {
+        public override JArray Parse(object value)
+        {
+            return JArray.Parse(value.ToString());
+        }
+        public override void SetValue(IDbDataParameter parameter, JArray value)
+        {
+            parameter.Value = value.ToString();
+        }
+    }
+
 }

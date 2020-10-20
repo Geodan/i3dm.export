@@ -100,12 +100,45 @@ and load the tileset:
 });
 ```
 
+## Instance batch info
+
+To add batch info to instanced tiles fill the 'tags' type json column in the input table.
+
+
+For example:
+
+```
+[{"customer" : "John Doe"}, {"id" : 5454577}]
+```
+
+In the MapBox GL JS client this attribute information can be displayed when selecting the instance.
+
+Note: 
+
+. all instance records should have the same properties (in the above case 'customer' and 'id'). 
+The list properties is determined from the first instance record;
+
+. only key - value is supported, not more complex structures.
+
+Sample to update the json column in PostgreSQL:
+
+```
+psql> update  i3dm.my_table set tags = json_build_array(json_build_object('customer','John Doe'), json_build_object('id',id));
+```
+
+The batch table information in the i3dm tile is stored as follows (for 2 instances):
+
+````
+{"customer":["John Doe","John Doe2"], "id": [5454577, 5454579]}
+```
+
 ## Roadmap
 
-- support instance properties, scale_non_uniform, lod;
-
+- support  scale_non_uniform, lod;
 
 ## History
+
+2020-10-20: release 1.4 add batch info support
 
 2020-10-20: release 1.3 adding instance rotation + rtc_Center support 
 
