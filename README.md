@@ -82,6 +82,24 @@ To develop in Visual Studio Code, open .vscode/launch.json and adjust the 'args'
 
 Press F5 to start debugging.
 
+To visualize in MapBox GL JS, add a reference to MapBox3DTiles.js:
+
+```
+<script src="Mapbox3DTiles.js"></script>
+```
+
+and load the tileset:
+
+```
+ map.on('style.load', function() {
+     let tileslayerTree = new Mapbox3DTiles.Mapbox3DTilesLayer( { 
+       id: 'tree', 
+       url: 'tileset.json'
+      } );
+      map.addLayer(tileslayerTree, 'waterway-label');
+});
+```
+
 ## Roadmap
 
 - support instance properties, scale_non_uniform, lod;
