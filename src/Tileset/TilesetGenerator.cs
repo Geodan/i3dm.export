@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using i3dm.export.Utils;
 
 namespace i3dm.export.Tileset
 {
@@ -16,11 +15,11 @@ namespace i3dm.export.Tileset
         private static double[] GetRootTransform(BoundingBox3D bounds)
         {
             var centroid = bounds.GetCenter();
-            double[] transformRoot = MathUtils.GetTransform(centroid, new decimal[] { 1, 1, 1 }, 0);
+            double[] transformRoot = TileTransform.GetTransform(centroid, new decimal[] { 1, 1, 1 }, 0);
             return transformRoot;
         }
 
-        private static TileSetJson GetTileSet(BoundingBox3D rootBounds, List<TileInfo> tiles, List<double> geometricErrors)
+        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, List<TileInfo> tiles, List<double> geometricErrors)
         {
             var extent_x = rootBounds.ExtentX();
             var extent_y = rootBounds.ExtentY();
@@ -42,7 +41,7 @@ namespace i3dm.export.Tileset
             {
                 geometricError = geometricErrors[0],
                 refine = "REPLACE",
-                transform = MathUtils.Round(GetRootTransform(rootBounds), 8),
+                transform = DoubleArrayRounder.Round(GetRootTransform(rootBounds), 8),
                 boundingVolume = boundingVolume
             };
 
@@ -54,7 +53,7 @@ namespace i3dm.export.Tileset
                 child.geometricError = geometricErrors[1];
                 child.content = new Content() { uri = tile.Filename };
                 var tileTransform = tile.GetTransform(centroid);
-                child.transform = MathUtils.Round(tileTransform, 8);
+                child.transform = DoubleArrayRounder.Round(tileTransform, 8);
                 var tileBounds = tile.Bounds;
                 var bbChild = new Boundingvolume();
                 bbChild.box = new double[] { 0, 0, 0, tileBounds.ExtentX() / 2, 0.0, 0.0, 0.0, tileBounds.ExtentY() / 2, 0.0, 0.0, 0.0, tileBounds.ExtentZ() / 2};

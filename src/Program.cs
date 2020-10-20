@@ -65,18 +65,26 @@ namespace i3dm.export
 
                         if (instances.Count > 0)
                         {
-                            // todo: handle rotations + scale + other instance properties
+                            // todo: handle rotations + other instance properties
                             var positions = new List<Vector3>();
                             var scales = new List<float>();
+                            var normalUps = new List<Vector3>();
+                            var normalRights = new List<Vector3>();
+
                             foreach (var instance in instances)
                             {
                                 var p = (Point)instance.Position;
                                 positions.Add(new Vector3((float)p.X, (float)p.Y, (float)p.Z));
                                 scales.Add((float)instance.Scale);
+                                var enuLocal = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
+                                normalUps.Add(enuLocal.Up);
+                                normalRights.Add(enuLocal.East);
                             }
 
                             var i3dm = isExternalGltf? new I3dm.Tile.I3dm(positions, o.Model): new I3dm.Tile.I3dm(positions, glbBytes);
                             i3dm.Scales = scales;
+                            i3dm.NormalUps = normalUps;
+                            i3dm.NormalRights = normalRights;
 
                             var i3dmFile = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm";
                             I3dmWriter.Write(i3dmFile, i3dm);
@@ -91,6 +99,7 @@ namespace i3dm.export
                         pbar.Tick();
                     }
                 }
+                pbar.Tick();
                 Console.WriteLine();
                 Console.WriteLine("Writing tileset.json...");
                 WriteJson(o.Output, rootBounds, tiles, o.GeometricErrors);
@@ -100,7 +109,7 @@ namespace i3dm.export
 
         private static void WriteJson(string output, BoundingBox3D rootBounds, List<TileInfo> tiles, string geometricErrors)
         {
-            var errors = geometricErrors.Split(',').Select(Double.Parse).ToList();
+            var errors = geometricErrors.Split(',').Select(double.Parse).ToList();
             var tilesetJSON = TilesetGenerator.GetTileSetJson(rootBounds, tiles, errors);
             var jsonFile = $"{output}{Path.DirectorySeparatorChar}tileset.json";
             File.WriteAllText(jsonFile, tilesetJSON);

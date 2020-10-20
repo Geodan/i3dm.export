@@ -1,5 +1,4 @@
 using System.Numerics;
-using i3dm.export.Utils;
 
 namespace i3dm.export.Tileset
 {
@@ -14,13 +13,18 @@ namespace i3dm.export.Tileset
             var x = (Bounds.XMax + Bounds.XMin) / 2;
             var y = (Bounds.YMax + Bounds.YMin) / 2;
             var z = (0 + 50) / 2;
-            return new Vector3((float)x, (float)y, (float)z);
+            return new Vector3((float)x, (float)y, z);
         }
 
         public double[] GetTransform(Vector3 centroid)
         {
-            var distance = MathUtils.Distance(centroid, GetCenter());
-            return MathUtils.GetLocalTransform(new decimal[]{1M, 1M, 1M}, 0, distance);
+            var distance = Distance(centroid, GetCenter());
+            return TileTransform.GetLocalTransform(new decimal[]{1M, 1M, 1M}, 0, distance);
+        }
+
+        public static Vector3 Distance(Vector3 from, Vector3 to)
+        {
+            return new Vector3(to.X - from.X, to.Y - from.Y, 0);
         }
     }
 }

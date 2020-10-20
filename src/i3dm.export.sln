@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{68333F7F-D9B
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "i3dm.export.tests", "..\i3dm.export.tests\i3dm.export.tests.csproj", "{44626E16-CFA5-4A3F-9812-0DF105C6FD7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{72689E3D-53A9-48E6-AC5B-2EB0CD8A7807}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72689E3D-53A9-48E6-AC5B-2EB0CD8A7807}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72689E3D-53A9-48E6-AC5B-2EB0CD8A7807}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44626E16-CFA5-4A3F-9812-0DF105C6FD7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44626E16-CFA5-4A3F-9812-0DF105C6FD7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44626E16-CFA5-4A3F-9812-0DF105C6FD7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44626E16-CFA5-4A3F-9812-0DF105C6FD7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,31 +1,9 @@
-using System;
-using System.Numerics;
+﻿using System.Numerics;
 
-namespace i3dm.export.Utils
+namespace i3dm.export
 {
-    public class MathUtils
+    public static class TileTransform
     {
-        public static double[] Round(double[] input, int decimals)
-        {
-            var res = new double[input.Length];
-            for (var i = 0; i < input.Length; i++)
-            {
-                res[i] = Math.Round(input[i], decimals);
-            }
-            return res;
-        }
-
-        public static Vector3 Distance(Vector3 from, Vector3 to)
-        {
-            return new Vector3(to.X - from.X, to.Y - from.Y, 0);
-        }
-
-        public static double ToRadius(double degrees)
-        {
-            double radians = (Math.PI / 180) * degrees;
-            return (radians);
-        }
-
         public static double[] Flatten(Matrix4x4 m, decimal[] scale)
         {
             if (scale == null)
@@ -84,28 +62,18 @@ namespace i3dm.export.Utils
 
         public static double[] GetTransform(Vector3 p, decimal[] scale, double heading)
         {
-            var center = new Vector3((float)p.X, (float)p.Y, (float)p.Z);
-            var transform = MathUtils.GetLocalTransform(scale, heading, center);
+            var center = new Vector3(p.X, p.Y, p.Z);
+            var transform = GetLocalTransform(scale, heading, center);
             return transform;
         }
 
         public static double[] GetLocalTransform(decimal[] scale, double heading, Vector3 relativeCenter)
         {
             double[] transform;
-            var res = GetLocalEnuMapbox(heading);
+            var res = EnuCalculator.GetLocalEnuMapbox(heading);
             var m = GetMatrix(relativeCenter, res.East, res.North, res.Up);
-            transform = MathUtils.Flatten(m, scale);
+            transform = Flatten(m, scale);
             return transform;
-        }
-
-        public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuMapbox(double angle)
-        {
-            var decimals = 6;
-            var radian = MathUtils.ToRadius(angle);
-            var east = new Vector3((float)Math.Round(Math.Cos(radian), decimals), (float)Math.Round(Math.Sin(radian) * -1, decimals), 0);
-            var up = new Vector3(0, 0, 1);
-            var north = new Vector3((float)Math.Round(Math.Sin(radian), decimals), (float)Math.Round(Math.Cos(radian), decimals), 0);
-            return (east, north, up);
         }
     }
 }

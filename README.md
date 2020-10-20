@@ -24,7 +24,7 @@ Input database table contains following columns:
 
 . scale - double
 
-. rotation - double with horizontal rotation angle (0 - 360 degrees) (not supported yet)
+. rotation - double with horizontal rotation angle (0 - 360 degrees)
 
 . properties (json) (not supported yet)
 
@@ -65,7 +65,7 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 
 ## Roadmap
 
-- support instance rotation, properties, scale_non_uniform;
+- support instance properties, rtc_Center, scale_non_uniform, lod;
 
 
 ## History
