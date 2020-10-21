@@ -50,7 +50,7 @@ Tool parameters:
 
 -t: (required) table with instance positions
 
--m: (required) glTF model (glb). When an uri is given, the i3dm will contain a reference to the model, otherwise an embedded local glb is expected.
+-m: (required) glTF model (glb). Can be a path too glb file or absolute/relative url (see use_external_model)
 
 -g: (optional - Default: 500,0) Geometric errors
 
