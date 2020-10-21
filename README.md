@@ -58,7 +58,9 @@ Tool parameters:
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
--r: (optional = Default: false) Use RTC_CENTER for high precision relative positions
+-r: (optional - Default: false) Use RTC_CENTER for high precision relative positions
+
+--use_external_model (optional - default false) Use external model instead of embedded model
 
 -q: query (not supported yet)
 ```

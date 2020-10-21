@@ -28,7 +28,7 @@ namespace i3dm.export
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
-                var isExternalGltf = Uri.IsWellFormedUriString(o.Model, UriKind.Absolute);
+                var isExternalGltf = o.UseExternalModel;
 
                 if (!isExternalGltf)
                 {
