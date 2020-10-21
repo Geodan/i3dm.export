@@ -11,6 +11,9 @@ For instanced 3D Model specs see https://github.com/CesiumGS/3d-tiles/tree/maste
 
 ## Installation
 
+
+Prerequisite: .NET Core 3.1 SDK is installed https://dotnet.microsoft.com/download/dotnet-core/3.1
+
 ```
 $ dotnet tool install -g i3dm.export
 ```
