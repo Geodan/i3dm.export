@@ -58,7 +58,7 @@ Tool parameters:
 
 -r: (optional - Default: false) Use RTC_CENTER for high precision relative positions
 
--q: query (optional - default ""). Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
+-q: (optional - default: ""). Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
 --use_external_model (optional - default false) Use external model instead of embedded model
 ```
