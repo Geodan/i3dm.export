@@ -128,6 +128,7 @@ namespace i3dm.export
                 WriteJson(o.Output, rootBounds, tiles, o.GeometricErrors);
                 pbar.WriteLine("tileset.json exported.");
                 pbar.WriteLine("Export finished!");
+                pbar.Dispose();
             });
         }
 
