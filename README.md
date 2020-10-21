@@ -2,7 +2,7 @@
 
 Console tool for exporting Instanced 3D Models (i3dm's) and tileset.json from PostGIS table. The input table contains instance information like location (epsg:4326), scale, rotation and instance attributes. The used 3D model (binary glTF - glb) for visualizing the instances is one of input parameters.
 
-This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles.
+This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles).
 
 For instanced 3D Model specs see https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel
 
