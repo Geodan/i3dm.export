@@ -160,6 +160,8 @@ The {q} option is the optional query parameter.
 
 ## History
 
+2020-10-21: release 1.5 add query, use_external_model paramters
+
 2020-10-20: release 1.4 add batch info support
 
 2020-10-20: release 1.3 adding instance rotation + rtc_Center support 
