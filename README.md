@@ -48,19 +48,19 @@ Tool parameters:
 
 -t: (required) table with instance positions
 
--m: (required) glTF model (glb). Can be a path too glb file or absolute/relative url (see use_external_model)
+-m: (required) glTF model (glb) Can be a path to glb file or absolute/relative url (see use_external_model)
 
 -g: (optional - Default: 500,0) Geometric errors
 
--e: (optional - Default: 1000) extent per tile
+-e: (optional - Default: 1000) Extent per tile
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
 -r: (optional - Default: false) Use RTC_CENTER for high precision relative positions
 
--q: (optional - default: ""). Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
+-q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
---use_external_model (optional - default false) Use external model instead of embedded model
+--use_external_model: (optional - default false) Use external model instead of embedded model
 ```
 
 ## Sample running
