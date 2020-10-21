@@ -1,8 +1,10 @@
 # i3dm.export
 
-Console tool for exporting instanced 3D Tiles (i3dm's) and tileset.json from PostGIS table. The input table contains instance information like location (4326), scale, rotation and instance attributes. The used 3D model (glTF - glb) for visualizing the instances is one of input parameters.
+Console tool for exporting instanced 3D Models (i3dm's) and tileset.json from PostGIS table. The input table contains instance information like location (epsg:4326), scale, rotation and instance attributes. The used 3D model (binary glTF - glb) for visualizing the instances is one of input parameters.
 
-This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles)
+This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles.
+
+For instanced 3D Model specs see https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel
 
 [![NuGet Status](http://img.shields.io/nuget/v/i3dm.export.svg?style=flat
 )](https://www.nuget.org/packages/i3dm.export/)
@@ -83,8 +85,8 @@ In the MapBox GL JS client this attribute information can be displayed when sele
 
 Note: 
 
-. all instance records should have the same properties (in the above case 'customer' and 'id'). 
-The list of properties is determined from the first instance record;
+. all instance records per tile should have the same properties (in the above case 'customer' and 'id'). 
+The list of properties is determined from the first instance in the tile;
 
 . only key - value is supported, not more complex structures.
 
@@ -152,7 +154,12 @@ SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_
 SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))
 ```
 
-The {q} option is the optional query parameter.
+where:
+
+- {q} option is the optional query parameter.
+- {geometry_column} column with geometry (default: geom)
+- {geometry_table} input geometry table
+- {from.X}, {from.Y}, {to.X}, {to.Y} envelope of a tile
 
 ## Roadmap
 
