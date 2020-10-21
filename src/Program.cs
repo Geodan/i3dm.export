@@ -24,9 +24,10 @@ namespace i3dm.export
                 string tileFolder = "tiles";
                 string geom_column = "geom";
                 byte[] glbBytes = null;
-                Console.WriteLine($"Exporting i3dm's from {o.Table}...");
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 SqlMapper.AddTypeHandler(new JArrayTypeHandler());
+
+                Console.WriteLine($"Exporting i3dm's from {o.Table}...");
 
                 var isExternalGltf = o.UseExternalModel;
 
@@ -43,11 +44,13 @@ namespace i3dm.export
 
                 var conn = new NpgsqlConnection(o.ConnectionString);
 
-                var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column);
+                var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column, o.Query);
                 var tiles = new List<TileInfo>();
 
                 var xrange = (int)Math.Ceiling(rootBounds.ExtentX() / o.ExtentTile);
                 var yrange = (int)Math.Ceiling(rootBounds.ExtentY() / o.ExtentTile);
+
+                Console.WriteLine($"Maximum number of tiles: {xrange * yrange}");
 
                 var totalTicks = xrange * yrange;
                 var options = new ProgressBarOptions
@@ -63,7 +66,7 @@ namespace i3dm.export
                     {
                         var from = new Point(rootBounds.XMin + o.ExtentTile * x, rootBounds.YMin + o.ExtentTile * y);
                         var to = new Point(rootBounds.XMin + o.ExtentTile * (x + 1), rootBounds.YMin + o.ExtentTile * (y + 1));
-                        var instances = InstancesRepository.GetInstances(conn, o.Table, from, to);
+                        var instances = InstancesRepository.GetInstances(conn, o.Table, from, to, o.Query);
 
                         if (instances.Count > 0)
                         {
@@ -120,11 +123,11 @@ namespace i3dm.export
                         pbar.Tick();
                     }
                 }
-                pbar.Tick();
-                Console.WriteLine();
-                Console.WriteLine("Writing tileset.json...");
+                pbar.WriteLine($"Tiles exported: {tiles.Count}");
+                pbar.WriteLine("Writing tileset.json...");
                 WriteJson(o.Output, rootBounds, tiles, o.GeometricErrors);
-                Console.WriteLine("\nExport finished!");
+                pbar.WriteLine("tileset.json exported.");
+                pbar.WriteLine("Export finished!");
             });
         }
 
@@ -134,7 +137,6 @@ namespace i3dm.export
             var tilesetJSON = TilesetGenerator.GetTileSetJson(rootBounds, tiles, errors);
             var jsonFile = $"{output}{Path.DirectorySeparatorChar}tileset.json";
             File.WriteAllText(jsonFile, tilesetJSON);
-            Console.WriteLine("\n\ntileset.json exported.");
         }
     }
 }

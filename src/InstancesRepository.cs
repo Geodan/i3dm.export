@@ -7,19 +7,21 @@ namespace i3dm.export
 {
     public static class InstancesRepository
     {
-        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to)
+        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to, string query = "")
         {
+            var q = string.IsNullOrEmpty(query) ? "" : $"{query} and";
             conn.Open();
-            var sql = $"SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, tags as tags FROM {geometry_table} WHERE ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))";
+            var sql = $"SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))";
             var res = conn.Query<Instance>(sql).AsList();
             conn.Close();
             return res;
         }
 
-        public static BoundingBox3D GetBoundingBox3DForTable(NpgsqlConnection conn, string geometry_table, string geometry_column)
+        public static BoundingBox3D GetBoundingBox3DForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, string query = "")
         {
-            conn.Open();            
-            var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, 3857)) AS box from {geometry_table}) as total";
+            conn.Open();
+            var q = string.IsNullOrEmpty(query) ? "" : $"where {query}";
+            var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, 3857)) AS box from {geometry_table} {q}) as total";
             var cmd = new NpgsqlCommand(sql, conn);
             var reader = cmd.ExecuteReader();
             reader.Read();

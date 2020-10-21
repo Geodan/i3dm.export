@@ -28,8 +28,7 @@ namespace i3dm.export
         [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
         public bool UseExternalModel { get; set; }
 
-        // add for next release
-        //[Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
-        //public string Query { get; set; }
+        [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
+        public string Query { get; set; }
     }
 }
