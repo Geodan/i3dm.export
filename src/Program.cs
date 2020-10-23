@@ -82,10 +82,9 @@ namespace i3dm.export
                             foreach (var instance in instances)
                             {
                                 var p = (Point)instance.Position;
-
-                                var vec= o.UseRtcCenter?
-                                    new Vector3((float)(p.X - firstPosition.X),(float)(p.Y - firstPosition.Y), (float)(p.Z - firstPosition.Z)):
-                                    new Vector3((float)p.X, (float)p.Y, (float)p.Z);
+                                var vec = o.UseRtcCenter ?
+                                    new Vector3((float)(p.X.GetValueOrDefault() - firstPosition.X.GetValueOrDefault()),(float)(p.Y.GetValueOrDefault() - firstPosition.Y.GetValueOrDefault()), (float)(p.Z.GetValueOrDefault() - firstPosition.Z.GetValueOrDefault())) :
+                                    new Vector3((float)p.X.GetValueOrDefault(), (float)p.Y.GetValueOrDefault(), (float)p.Z.GetValueOrDefault());
                                 positions.Add(vec);
                                 scales.Add((float)instance.Scale);
                                 var (East, North, Up) = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
@@ -94,7 +93,7 @@ namespace i3dm.export
                                 tags.Add(instance.Tags);
                             }
 
-                            var i3dm = isExternalGltf? new I3dm.Tile.I3dm(positions, o.Model): new I3dm.Tile.I3dm(positions, glbBytes);
+                            var i3dm = isExternalGltf ? new I3dm.Tile.I3dm(positions, o.Model) : new I3dm.Tile.I3dm(positions, glbBytes);
                             i3dm.Scales = scales;
                             i3dm.NormalUps = normalUps;
                             i3dm.NormalRights = normalRights;
