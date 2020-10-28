@@ -66,9 +66,9 @@ $ dotnet tool install -g i3dm.export
 $ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" -t  traffic_signs_instances -m box.glb
 ```
 
-an 'output' directory will be created with a tiles subdirectory containing i3dm tiles.
+Here we visualize the traffic lights as a simple red box (box.glb), but any glTF model can be used here.
 
-todo: use other model for tree.glb
+an 'output' directory will be created with a tiles subdirectory containing i3dm tiles.
 
 ## Visualize in MapBox GL JS
 
