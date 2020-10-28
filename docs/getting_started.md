@@ -2,6 +2,22 @@
 
 In this document we run i3dm.export on a sample dataset of traffic signs (GeoJSON file). The generated instanced 3D tiles are visualized in a MapBox GL JS viewer.
 
+## Prerequisites
+
+Some open source tooling is used in this tutorial:
+
+- wget https://www.gnu.org/software/wget/
+
+- Docker https://www.docker.com/get-started
+
+- ogr2ogr https://gdal.org/programs/ogr2ogr.html
+
+- psql https://www.postgresql.org/docs/9.2/app-psql.html
+
+- .NET Core 3.1 https://dotnet.microsoft.com/download/dotnet-core/3.1
+
+- Python 3 https://www.python.org/
+
 ## Download data
 
 ```
