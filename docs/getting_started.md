@@ -19,7 +19,7 @@ $ docker run -d -e POSTGRES_PASSWORD=postgres -p 5432:5432 mdillon/postgis
 ## Import traffic signs to PostGIS
 
 ```
-$ ogr2ogr -f "PostgreSQL" PG:"host=::1 user=postgres password=postgres dbname=postgres" current_traffic_signs.geojson -nlt POINT -nln traffic_signs
+$ ogr2ogr -f "PostgreSQL" PG:"host=localhost user=postgres password=postgres dbname=postgres" current_traffic_signs.geojson -nlt POINT -nln traffic_signs
 ```
 
 ## PSQL into PostGIS
