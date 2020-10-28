@@ -42,7 +42,7 @@ Input database table contains following columns:
 
 . tags (json)
 
-. scale_non_uniform (double precision[3])
+. (optional) scale_non_uniform (double precision[3])
 
 See [testdata/create_testdata.sql](testdata/create_testdata.sql) for script creating sample table. 
 
