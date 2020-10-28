@@ -68,7 +68,7 @@ $ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" 
 
 Here we visualize the traffic lights as a simple red box (box.glb), but any glTF model can be used here.
 
-an 'output' directory will be created with a tiles subdirectory containing i3dm tiles.
+an 'output' directory will be created with a tiles subdirectory containing tileset.json and i3dm tiles.
 
 ## Visualize in MapBox GL JS
 
@@ -83,7 +83,10 @@ Navigate in a browser to http://localhost:8000 and the traffic signs should be v
 
 Result should look like:
 
+Live demo: https://geodan.github.io/i3dm.export/docs/index.html
+
 ![screenshot](screenshot.png)
+
 
 
 
