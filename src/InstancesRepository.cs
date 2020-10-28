@@ -7,11 +7,12 @@ namespace i3dm.export
 {
     public static class InstancesRepository
     {
-        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to, string query = "")
+        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to, string query = "", bool useScaleNonUniform = false)
         {
             var q = string.IsNullOrEmpty(query) ? "" : $"{query} and";
+            var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
             conn.Open();
-            var sql = $"SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))";
+            var sql = $"SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, {scaleNonUniform} rotation, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))";
             var res = conn.Query<Instance>(sql).AsList();
             conn.Close();
             return res;

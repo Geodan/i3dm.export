@@ -6,6 +6,7 @@ CREATE TABLE mydata(
   id serial PRIMARY KEY, 
   geom geometry(POINTZ, 4326),
   scale double precision,
+  scale_non_uniform double precision[3],
   rotation double precision,
   tags json
 );

@@ -66,12 +66,13 @@ namespace i3dm.export
                     {
                         var from = new Point(rootBounds.XMin + o.ExtentTile * x, rootBounds.YMin + o.ExtentTile * y);
                         var to = new Point(rootBounds.XMin + o.ExtentTile * (x + 1), rootBounds.YMin + o.ExtentTile * (y + 1));
-                        var instances = InstancesRepository.GetInstances(conn, o.Table, from, to, o.Query);
+                        var instances = InstancesRepository.GetInstances(conn, o.Table, from, to, o.Query, o.UseScaleNonUniform);
 
                         if (instances.Count > 0)
                         {
                             var positions = new List<Vector3>();
                             var scales = new List<float>();
+                            var scalesNonUniform = new List<Vector3>();
                             var normalUps = new List<Vector3>();
                             var normalRights = new List<Vector3>();
                             var tags = new List<JArray>();
@@ -83,10 +84,18 @@ namespace i3dm.export
                             {
                                 var p = (Point)instance.Position;
                                 var vec = o.UseRtcCenter ?
-                                    new Vector3((float)(p.X.GetValueOrDefault() - firstPosition.X.GetValueOrDefault()),(float)(p.Y.GetValueOrDefault() - firstPosition.Y.GetValueOrDefault()), (float)(p.Z.GetValueOrDefault() - firstPosition.Z.GetValueOrDefault())) :
-                                    new Vector3((float)p.X.GetValueOrDefault(), (float)p.Y.GetValueOrDefault(), (float)p.Z.GetValueOrDefault());
+                                    new Vector3((float)(p.X - firstPosition.X),(float)(p.Y - firstPosition.Y), (float)(p.Z.GetValueOrDefault() - firstPosition.Z.GetValueOrDefault())) :
+                                    new Vector3((float)p.X, (float)p.Y, (float)p.Z.GetValueOrDefault());
                                 positions.Add(vec);
-                                scales.Add((float)instance.Scale);
+
+                                if (!o.UseScaleNonUniform)
+                                {
+                                    scales.Add((float)instance.Scale);
+                                }
+                                else
+                                {
+                                    scalesNonUniform.Add(new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]));
+                                }
                                 var (East, North, Up) = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
                                 normalUps.Add(Up);
                                 normalRights.Add(East);
@@ -94,7 +103,16 @@ namespace i3dm.export
                             }
 
                             var i3dm = isExternalGltf ? new I3dm.Tile.I3dm(positions, o.Model) : new I3dm.Tile.I3dm(positions, glbBytes);
-                            i3dm.Scales = scales;
+
+                            if (!o.UseScaleNonUniform)
+                            {
+                                i3dm.Scales = scales;
+                            }
+                            else
+                            {
+                                i3dm.ScaleNonUniforms= scalesNonUniform;
+                            }
+
                             i3dm.NormalUps = normalUps;
                             i3dm.NormalRights = normalRights;
 

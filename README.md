@@ -42,6 +42,8 @@ Input database table contains following columns:
 
 . tags (json)
 
+. scale_non_uniform (double precision[3])
+
 See [testdata/create_testdata.sql](testdata/create_testdata.sql) for script creating sample table. 
 
 ## Parameters
@@ -66,6 +68,8 @@ Tool parameters:
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
 --use_external_model: (optional - default false) Use external model instead of embedded model
+
+--use_scale_non_uniform: (optional - default false) Use column scale_non_uniform for scaling instances
 ```
 
 ## Sample running
@@ -107,6 +111,29 @@ The batch table information in the i3dm tile is stored as follows (for 2 instanc
 
 ```
 {"customer":["John Doe","John Doe2"], "id": [5454577, 5454579]}
+```
+
+## Scale non uniform
+
+When the instance model should be scaled in three directions (x, y, z) use the --use_scale_non_uniform option (default false)
+
+When using this option, the column 'scale_non_uniform' will be used for scaling instances.
+
+Column 'scale_non_uniform' must be of type 'double precision[3]'.
+
+Sample queries to create/fill this column:
+
+Create column:
+
+```
+ALTER TABLE traffic_signs_instances
+ADD COLUMN scale_non_uniform double precision[3]
+```
+
+Fill column:
+
+```
+update traffic_signs_instances set scale_non_uniform = '{10.0, 20.0, 30.0}'
 ```
 
 ## Developing
@@ -170,9 +197,11 @@ where:
 
 ## Roadmap
 
-- support  scale_non_uniform, lod;
+- support lods;
 
 ## History
+
+2020-10-28: release 1.6 add scale_non_uniform support
 
 2020-10-21: release 1.5 add query, use_external_model parameters
 

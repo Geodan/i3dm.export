@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Numerics;
 using Wkx;
 
 namespace i3dm.export
@@ -12,6 +13,8 @@ namespace i3dm.export
         public Geometry Position { get; set; }
 
         public double Scale { get; set; }
+
+        public double[] ScaleNonUniform { get; set; }
 
         public double Rotation { get; set; }
 
