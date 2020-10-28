@@ -82,13 +82,13 @@ $ dotnet tool install -g i3dm.export
 $ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" -t  traffic_signs_instances -m box.glb
 ```
 
-Here we visualize the traffic lights as a simple red box (box.glb), but any glTF model can be used here.
+Here we visualize the traffic lights as a simple red box (box.glb), but any glTF model can be used instead.
 
 an 'output' directory will be created with a tiles subdirectory containing tileset.json and i3dm tiles.
 
 ## Visualize in MapBox GL JS
 
-Put the MapBox client (index.html) on a webserver 
+Put the MapBox client ![index.html](index.html), ![mapbox3dtiles.js](mapbox3dtiles.js) and the output folder with tiles on a webserver:
 
 ```
 $ python3 -m http.server
