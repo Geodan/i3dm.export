@@ -76,7 +76,7 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 
 ## Getting started
 
-For getting started with i3dm.export tool see [getting started](doc/getting_started.md).
+For getting started with i3dm.export tool see [getting started](blob/main/docs/getting_started.md).
 
 ## Instance batch info
 
