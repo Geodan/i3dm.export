@@ -74,6 +74,10 @@ Tool parameters:
 $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=test;Port=5432" -t public.trees -m tree.glb
 ```
 
+## Getting started
+
+For getting started with i3dm.export tool see [getting started](doc/getting_started.md).
+
 ## Instance batch info
 
 To add batch info to instanced tiles fill the 'tags' type json column in the input table.
