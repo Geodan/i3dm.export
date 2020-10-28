@@ -88,7 +88,7 @@ an 'output' directory will be created with a tiles subdirectory containing tiles
 
 ## Visualize in MapBox GL JS
 
-Put the MapBox client ![index.html](index.html), ![mapbox3dtiles.js](mapbox3dtiles.js) and the output folder with tiles on a webserver:
+Put the MapBox client ![index.html](./index.html), ![mapbox3dtiles.js](./mapbox3dtiles.js) and the output folder with tiles on a webserver:
 
 ```
 $ python3 -m http.server
