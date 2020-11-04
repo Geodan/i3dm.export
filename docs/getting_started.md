@@ -95,7 +95,8 @@ $ python3 -m http.server
 Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
 ```
 
-Navigate in a browser to http://localhost:8000 and the traffic signs should be visible.
+Navigate in a browser to http://localhost:8000 and the traffic signs should be visible. When moving with mouse over a 
+sign you should be able to see the 'id' and 'bevestiging' tags in the upperleft popup.  
 
 Result should look like:
 
