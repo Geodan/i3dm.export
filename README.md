@@ -75,7 +75,7 @@ Tool parameters:
 ## Sample running
 
 ```
-$ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=test;Port=5432" -t public.trees -m tree.glb
+$ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=test;Port=5432" -t public.trees
 ```
 
 ## Getting started
@@ -185,7 +185,7 @@ SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_
 2] Query instances per tile
 
 ```
-SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))
+SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, model, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))
 ```
 
 where:

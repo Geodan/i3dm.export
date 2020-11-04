@@ -67,12 +67,13 @@ namespace i3dm.export
                             var tile = GetTile(instances, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
 
                             var ext = tile.isI3dm ? "i3dm" : "cmpt";
+
                             var file = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.{ext}";
                             File.WriteAllBytes(file, tile.tile);
 
                             tiles.Add(new TileInfo
                             {
-                                Filename = $"{tileFolder}/tile_{x}_{y}.i3dm",
+                                Filename = $"{tileFolder}/tile_{x}_{y}.{ext}",
                                 Bounds = new BoundingBox3D((float)from.X, (float)from.Y, 0, (float)to.X, (float)to.Y, 0)
                             });
                         }
@@ -123,9 +124,9 @@ namespace i3dm.export
             }
 
             var uniqueModels = instances.Select(s => s.Model).Distinct();
-            byte[] bytes=null;
+            byte[] bytes = null;
             bool isI3dm;
-            if(uniqueModels.Count() <= 1)
+            if (uniqueModels.Count() <= 1)
             {
                 var model = instances[0].Model;
                 var i3dm = GetI3dm(model, UseExternalModel, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
@@ -135,7 +136,7 @@ namespace i3dm.export
             else
             {
                 var tiles = new List<byte[]>();
-                foreach(var model in uniqueModels)
+                foreach (var model in uniqueModels)
                 {
                     var i3dm = GetI3dm(model, UseExternalModel, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
                     var bytesI3dm = I3dmWriter.Write(i3dm);
