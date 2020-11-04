@@ -54,22 +54,22 @@ postgres=# select count(*) from traffic_signs;
 
 ## Create instances table
 
+We create a new table, with trees in epsg:4326, randomized scales and horizontal rotations and field 'bevestiging' as tag. 
+
 ```
 postgres=# CREATE TABLE traffic_signs_instances as (
 	SELECT ogc_fid as id, 
 	st_transform(wkb_geometry, 4326) as geom,
-	1 as scale,
-	0 as rotation,
-	null::json as tags
+	1 +  random() as scale,
+	random()*360 as rotation,
+	json_build_array(json_build_object('bevestiging',bevestiging)) as tags
 	from traffic_signs
-)
+);
 
 postgres=# CREATE INDEX geom_idx ON traffic_signs_instances USING GIST (geom);
-postgres=# delete from traffic_signs_instances where st_x(geom) < 4.5 or st_x(geom)>5.0
+postgres=# delete from traffic_signs_instances where st_x(geom) < 4.5 or st_x(geom)>5.0;
+postgres=# exit;
 ```
-
-todo: fill tags, rotation, scales
-
 ## Install i3dm.export
 
 ```
