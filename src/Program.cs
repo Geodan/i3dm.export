@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using Cmpt.Tile;
+using CommandLine;
 using Dapper;
 using i3dm.export.Tileset;
 using I3dm.Tile;
@@ -23,18 +24,11 @@ namespace i3dm.export
             {
                 string tileFolder = "tiles";
                 string geom_column = "geom";
-                byte[] glbBytes = null;
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
                 Console.WriteLine($"Exporting i3dm's from {o.Table}...");
 
-                var isExternalGltf = o.UseExternalModel;
-
-                if (!isExternalGltf)
-                {
-                    glbBytes = File.ReadAllBytes(o.Model);
-                }
                 var tilefolder = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}";
 
                 if (!Directory.Exists(tilefolder))
@@ -70,65 +64,11 @@ namespace i3dm.export
 
                         if (instances.Count > 0)
                         {
-                            var positions = new List<Vector3>();
-                            var scales = new List<float>();
-                            var scalesNonUniform = new List<Vector3>();
-                            var normalUps = new List<Vector3>();
-                            var normalRights = new List<Vector3>();
-                            var tags = new List<JArray>();
-                            var batchInfo2 = new List<string>();
+                            var tile = GetTile(instances, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
 
-                            var firstPosition = (Point)instances[0].Position;
-
-                            foreach (var instance in instances)
-                            {
-                                var p = (Point)instance.Position;
-                                var vec = o.UseRtcCenter ?
-                                    new Vector3((float)(p.X - firstPosition.X),(float)(p.Y - firstPosition.Y), (float)(p.Z.GetValueOrDefault() - firstPosition.Z.GetValueOrDefault())) :
-                                    new Vector3((float)p.X, (float)p.Y, (float)p.Z.GetValueOrDefault());
-                                positions.Add(vec);
-
-                                if (!o.UseScaleNonUniform)
-                                {
-                                    scales.Add((float)instance.Scale);
-                                }
-                                else
-                                {
-                                    scalesNonUniform.Add(new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]));
-                                }
-                                var (East, North, Up) = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
-                                normalUps.Add(Up);
-                                normalRights.Add(East);
-                                tags.Add(instance.Tags);
-                            }
-
-                            var i3dm = isExternalGltf ? new I3dm.Tile.I3dm(positions, o.Model) : new I3dm.Tile.I3dm(positions, glbBytes);
-
-                            if (!o.UseScaleNonUniform)
-                            {
-                                i3dm.Scales = scales;
-                            }
-                            else
-                            {
-                                i3dm.ScaleNonUniforms= scalesNonUniform;
-                            }
-
-                            i3dm.NormalUps = normalUps;
-                            i3dm.NormalRights = normalRights;
-
-                            if (o.UseRtcCenter)
-                            {
-                                i3dm.RtcCenter = new Vector3((float)firstPosition.X, (float)firstPosition.Y, (float)firstPosition.Z);
-                            }
-
-                            if (tags[0] != null)
-                            {
-                                var properties = TinyJson.GetProperties(tags[0]);
-                                i3dm.BatchTableJson = TinyJson.ToJson(tags, properties);
-                            }
-
-                            var i3dmFile = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.i3dm";
-                            I3dmWriter.Write(i3dmFile, i3dm);
+                            var ext = tile.isI3dm ? "i3dm" : "cmpt";
+                            var file = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.{ext}";
+                            File.WriteAllBytes(file, tile.tile);
 
                             tiles.Add(new TileInfo
                             {
@@ -147,6 +87,103 @@ namespace i3dm.export
                 pbar.WriteLine("Export finished!");
                 pbar.Dispose();
             });
+        }
+
+        private static (byte[] tile, bool isI3dm) GetTile(List<Instance> instances, bool UseExternalModel, bool UseRtcCenter, bool UseScaleNonUniform)
+        {
+            var positions = new List<Vector3>();
+            var scales = new List<float>();
+            var scalesNonUniform = new List<Vector3>();
+            var normalUps = new List<Vector3>();
+            var normalRights = new List<Vector3>();
+            var tags = new List<JArray>();
+
+            var firstPosition = (Point)instances[0].Position;
+
+            foreach (var instance in instances)
+            {
+                var p = (Point)instance.Position;
+                var vec = UseRtcCenter ?
+                    new Vector3((float)(p.X - firstPosition.X), (float)(p.Y - firstPosition.Y), (float)(p.Z.GetValueOrDefault() - firstPosition.Z.GetValueOrDefault())) :
+                    new Vector3((float)p.X, (float)p.Y, (float)p.Z.GetValueOrDefault());
+                positions.Add(vec);
+
+                if (!UseScaleNonUniform)
+                {
+                    scales.Add((float)instance.Scale);
+                }
+                else
+                {
+                    scalesNonUniform.Add(new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]));
+                }
+                var (East, North, Up) = EnuCalculator.GetLocalEnuMapbox(instance.Rotation);
+                normalUps.Add(Up);
+                normalRights.Add(East);
+                tags.Add(instance.Tags);
+            }
+
+            var uniqueModels = instances.Select(s => s.Model).Distinct();
+            byte[] bytes=null;
+            bool isI3dm;
+            if(uniqueModels.Count() <= 1)
+            {
+                var model = instances[0].Model;
+                var i3dm = GetI3dm(model, UseExternalModel, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
+                bytes = I3dmWriter.Write(i3dm);
+                isI3dm = true;
+            }
+            else
+            {
+                var tiles = new List<byte[]>();
+                foreach(var model in uniqueModels)
+                {
+                    var i3dm = GetI3dm(model, UseExternalModel, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
+                    var bytesI3dm = I3dmWriter.Write(i3dm);
+                    tiles.Add(bytesI3dm);
+                }
+                bytes = CmptWriter.Write(tiles);
+                isI3dm = false;
+            }
+            return (bytes, isI3dm);
+        }
+
+        private static I3dm.Tile.I3dm GetI3dm(string model, bool UseExternalModel, bool UseRtcCenter, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition)
+        {
+            I3dm.Tile.I3dm i3dm;
+            if (!UseExternalModel)
+            {
+                var glbBytes = File.ReadAllBytes(model);
+                i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
+            }
+            else
+            {
+                i3dm = new I3dm.Tile.I3dm(positions, model);
+            }
+
+            if (!UseScaleNonUniform)
+            {
+                i3dm.Scales = scales;
+            }
+            else
+            {
+                i3dm.ScaleNonUniforms = scalesNonUniform;
+            }
+
+            i3dm.NormalUps = normalUps;
+            i3dm.NormalRights = normalRights;
+
+            if (UseRtcCenter)
+            {
+                i3dm.RtcCenter = new Vector3((float)firstPosition.X, (float)firstPosition.Y, (float)firstPosition.Z);
+            }
+
+            if (tags[0] != null)
+            {
+                var properties = TinyJson.GetProperties(tags[0]);
+                i3dm.BatchTableJson = TinyJson.ToJson(tags, properties);
+            }
+
+            return i3dm;
         }
 
         private static void WriteJson(string output, BoundingBox3D rootBounds, List<TileInfo> tiles, string geometricErrors)

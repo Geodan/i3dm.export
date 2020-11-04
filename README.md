@@ -42,6 +42,8 @@ Input database table contains following columns:
 
 . tags (json)
 
+. model - string with binary glTF model
+
 . (optional) scale_non_uniform (double precision[3])
 
 See [testdata/create_testdata.sql](testdata/create_testdata.sql) for script creating sample table. 
@@ -54,8 +56,6 @@ Tool parameters:
 -c: (required) connection string to PostGIS database
 
 -t: (required) table with instance positions
-
--m: (required) glTF model (glb) Can be a path to glb file or absolute/relative url (see use_external_model)
 
 -g: (optional - Default: 500,0) Geometric errors
 

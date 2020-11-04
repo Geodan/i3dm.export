@@ -19,5 +19,7 @@ namespace i3dm.export
         public double Rotation { get; set; }
 
         public JArray Tags { get; set; }
+
+        public string Model { get; set; }
     }
 }
