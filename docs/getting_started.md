@@ -62,10 +62,10 @@ postgres=# CREATE TABLE traffic_signs_instances as (
 	0 as rotation,
 	null::json as tags
 	from traffic_signs
-)
+);
 
 postgres=# CREATE INDEX geom_idx ON traffic_signs_instances USING GIST (geom);
-postgres=# delete from traffic_signs_instances where st_x(geom) < 4.5 or st_x(geom)>5.0
+postgres=# delete from traffic_signs_instances where st_x(geom) < 4.5 or st_x(geom)>5.0;
 ```
 
 todo: fill tags, rotation, scales
