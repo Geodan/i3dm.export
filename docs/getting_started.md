@@ -54,7 +54,7 @@ postgres=# select count(*) from traffic_signs;
 
 ## Create instances table
 
-We create a new table, with trees in epsg:4326, randomized scales and horizontal rotations and field 'bevestiging' as tag. 
+We create a new table, with trees in epsg:4326, randomized scales and horizontal rotations and fields 'id' and 'bevestiging' as tags. 
 
 ```
 postgres=# CREATE TABLE traffic_signs_instances as (
@@ -62,7 +62,7 @@ postgres=# CREATE TABLE traffic_signs_instances as (
 	st_transform(wkb_geometry, 4326) as geom,
 	1 +  random() as scale,
 	random()*360 as rotation,
-	json_build_array(json_build_object('bevestiging',bevestiging)) as tags
+	json_build_array(json_build_object('id',ogc_fid), json_build_object('bevestiging',bevestiging)) as tags
 	from traffic_signs
 );
 
