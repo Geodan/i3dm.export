@@ -11,7 +11,7 @@ namespace i3dm.export
 {
     public static class TileHandler
     {
-        public static (byte[] tile, bool isI3dm) GetTile(List<Instance> instances, bool UseExternalModel=false, bool UseRtcCenter=false, bool UseScaleNonUniform=false)
+        public static (byte[] tile, bool isI3dm) GetTile(List<Instance> instances, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
         {
             var positions = new List<Vector3>();
             var scales = new List<float>();
@@ -69,7 +69,7 @@ namespace i3dm.export
             return vec;
         }
 
-        private static I3dm.Tile.I3dm GetI3dm(string model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition, bool UseExternalModel=false, bool UseRtcCenter=false, bool UseScaleNonUniform=false)
+        private static I3dm.Tile.I3dm GetI3dm(string model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
         {
             I3dm.Tile.I3dm i3dm;
             if (!UseExternalModel)
@@ -96,7 +96,7 @@ namespace i3dm.export
 
             if (UseRtcCenter)
             {
-                i3dm.RtcCenter = new Vector3((float)firstPosition.X, (float)firstPosition.Y, (float)firstPosition.Z);
+                i3dm.RtcCenter = new Vector3((float)firstPosition.X, (float)firstPosition.Y, (float)firstPosition.Z.GetValueOrDefault());
             }
 
             if (tags[0] != null)
@@ -107,6 +107,5 @@ namespace i3dm.export
 
             return i3dm;
         }
-
     }
 }

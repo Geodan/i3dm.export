@@ -15,7 +15,6 @@ namespace i3dm.export
     {
         static void Main(string[] args)
         {
-
             Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
             {
                 string tileFolder = "tiles";
@@ -89,7 +88,6 @@ namespace i3dm.export
                 });
             }
         }
-
 
         private static void WriteJson(string output, BoundingBox3D rootBounds, List<TileInfo> tiles, string geometricErrors)
         {
