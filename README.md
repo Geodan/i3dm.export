@@ -122,7 +122,7 @@ The list of properties is determined from the first instance in the tile;
 Sample to update the json column in PostgreSQL:
 
 ```
-psql> update  i3dm.my_table set tags = json_build_array(json_build_object('customer','John Doe'), json_build_object('id',id));
+postgres=# update  i3dm.my_table set tags = json_build_array(json_build_object('customer','John Doe'), json_build_object('id',id));
 ```
 
 The batch table information in the i3dm tile is stored as follows (for 2 instances):
@@ -144,14 +144,14 @@ Sample queries to create/fill this column:
 Create column:
 
 ```
-ALTER TABLE traffic_signs_instances
-ADD COLUMN scale_non_uniform double precision[3]
+postgres=# ALTER TABLE traffic_signs_instances
+postgres=# ADD COLUMN scale_non_uniform double precision[3]
 ```
 
 Fill column:
 
 ```
-update traffic_signs_instances set scale_non_uniform = '{10.0, 20.0, 30.0}'
+postgres=# update traffic_signs_instances set scale_non_uniform = '{10.0, 20.0, 30.0}'
 ```
 
 ## Developing
@@ -197,13 +197,13 @@ Queries used in this tool:
 1] Query bounding box of table
 
 ```
-SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, 3857)) AS box from {geometry_table} {q}) as total
+postgres=# SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, 3857)) AS box from {geometry_table} {q}) as total
 ````
 
 2] Query instances per tile
 
 ```
-SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, model, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))
+postgres=# SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, model, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))
 ```
 
 where:
