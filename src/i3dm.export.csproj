@@ -6,13 +6,12 @@
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
-	<Version>1.7</Version>
+	<Version>1.7.1</Version>
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	<PackageTags>i3dm 3dtiles mapbox</PackageTags>
-	<PackageReleaseNotes>add support for composite tiles (cmpt)
-breaking change: parameter -m model is removed, model can now be defined per instance in the input table.</PackageReleaseNotes>
+	<PackageReleaseNotes>fix instances per i3dm</PackageReleaseNotes>
 	<Description>Console tool for exporting instanced 3D Tiles (i3dm's) and tileset.json from PostGIS table.</Description>
 	<Company>Geodan</Company>
 	<Authors>Bert Temme</Authors>

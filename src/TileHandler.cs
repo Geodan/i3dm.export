@@ -13,22 +13,23 @@ namespace i3dm.export
     {
         public static (byte[] tile, bool isI3dm) GetTile(List<Instance> instances, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
         {
-            var positions = new List<Vector3>();
-            var scales = new List<float>();
-            var scalesNonUniform = new List<Vector3>();
-            var normalUps = new List<Vector3>();
-            var normalRights = new List<Vector3>();
-            var tags = new List<JArray>();
 
             var firstPosition = (Point)instances[0].Position;
-
-            CalculateArrays(instances, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
 
             var uniqueModels = instances.Select(s => s.Model).Distinct();
 
             var tiles = new List<byte[]>();
             foreach (var model in uniqueModels)
             {
+                var positions = new List<Vector3>();
+                var scales = new List<float>();
+                var scalesNonUniform = new List<Vector3>();
+                var normalUps = new List<Vector3>();
+                var normalRights = new List<Vector3>();
+                var tags = new List<JArray>();
+
+                var modelInstances = instances.Where(s => s.Model == model).ToList();
+                CalculateArrays(modelInstances, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
                 var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition, UseExternalModel, UseRtcCenter, UseScaleNonUniform);
                 var bytesI3dm = I3dmWriter.Write(i3dm);
                 tiles.Add(bytesI3dm);

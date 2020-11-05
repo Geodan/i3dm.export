@@ -76,16 +76,19 @@ namespace i3dm.export
             {
                 var tile = TileHandler.GetTile(instances, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
 
-                var ext = tile.isI3dm ? "i3dm" : "cmpt";
-
-                var file = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.{ext}";
-                File.WriteAllBytes(file, tile.tile);
-
-                tiles.Add(new TileInfo
+                if (!tile.isI3dm)
                 {
-                    Filename = $"{tileFolder}/tile_{x}_{y}.{ext}",
-                    Bounds = new BoundingBox3D((float)from.X, (float)from.Y, 0, (float)to.X, (float)to.Y, 0)
-                });
+                    var ext = tile.isI3dm ? "i3dm" : "cmpt";
+
+                    var file = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}tile_{x}_{y}.{ext}";
+                    File.WriteAllBytes(file, tile.tile);
+
+                    tiles.Add(new TileInfo
+                    {
+                        Filename = $"{tileFolder}/tile_{x}_{y}.{ext}",
+                        Bounds = new BoundingBox3D((float)from.X, (float)from.Y, 0, (float)to.X, (float)to.Y, 0)
+                    });
+                }
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using I3dm.Tile;
+﻿using Cmpt.Tile;
+using I3dm.Tile;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -29,6 +30,48 @@ namespace i3dm.export.tests
             Assert.IsTrue(tile.tile.Length > 0);
             Assert.IsTrue(i3dm.Positions.Count == 1);
             Assert.IsTrue(i3dm.Positions[0] == new System.Numerics.Vector3(1, 2, 0));
+        }
+
+        [Test]
+        public void GetCompositeTileTest()
+        {
+            // arrange
+            var instances = new List<Instance>();
+            var instance = new Instance();
+            instance.Position = new Wkx.Point(1, 2);
+            instance.Scale = 1;
+            instance.Model = "box.glb";
+            instances.Add(instance);
+
+            var instance2 = new Instance();
+            instance2.Position = new Wkx.Point(3, 4);
+            instance2.Scale = 1;
+            instance2.Model = "box1.glb";
+            instances.Add(instance2);
+
+            var instance3 = new Instance();
+            instance3.Position = new Wkx.Point(5, 6);
+            instance3.Scale = 1;
+            instance3.Model = "box1.glb";
+            instances.Add(instance3);
+
+            // act
+            var tile = TileHandler.GetTile(instances,UseExternalModel: true);
+            Assert.IsTrue(tile.isI3dm == false);
+            var cmpt = CmptReader.Read(new MemoryStream(tile.tile));
+
+            // assert
+            Assert.IsTrue(cmpt.Tiles.Count == 2);
+            var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles[0]));
+            Assert.IsTrue(i3dm0.Positions.Count == 1);
+            Assert.IsTrue(i3dm0.GlbUrl == "box.glb");
+            Assert.IsTrue(i3dm0.Positions[0] == new Vector3(1,2,0));
+
+            var i3dm1 = I3dmReader.Read(new MemoryStream(cmpt.Tiles[1]));
+            Assert.IsTrue(i3dm1.Positions.Count == 2);
+            Assert.IsTrue(i3dm1.GlbUrl == "box1.glb");
+            Assert.IsTrue(i3dm1.Positions[0] == new Vector3(3, 4, 0));
+            Assert.IsTrue(i3dm1.Positions[1] == new Vector3(5, 6, 0));
         }
 
         [Test]
