@@ -1,6 +1,8 @@
 # i3dm.export
 
-Console tool for exporting Instanced 3D Models (i3dm's) and tileset.json from PostGIS table. The input table contains instance information like location (epsg:4326), scale, rotation and instance attributes. The used 3D model (binary glTF - glb) for visualizing the instances is one of input parameters.
+Console tool for exporting Instanced 3D Models (i3dm's), i3dm composites (cmpt) and tileset.json from PostGIS table. 
+
+The input table contains instance information like location (epsg:4326), binary glTF model (glb), scale, rotation and instance attributes. 
 
 This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles).
 
@@ -26,7 +28,7 @@ $ dotnet tool update -g i3dm.export
 
 ## Live demo 3D instanced tiles
 
-30k trees in instanced tiles (1000m by 1000m) with random scales/rotations:
+30k trees in instanced tiles (1000m by 1000m) with random scales/rotations and batch information:
 
 https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/trees/
 
@@ -34,17 +36,17 @@ https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/trees/
 
 Input database table contains following columns: 
 
-. geom - geometry with PointZ (4326) for i3dm positions
+. geom - geometry with Point or PointZ (epsg:4326) for i3dm positions;
 
-. scale - double
+. scale - double with instance scale (all directions);
 
-. rotation - double with horizontal rotation angle (0 - 360 degrees)
+. rotation - double with horizontal rotation angle (0 - 360 degrees);
 
-. tags (json)
+. tags - json with instance attribute information;
 
-. model - string with binary glTF model
+. model - string with name of binary glTF model per instance. Should be valid path on tool runtime or valid uri on display in client; 
 
-. (optional) scale_non_uniform (double precision[3])
+. (optional) scale_non_uniform - double precision[3] - for scale per instance in 3 directions.
 
 See [testdata/create_testdata.sql](testdata/create_testdata.sql) for script creating sample table. 
 
@@ -81,6 +83,22 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 ## Getting started
 
 For getting started with i3dm.export tool see [getting started](docs/getting_started.md).
+
+## Model
+
+By default, the instance model will be stored in the i3dm payload. In the i3dm header the value 'gltfFormat' is set to 1. 
+In this case, the model should be a valid file path to the binary glTF. 
+Only the i3m files should be copied to a production server.
+
+When parameter 'use_external_model' is set to true, only the model name will be stored in the i3dm payload. 
+In the i3dm header the value 'gltfFormat' is set to 0. In this case, the model should be a valid absolute or relative url to 
+the binary glTF. The client is responsible for retrieving the binary glTF's. Both the i3dm's and binary glTF's should be copied to a production server.
+
+## Composites
+
+When there are multiple models in the instances for a tiles, a composite tile (cmpt) will be generated. The composite tile
+contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm. When there is only 1 model used in the instances, an i3dm tile 
+will be generated.
 
 ## Instance batch info
 
@@ -197,9 +215,12 @@ where:
 
 ## Roadmap
 
-- support lods;
+- support external tileset.json when a limit of tiles is too large.
 
 ## History
+
+2020-11-05: release 1.7 add support for composite tiles (cmpt). Breaking change: parameter -m --model is removed. 
+Model can now be defined per instance in the input table.
 
 2020-10-28: release 1.6 add scale_non_uniform support
 
@@ -214,7 +235,3 @@ where:
 2020-10-19: add support for uri references to external glTF's.
 
 2020-10-15: Initial coding
-
-
-
-
