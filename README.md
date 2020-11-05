@@ -96,7 +96,7 @@ the binary glTF. The client is responsible for retrieving the binary glTF's. Bot
 
 ## Composites
 
-When there are multiple models in the instances for a tiles, a composite tile (cmpt) will be generated. The composite tile
+When there are multiple models in the tile instances, a composite tile (cmpt) will be generated. The composite tile
 contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm. When there is only 1 model used in the instances, an i3dm tile 
 will be generated.
 
@@ -215,7 +215,7 @@ where:
 
 ## Roadmap
 
-- support external tileset.json when a limit of tiles is too large.
+- support external tileset.json to prevent very large tileset.json file.
 
 ## History
 
