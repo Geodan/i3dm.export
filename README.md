@@ -6,7 +6,9 @@ The input table contains instance information like location (epsg:4326), binary 
 
 This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles).
 
-For instanced 3D Model specs see https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel
+For instanced 3D Model (i3dm) specs see https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel
+
+For composite tile (cmpt) specs see https://github.com/CesiumGS/3d-tiles/blob/master/specification/TileFormats/Composite/README.md
 
 [![NuGet Status](http://img.shields.io/nuget/v/i3dm.export.svg?style=flat
 )](https://www.nuget.org/packages/i3dm.export/)
