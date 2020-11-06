@@ -28,9 +28,6 @@ namespace i3dm.export
         [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
         public bool UseScaleNonUniform { get; set; }
 
-        [Option("use_composite_tiles", Required = false, Default = false, HelpText = "Use composite tiles (cmpt)")]
-        public bool UseCommpositeTiles { get; set; }
-
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
     }
