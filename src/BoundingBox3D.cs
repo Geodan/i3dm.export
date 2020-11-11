@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Drawing;
+using System.Globalization;
 using System.Numerics;
 
 namespace i3dm.export
@@ -24,9 +26,34 @@ namespace i3dm.export
             this.ZMax = ZMax;
         }
 
+        public (int xrange, int yrange) GetRange(double extentTile)
+        {
+            var xrange = (int)Math.Ceiling(ExtentX() / extentTile);
+            var yrange = (int)Math.Ceiling(ExtentY() / extentTile);
+            return (xrange, yrange);
+        }
+
+        public BoundingBox3D GetBounds(double extent, int x, int y)
+        {
+            var from = new Wkx.Point(XMin + extent * x, YMin + extent * y);
+            var to = new Wkx.Point(XMin + extent * (x + 1), YMin + extent * (y + 1));
+            var bb = new BoundingBox3D((float)from.X, (float)from.Y, 0, (float)to.X, (float)to.Y, 0);
+            return bb;
+        }
+
         public override string ToString()
         {
             return $"{XMin.ToString(CultureInfo.InvariantCulture)},{YMin.ToString(CultureInfo.InvariantCulture)},{ZMin.ToString(CultureInfo.InvariantCulture)},{XMax.ToString((CultureInfo.InvariantCulture))},{YMax.ToString((CultureInfo.InvariantCulture))},{ZMax.ToString((CultureInfo.InvariantCulture))}";
+        }
+
+        public Wkx.Point From()
+        {
+            return new Wkx.Point(XMin, YMin);
+        }
+
+        public Wkx.Point To()
+        {
+            return new Wkx.Point(XMax, YMax);
         }
 
         public double ExtentX()

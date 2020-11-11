@@ -7,7 +7,7 @@ namespace i3dm.export.Tileset
     {
         public static string GetTileSetJson(BoundingBox3D bb3d, List<TileInfo> tiles, List<double> geometricErrors)
         {
-            var tileset = GetTileSet(bb3d, tiles, geometricErrors);
+            var tileset = GetTileSet(bb3d, tiles, geometricErrors, "REPLACE");
             var json = JsonConvert.SerializeObject(tileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
             return json;
         }
@@ -19,7 +19,61 @@ namespace i3dm.export.Tileset
             return transformRoot;
         }
 
-        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, List<TileInfo> tiles, List<double> geometricErrors)
+        public static TileSetJson GetSuperTileSet(BoundingBox3D rootBounds,List<SuperTileSetJson> tilesets, List<double> geometricErrors)
+        {
+            var tileset = new TileSetJson
+            {
+                asset = new Asset() { version = "1.0", generator = "i3dm.export" }
+            };
+
+            tileset.geometricError = geometricErrors[0];
+
+
+            var boundingVolume = GetBoundingVolume(rootBounds);
+
+            var root = new Root
+            {
+                refine = "ADD",
+                boundingVolume = boundingVolume,
+                geometricError = geometricErrors[0]
+            };
+
+            var children = new List<Child>();
+
+
+            foreach (var ts in tilesets)
+            {
+                var child = new Child();
+                child.geometricError = geometricErrors[0];
+                child.boundingVolume = GetBoundingVolume(ts.Bounds);
+                var content = new Content();
+                content.uri = ts.FileName;
+                child.content = content;
+                children.Add(child);
+            }
+
+            tileset.root = root;
+            tileset.root.children = children;
+            return tileset;
+        }
+
+        private static Boundingvolume GetBoundingVolume(BoundingBox3D rootBounds)
+        {
+            var centroid = rootBounds.GetCenter();
+            var extent_x = rootBounds.ExtentX();
+            var extent_y = rootBounds.ExtentY();
+            var extent_z = 100;
+
+            var box = new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
+
+            var boundingVolume = new Boundingvolume
+            {
+                box = box
+            };
+            return boundingVolume;
+        }
+
+        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, List<double> geometricErrors, string refine)
         {
             var extent_x = rootBounds.ExtentX();
             var extent_y = rootBounds.ExtentY();
@@ -40,11 +94,18 @@ namespace i3dm.export.Tileset
             var root = new Root
             {
                 geometricError = geometricErrors[0],
-                refine = "REPLACE",
+                refine = refine,
                 transform = DoubleArrayRounder.Round(GetRootTransform(rootBounds), 8),
                 boundingVolume = boundingVolume
             };
 
+            tileset.root = root;
+            return tileset;
+        }
+
+        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, List<TileInfo> tiles, List<double> geometricErrors, string refine)
+        {
+            var tileset = GetRootTileSet(rootBounds, geometricErrors, refine);
             var centroid = rootBounds.GetCenter();
             var children = new List<Child>();
             foreach (var tile in tiles)
@@ -61,8 +122,7 @@ namespace i3dm.export.Tileset
                 children.Add(child);
             }
 
-            root.children = children;
-            tileset.root = root;
+            tileset.root.children = children;
             return tileset;
         }
     }

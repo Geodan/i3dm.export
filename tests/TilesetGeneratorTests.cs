@@ -15,7 +15,7 @@ namespace i3dm.export.tests
             var tile = new TileInfo() { Bounds = bbTile };
 
             // act
-            var result = TilesetGenerator.GetTileSet(bounds, new List<TileInfo> { tile }, new List<double> { 500, 0 });
+            var result = TilesetGenerator.GetTileSet(bounds, new List<TileInfo> { tile }, new List<double> { 500, 0 }, "REPLACE");
 
             // assert (todo add more checks)
             Assert.IsNotNull(result);

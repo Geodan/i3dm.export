@@ -19,6 +19,9 @@ namespace i3dm.export
         [Option('e', "extenttile", Required = false, Default = 1000.0, HelpText = "Extent per tile")]
         public double ExtentTile { get; set; }
 
+        [Option("superextenttile", Required = false, Default = 10000.0, HelpText = "Super Extent per tile")]
+        public double SuperExtentTile { get; set; }
+
         [Option('r', "rtccenter", Required = false, Default = false, HelpText = "Use RTC_CENTER for positions")]
         public bool UseRtcCenter { get; set; }
 

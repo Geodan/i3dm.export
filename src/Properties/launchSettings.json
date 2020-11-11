@@ -2,7 +2,7 @@
   "profiles": {
     "i3dm.export": {
       "commandName": "Project",
-      "commandLineArgs": "-c \"Host=localhost;Username=postgres;password=postgres;Port=5432\" -t  traffic_signs_instances"
+      "commandLineArgs": "-c \"Host=leda;database=research;Username=postgres;password=postgres;Port=5432\" -t  bertt.boomregister"
     }
   }
 }
