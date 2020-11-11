@@ -221,6 +221,8 @@ where:
 
 ## History
 
+2020-11-05: release 1.7.1 with bug fix wrong instances per i3dm when multiple models used. 
+
 2020-11-05: release 1.7 add support for composite tiles (cmpt). Breaking change: parameter -m --model is removed. 
 Model can now be defined per instance in the input table.
 
