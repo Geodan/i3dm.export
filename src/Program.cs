@@ -11,20 +11,6 @@ using System.Linq;
 
 namespace i3dm.export
 {
-    public class SuperTileSetJson
-    {
-        public SuperTileSetJson(int X, int Y)
-        {
-            this.X = X;
-            this.Y = Y;
-        }
-        public int Y { get; set; }
-        public int X { get; set; }
-        public string FileName { get; set; }
-
-        public BoundingBox3D Bounds { get; set; }
-    }
-
     class Program
     {
         static void Main(string[] args)
@@ -71,51 +57,43 @@ namespace i3dm.export
                     {
                         var supertilebounds = rootBounds.GetBounds(o.SuperExtentTile, x_super, y_super);
 
-                        var range_tile = supertilebounds.GetRange(o.ExtentTile);
+                        var (xrange, yrange) = supertilebounds.GetRange(o.ExtentTile);
 
                         var tiles = new List<TileInfo>();
 
-                        for (var x = 0; x < range_tile.xrange; x++)
+                        for (var x = 0; x < xrange; x++)
                         {
-                            for (var y = 0; y < range_tile.yrange; y++)
+                            for (var y = 0; y < yrange; y++)
                             {
-                                var useBlue = (x_super == 1 ? true : false);
-                                CreateTile(o, tileFolder, conn, supertilebounds, tiles, x, y, $"{x_super}_{y_super}", useBlue);
+                                CreateTile(o, tileFolder, conn, supertilebounds, tiles, x, y, $"{x_super}_{y_super}");
                                 pbar.Tick();
                             }
                         }
 
                         var supertileSet = new SuperTileSetJson(x_super, y_super);
-                        supertileSet.FileName = $"tileset_{x_super}_{y_super}.json";
+                        supertileSet.FileName = supertiles>1? $"tileset_{x_super}_{y_super}.json" : "tileset.json";
                         supertileSet.Bounds = supertilebounds;
                         supertilesets.Add(supertileSet);
                         WriteJson(o.Output, supertilebounds, tiles, o.GeometricErrors, supertileSet.FileName);
                     }
                 }
 
-                // todo: write supertileset.json
-                var supertileset = TilesetGenerator.GetSuperTileSet(newBounds, supertilesets, ToDoubles(o.GeometricErrors));
-                var json = JsonConvert.SerializeObject(supertileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
-                File.WriteAllText($"{o.Output}{ Path.DirectorySeparatorChar}super_tileset.json", json);
-
+                if (supertiles > 1)
+                {
+                    var supertileset = TilesetGenerator.GetSuperTileSet(newBounds, supertilesets, ToDoubles(o.GeometricErrors));
+                    var json = JsonConvert.SerializeObject(supertileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+                    File.WriteAllText($"{o.Output}{ Path.DirectorySeparatorChar}tileset.json", json);
+                }
                 pbar.WriteLine("Export finished!");
                 pbar.Dispose();
             });
         }
 
 
-        private static void CreateTile(Options o, string tileFolder, NpgsqlConnection conn, BoundingBox3D rootBounds, List<TileInfo> tiles, int x, int y, string prefix, bool useblue= false)
+        private static void CreateTile(Options o, string tileFolder, NpgsqlConnection conn, BoundingBox3D rootBounds, List<TileInfo> tiles, int x, int y, string prefix)
         {
             var tileBounds = rootBounds.GetBounds(o.ExtentTile, x, y);
             var instances = InstancesRepository.GetInstances(conn, o.Table, tileBounds.From(), tileBounds.To(), o.Query, o.UseScaleNonUniform);
-
-            if (useblue)
-            {
-                foreach(var instance in instances)
-                {
-                    instance.Model = "Box_blue.glb";
-                }
-            }
 
             if (instances.Count > 0)
             {

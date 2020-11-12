@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using i3dm.export.Tileset;
+using NUnit.Framework;
 
 namespace i3dm.export.tests
 {
@@ -17,6 +18,25 @@ namespace i3dm.export.tests
             Assert.IsTrue(res.xrange == 10 / 5);
             Assert.IsTrue(res.yrange == 100 / 5);
         }
+
+        [Test]
+        public void BoundingVolumeTest()
+        {
+            // arrange
+            var bounds = new BoundingBox3D(0, 0, 0, 10, 10, 10);
+            var expectedBoundingVolume = new Boundingvolume() { box = new double[] { 5, 5, 5, 5, 0, 0, 0, 5, 0, 0, 0, 100 } };
+
+            // act
+            var boundingvolume = bounds.GetBoundingVolume();
+
+            // assert
+            Assert.IsTrue(boundingvolume.box.Length == expectedBoundingVolume.box.Length);
+            for (var i = 0; i < boundingvolume.box.Length; i++)
+            {
+                Assert.IsTrue(boundingvolume.box[i] == expectedBoundingVolume.box[i]);
+            }
+        }
+
 
         [Test]
         public void GetBoundsTest()

@@ -21,5 +21,6 @@ namespace i3dm.export.tests
             Assert.IsNotNull(result);
             Assert.IsTrue(result.asset.version == "1.0");
         }
+
     }
 }

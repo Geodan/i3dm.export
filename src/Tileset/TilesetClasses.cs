@@ -4,6 +4,21 @@ using System.Linq;
 
 namespace i3dm.export.Tileset
 {
+    public class SuperTileSetJson
+    {
+        public SuperTileSetJson(int X, int Y)
+        {
+            this.X = X;
+            this.Y = Y;
+        }
+        public int Y { get; set; }
+        public int X { get; set; }
+        public string FileName { get; set; }
+
+        public BoundingBox3D Bounds { get; set; }
+    }
+
+
     public class Root : Child {}
 
     public class TileSetJson

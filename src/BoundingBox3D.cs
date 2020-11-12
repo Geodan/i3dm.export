@@ -1,5 +1,5 @@
-﻿using System;
-using System.Drawing;
+﻿using i3dm.export.Tileset;
+using System;
 using System.Globalization;
 using System.Numerics;
 
@@ -40,6 +40,22 @@ namespace i3dm.export
             var bb = new BoundingBox3D((float)from.X, (float)from.Y, 0, (float)to.X, (float)to.Y, 0);
             return bb;
         }
+        public Boundingvolume GetBoundingVolume()
+        {
+            var centroid = GetCenter();
+            var extent_x = ExtentX();
+            var extent_y = ExtentY();
+            var extent_z = 100;
+
+            var box = new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
+
+            var boundingVolume = new Boundingvolume
+            {
+                box = box
+            };
+            return boundingVolume;
+        }
+
 
         public override string ToString()
         {

@@ -29,7 +29,7 @@ namespace i3dm.export.Tileset
             tileset.geometricError = geometricErrors[0];
 
 
-            var boundingVolume = GetBoundingVolume(rootBounds);
+            var boundingVolume = rootBounds.GetBoundingVolume();
 
             var root = new Root
             {
@@ -45,7 +45,7 @@ namespace i3dm.export.Tileset
             {
                 var child = new Child();
                 child.geometricError = geometricErrors[0];
-                child.boundingVolume = GetBoundingVolume(ts.Bounds);
+                child.boundingVolume = ts.Bounds.GetBoundingVolume();
                 var content = new Content();
                 content.uri = ts.FileName;
                 child.content = content;
@@ -57,21 +57,6 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        private static Boundingvolume GetBoundingVolume(BoundingBox3D rootBounds)
-        {
-            var centroid = rootBounds.GetCenter();
-            var extent_x = rootBounds.ExtentX();
-            var extent_y = rootBounds.ExtentY();
-            var extent_z = 100;
-
-            var box = new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
-
-            var boundingVolume = new Boundingvolume
-            {
-                box = box
-            };
-            return boundingVolume;
-        }
 
         public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, List<double> geometricErrors, string refine)
         {
