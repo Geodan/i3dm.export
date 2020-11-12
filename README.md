@@ -16,7 +16,7 @@ For composite tile (cmpt) specs see https://github.com/CesiumGS/3d-tiles/blob/ma
 ## Installation
 
 
-Prerequisite: .NET Core 3.1 SDK is installed https://dotnet.microsoft.com/download/dotnet-core/3.1
+Prerequisite: .NET 5.0 SDK is installed https://dotnet.microsoft.com/download/dotnet/5.0
 
 ```
 $ dotnet tool install -g i3dm.export
@@ -65,6 +65,8 @@ Tool parameters:
 
 -e: (optional - Default: 1000) Extent per tile
 
+-s: (optional - Default: 10000) Super extent tile, references external tilesets
+
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
 -r: (optional - Default: false) Use RTC_CENTER for high precision relative positions
@@ -96,10 +98,16 @@ When parameter 'use_external_model' is set to true, only the model name will be 
 In the i3dm header the value 'gltfFormat' is set to 0. In this case, the model should be a valid absolute or relative url to 
 the binary glTF. The client is responsible for retrieving the binary glTF's. Both the i3dm's and binary glTF's should be copied to a production server.
 
+## External tilesets
+
+When the spatial extent of the input table is larger then the super extent (option -s), multiple tileset files will be generated. Those tilesets
+are referenced in the super tileset.json file, using the external tilesets technique (https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#45). 
+When the spatial extent of the input table is smaller then the super extent (option -s), only 1 tileset.json file will be generated.
+
 ## Composites
 
-When there are multiple models in the tile instances, a composite tile (cmpt) will be generated. The composite tile
-contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm. When there is only 1 model used in the instances, an i3dm tile 
+When there are multiple models in the tile instances, a composite tile (cmpt) will be generated. Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . 
+The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm. When there is only 1 model used in the instances, an i3dm tile 
 will be generated.
 
 ## Instance batch info
@@ -220,6 +228,10 @@ where:
 - support external tileset.json to prevent very large tileset.json file.
 
 ## History
+
+2020-11-12: release 1.8 add external tileset support
+
+2020-11-12: release 1.72. to .NET 5.0
 
 2020-11-05: release 1.7.1 with bug fix wrong instances per i3dm when multiple models used. 
 

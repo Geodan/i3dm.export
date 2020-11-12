@@ -100,7 +100,7 @@ namespace i3dm.export
                 var tile = TileHandler.GetTile(instances, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
 
                 var ext = tile.isI3dm ? "i3dm" : "cmpt";
-                var filename = $"tile_{prefix}_{x}_{y}.{ext}";
+                var filename = $"{prefix}_{x}_{y}.{ext}";
                 var file = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}{filename}";
                 File.WriteAllBytes(file, tile.tile);
 
