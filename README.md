@@ -63,9 +63,9 @@ Tool parameters:
 
 -g: (optional - Default: 500,0) Geometric errors
 
--e: (optional - Default: 1000) Extent per tile
+-e: (optional - Default: 1000) Extent per tile (meters)
 
--s: (optional - Default: 10000) Super extent tile, references external tilesets
+-s: (optional - Default: 10000) Super extent tile (meters)
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
