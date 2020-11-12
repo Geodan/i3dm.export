@@ -223,10 +223,6 @@ where:
 - {geometry_table} input geometry table
 - {from.X}, {from.Y}, {to.X}, {to.Y} envelope of a tile
 
-## Roadmap
-
-- support external tileset.json to prevent very large tileset.json file.
-
 ## History
 
 2020-11-12: release 1.8 add external tileset support
