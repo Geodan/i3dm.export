@@ -32,7 +32,7 @@ $ dotnet tool update -g i3dm.export
 
 30k trees in instanced tiles (1000m by 1000m) with random scales/rotations and batch information:
 
-https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/trees/
+https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/
 
 ## Input database table
 
