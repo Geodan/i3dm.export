@@ -53662,13 +53662,23 @@ var Mapbox3DTiles = (function (exports) {
 	    }
 	    // TileLoader.load
 	    async load() {
-	        let response = await fetch(this.url);
+	        this.abortController = new AbortController();
+	        let response = await fetch(this.url, {signal: this.abortController.signal});
+	        this.abortController = null;
 	        if (!response.ok) {
 	            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
 	        }
 	        let buffer = await response.arrayBuffer();
 	        let res = await this.parseResponse(buffer);
 	        return res;
+	    }
+	    abortLoad() {
+	        if (this.abortController) {
+	            this.abortController.abort();
+	            this.abortController = null;
+	            return true;
+	        }
+	        return false;
 	    }
 	    async parseResponse(buffer) {
 	        let header = new Uint32Array(buffer.slice(0, 32));
@@ -53906,6 +53916,83 @@ var Mapbox3DTiles = (function (exports) {
 	    return instancedMesh;
 	}
 
+	function applyStyle(scene,styleParams){
+		let maincolor = null;
+		if (styleParams.color != null) {
+			maincolor = new Color(styleParams.color);
+		}
+		scene.traverse(child => {
+				if (child instanceof Mesh) {
+
+					if (styleParams.color != null) {
+						child.material.color = maincolor;
+					}
+					if (styleParams.opacity != null) {
+						child.material.opacity = styleParams.opacity;
+						child.material.transparent = styleParams.opacity < 1.0 ? true : false;
+					}
+					
+					// some gltf has wrong bounding data, recompute here
+					child.geometry.computeBoundingBox();
+					child.geometry.computeBoundingSphere();
+					child.castShadow = true;
+
+					//For changing individual colors later, we have to introduce vertexcolors
+					//const color = new THREE.Color();
+					const positions = child.geometry.attributes.position;
+					const count = positions.count;
+					child.geometry.setAttribute( 'color', new BufferAttribute( new Float32Array( count * 3 ), 3 ) );
+					const colors = child.geometry.attributes.color;
+					const color = new Color();
+					const grey = new Color("rgb(20,20,20)");
+					const ymin = child.geometry.boundingBox.min.y;
+					const ymax = child.geometry.boundingBox.max.y;
+					//Currently attributes are kind of hardcoded in the tiles and have to be unpacked 
+					//let magnitude = scaleSequential(interpolateYlGnBu).domain([1600, 2020])
+					//const colormap = child.parent.userData.attr.map(d=>magnitude(d[0]));
+					for ( let i = 0; i < count; i ++ ) {
+						//Assign every vertex it's own color
+				
+						//let batchid = child.geometry.attributes._batchid.getX(i);
+						//let colorval = colormap[batchid];
+						let colorval = child.material.color;
+						color.set(colorval);
+						//Create a little gradient from black to white
+						//adding 0.3 not to start at black, dividing by 10 limits effect to bottom
+						let greyval = Math.min( 0.8 + ( positions.getY( i ) + Math.abs( ymin )) / 1, 1 );
+						color.lerp ( grey, 1-greyval ); //lerp to grey
+						colors.setXYZ( i, color.r, color.g, color.b );
+					}
+					child.material.vertexColors = true;
+					child.material.depthWrite = !child.material.transparent; // necessary for Velsen dataset?
+					
+				}
+			});
+			/*
+			if (styleParams.color != null || styleParams.opacity != null) {
+				let color = new THREE.Color(styleParams.color);
+				scene.traverse(child => {
+					if (child instanceof THREE.Mesh) {
+						if (styleParams.color != null) 
+							child.material.color = color;
+							
+						if (styleParams.opacity != null) {
+							child.material.opacity = styleParams.opacity;
+							child.material.transparent = styleParams.opacity < 1.0 ? true : false;
+						}
+					}
+				});
+			}*/
+			if (styleParams.debugColor) {
+				scene.traverse(child => {
+					if (child instanceof Mesh) {
+						child.material.color = styleParams.debugColor;
+					}
+				});
+			}
+			return scene;
+		}
+
 	class ThreeDeeTile {
 		constructor(json, resourcePath, styleParams, updateCallback, parentRefine, parentTransform,projectToMercator) {
 		  this.loaded = false;
@@ -53951,7 +54038,7 @@ var Mapbox3DTiles = (function (exports) {
 		  this.children = [];
 		  if (json.children) {
 			for (let i=0; i<json.children.length; i++){
-			  let child = new ThreeDeeTile(json.children[i], resourcePath, styleParams, updateCallback, this.refine, this.worldTransform, this.projectToMercator);
+			  let child = new ThreeDeeTile(json.children[i], resourcePath, this.styleParams, updateCallback, this.refine, this.worldTransform, this.projectToMercator);
 			  this.childContent.add(child.totalContent);
 			  this.children.push(child);
 			}
@@ -53972,7 +54059,7 @@ var Mapbox3DTiles = (function (exports) {
 			this.unloadedDebugContent = false;
 		  }
 		  if (this.loaded) {
-			this.updateCallback();
+			this.updateCallback(this);
 			return;
 		  }
 		  this.loaded = true;
@@ -53990,7 +54077,7 @@ var Mapbox3DTiles = (function (exports) {
 			  case 'json':
 				// child is a tileset json
 				try {
-				  let subTileset = new TileSet(()=>this.updateCallback());
+				  let subTileset = new TileSet((ts)=>this.updateCallback(ts));
 				  await subTileset.load(url, this.styleParams);
 				  if (subTileset.root) {
 					this.box.applyMatrix4(this.worldTransform);
@@ -54012,43 +54099,72 @@ var Mapbox3DTiles = (function (exports) {
 				break;
 			  case 'b3dm':
 				try {
-				  let b3dm = new B3DM(url);
-				  let b3dmData = await b3dm.load();
+				  this.tileLoader = new B3DM(url);
+				  let b3dmData = await this.tileLoader.load();
+				  this.tileLoader = null;
 				  this.b3dmAdd(b3dmData, url);
 				} catch (error) {
+				  if (error.name === "AbortError") {
+					  this.loaded = false;
+					  return;
+				  }
 				  console.error(error);
 				}
 				break;
 			  case 'i3dm':
 				try {
-					let i3dm = new B3DM(url);
-					let i3dmData = await i3dm.load();
+					this.tileLoader = new B3DM(url);
+					let i3dmData = await this.tileLoader.load();
+					this.tileLoader = null;
 					this.i3dmAdd(i3dmData);
 				} catch (error) {
+					if (error.name === "AbortError") {
+						this.loaded = false;
+						return;
+					}
 					console.error(error.message);
 				}
 				break;
 			  case 'pnts':
 				try {
-				  let pnts = new PNTS(url);
-				  let pointData = await pnts.load();
+				  this.tileLoader = new PNTS(url);
+				  let pointData = await this.tileLoader.load();
+				  this.tileLoader = null;
 				  this.pntsAdd(pointData);
 				} catch (error) {
+				  if (error.name === "AbortError") {
+					this.loaded = false;
+					return;
+				  }
 				  console.error(error);
 				}
 				break;
 			  case 'cmpt':
-				let cmpt = new CMPT(url);
-				let compositeTiles = await cmpt.load();
-				this.cmptAdd(compositeTiles, url);
+				try {
+					this.tileLoader = new CMPT(url);
+					let compositeTiles = await this.tileLoader.load();
+					this.tileLoader = null;
+					this.cmptAdd(compositeTiles, url);
+				} catch (error) {
+					if (error.name === "AbortError") {
+						this.loaded = false;
+						return;
+					}
+					console.error(error);
+				}
 				break;
 			  default:
 				throw new Error('invalid tile type: ' + type);
 			}
 		  }
-		  this.updateCallback();
+		  this.updateCallback(this);
 		}
 		async cmptAdd(compositeTiles, url) {
+			if (this.cmptAdded) {
+				// prevent duplicate adding
+				return;
+			}
+			this.cmptAdded = true;
 			for (let innerTile of compositeTiles) {
 				switch(innerTile.type) {
 					case 'i3dm':
@@ -54068,90 +54184,80 @@ var Mapbox3DTiles = (function (exports) {
 						break;
 					case 'cmpt':
 						let cmpt = new CMPT('.cmpt');
-						let subCompositeTiles = CMPT.parseResponse(innerTile.data);
+						let subCompositeTiles = cmpt.parseResponse(innerTile.data);
 						this.cmptAdd(subCompositeTiles);
 						break;
 					default:
 						console.error(`Composite type ${innerTile.type} not supported`);
 						break;
 				}
-				console.log(`type: ${innerTile.type}, size: ${innerTile.data.byteLength}`);
+				//console.log(`type: ${innerTile.type}, size: ${innerTile.data.byteLength}`);
 			}
 		}
 		pntsAdd(pointData) {
+			if (this.pntsAdded && !this.cmptAdded) {
+				// prevent duplicate adding
+				return;
+			}
+			this.pntsAdded = true;
 			let geometry = new BufferGeometry();
 			geometry.setAttribute('position', new Float32BufferAttribute(pointData.points, 3));
 			let material = new PointsMaterial();
 			material.size = this.styleParams.pointsize != null ? this.styleParams.pointsize : 1.0;
 			if (this.styleParams.color) {
-			material.vertexColors = NoColors;
-			material.color = new Color(this.styleParams.color);
-			material.opacity = this.styleParams.opacity != null ? this.styleParams.opacity : 1.0;
+				material.vertexColors = NoColors;
+				material.color = new Color(this.styleParams.color);
+				material.opacity = this.styleParams.opacity != null ? this.styleParams.opacity : 1.0;
 			} else if (pointData.rgba) {
-			geometry.setAttribute('color', new Float32BufferAttribute(pointData.rgba, 4));
-			material.vertexColors = VertexColors;
+				geometry.setAttribute('color', new Float32BufferAttribute(pointData.rgba, 4));
+				material.vertexColors = VertexColors;
 			} else if (pointData.rgb) {
-			geometry.setAttribute('color', new Float32BufferAttribute(pointData.rgb, 3));
-			material.vertexColors = VertexColors;
+				geometry.setAttribute('color', new Float32BufferAttribute(pointData.rgb, 3));
+				material.vertexColors = VertexColors;
 			}
 			this.tileContent.add(new Points( geometry, material ));
 			if (pointData.rtc_center) {
-			let c = pointData.rtc_center;
-			this.tileContent.applyMatrix4(new Matrix4().makeTranslation(c[0], c[1], c[2]));
+				let c = pointData.rtc_center;
+				this.tileContent.applyMatrix4(new Matrix4().makeTranslation(c[0], c[1], c[2]));
 			}
 			this.tileContent.add(new Points( geometry, material ));
 		}
 		b3dmAdd(b3dmData, url) {
-			let loader = new GLTFLoader().setDRACOLoader(new DRACOLoader().setDecoderPath('assets/wasm/')).setKTX2Loader(new KTX2Loader());
+			if (this.b3dmAdded && !this.cmptAdded) {
+				// prevent duplicate adding
+				return;
+			}
+			this.b3dmAdded = true;
+			let dracoloader = new DRACOLoader().setDecoderPath('assets/wasm/');
+			let loader = new GLTFLoader().setDRACOLoader(dracoloader).setKTX2Loader(new KTX2Loader());
 			let rotateX = new Matrix4().makeRotationAxis(new Vector3(1, 0, 0), Math.PI / 2);
 			this.tileContent.applyMatrix4(rotateX); // convert from GLTF Y-up to Z-up
 			loader.parse(b3dmData.glbData, this.resourcePath, (gltf) => {
-					let scene = gltf.scene || gltf.scenes[0];
-
-					if (this.projectToMercator) {
+				let scene = gltf.scene || gltf.scenes[0];
+				//Add the batchtable to the userData since gltfLoader doesn't deal with it
+				scene.userData = b3dmData.batchTableJson;
+				if (scene.userData && Array.isArray(b3dmData.batchTableJson.attr)) {
+					scene.userData.attr = scene.userData.attr.map(d=>d.split(","));
+					scene.userData.b3dm= url.replace(this.resourcePath, '').replace('.b3dm', '');
+				}
+				scene = applyStyle(scene,this.styleParams);
+				
+				if (this.projectToMercator) {
 					//TODO: must be a nicer way to get the local Y in webmerc. than worldTransform.elements	
 					scene.scale.setScalar(LatToScale(YToLat(this.worldTransform.elements[13])));
-					}
-					scene.traverse(child => {
-					if (child instanceof Mesh) {
-						// some gltf has wrong bounding data, recompute here
-						child.geometry.computeBoundingBox();
-						child.geometry.computeBoundingSphere();
-						child.castShadow = true;
-
-						child.material.depthWrite = !child.material.transparent; // necessary for Velsen dataset?
-						//Add the batchtable to the userData since gltfLoader doesn't deal with it
-						child.userData = b3dmData.batchTableJson;
-						child.userData.b3dm = url.replace(this.resourcePath, '').replace('.b3dm', '');
-					}
-					});
-					if (this.styleParams.color != null || this.styleParams.opacity != null) {
-					let color = new Color(this.styleParams.color);
-					scene.traverse(child => {
-						if (child instanceof Mesh) {
-						if (this.styleParams.color != null) 
-							child.material.color = color;
-						if (this.styleParams.opacity != null) {
-							child.material.opacity = this.styleParams.opacity;
-							child.material.transparent = this.styleParams.opacity < 1.0 ? true : false;
-						}
-						}
-					});
-					}
-					if (this.debugColor) {
-					scene.traverse(child => {
-						if (child instanceof Mesh) {
-						child.material.color = this.debugColor;
-						}
-					});
-					}
-					this.tileContent.add(scene);
-				}, (error) => {
-					throw new Error('error parsing gltf: ' + error);
 				}
-			);
+				this.tileContent.add(scene);
+				dracoloader.dispose();
+			}, (error) => {
+				throw new Error('error parsing gltf: ' + error);
+			});
 		}
 		i3dmAdd(i3dmData) {
+			if (this.i3dmAdded && !this.cmptAdded) {
+				// prevent duplicate adding
+				return;
+			}
+			this.i3dmAdded = true;
 			let loader = new GLTFLoader().setDRACOLoader(new DRACOLoader().setDecoderPath('assets/wasm/')).setKTX2Loader(new KTX2Loader());
 			// Check what metadata is present in the featuretable, currently using: https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel#instance-orientation.				
 			let metadata = i3dmData.featureTableJSON;
@@ -54193,9 +54299,20 @@ var Mapbox3DTiles = (function (exports) {
 				});
 			});
 		}
+		
 		unload(includeChildren) {
+		  if (this.tileLoader) {
+				this.tileLoader.abortLoad();
+		  }
+
 		  this.unloadedTileContent = true;
+		  
+		  //Clean up (TODO: make a grace period in which object can stay in cache)
+		  this.freeObjectFromMemory(this.tileContent); 
 		  this.totalContent.remove(this.tileContent);
+		  this.tileContent = new Group();
+		  this.loaded = false;
+		  this.b3dmAdded = false;
 	  
 		  //this.tileContent.visible = false;
 		  if (includeChildren) {
@@ -54212,8 +54329,9 @@ var Mapbox3DTiles = (function (exports) {
 			this.totalContent.remove(this.debugLine);
 			this.unloadedDebugContent = true;
 		  }
-		  this.updateCallback();
-		  // TODO: should we also free up memory?
+		  this.updateCallback(this);
+		  
+		  
 		}
 		checkLoad(frustum, cameraPosition) {
 	  
@@ -54244,6 +54362,7 @@ var Mapbox3DTiles = (function (exports) {
 		  //console.log(`dist: ${dist}, geometricError: ${this.geometricError}`);
 		  // are we too far to render this tile?
 		  if (this.geometricError > 0.0 && dist > this.geometricError * 50.0) {
+			// remove from memory
 			this.unload(true);
 			return;
 		  }
@@ -54286,6 +54405,26 @@ var Mapbox3DTiles = (function (exports) {
 		  }*/
 		  
 		}
+
+		freeObjectFromMemory(object) {
+			object.traverse(function(obj){
+				if (obj.material && obj.material.dispose) {
+				  obj.material.dispose();
+				  if (obj.material.map) {
+					obj.material.map.dispose();
+				  }
+				}
+				if (obj.geometry && obj.geometry.dispose) {
+				  obj.geometry.dispose();
+				  obj.geometry.attributes.color = {};
+				  obj.geometry.attributes.normal = {};
+				  obj.geometry.attributes.position = {};
+				  obj.geometry.attributes.uv = {};
+				  obj.geometry.attributes = {};
+				  obj.material = {};
+				}
+			});
+		  }
 	  }
 
 	class TileSet {
@@ -59745,16 +59884,27 @@ var Mapbox3DTiles = (function (exports) {
 	        if ('opacity' in params) this.styleParams.opacity = params.opacity;
 	        if ('pointsize' in params) this.styleParams.pointsize = params.pointsize;
 
+	        this.style = params.style || this.styleParams; //styleparams to be replaced by style config
 	        this.loadStatus = 0;
 	        this.viewProjectionMatrix = null;
 	        this.type = 'custom';
 	        this.renderingMode = '3d';
+
+	        window.addEventListener('resize', (e) => {
+	            this._resize(e);
+	        });
 	    }
 
 	    getDefaultLights() {
 	        const width = window.innerWidth;
 	        const height = window.innerHeight;
 	        const hemiLight = new HemisphereLight(0xffffff, 0xbebebe, 0.7);
+	        const dirLight = this._getDefaultDirLight(width, height);
+
+	        return [hemiLight, dirLight];
+	    }
+
+	    _getDefaultDirLight(width, height) {
 	        const dirLight = new DirectionalLight(0xffffff, 0.5);
 	        dirLight.color.setHSL(0.1, 1, 0.95);
 	        dirLight.position.set(-1, -1.75, 1);
@@ -59764,13 +59914,14 @@ var Mapbox3DTiles = (function (exports) {
 	        dirLight.shadow.camera.far = 2000000;
 	        dirLight.shadow.bias = 0.0038;
 	        dirLight.shadow.mapSize.width = width;
-	        dirLight.shadow.mapSize.height = height;
+	        dirLight.shadow.mapSize.height = height * 2.5;
 	        dirLight.shadow.camera.left = -width;
 	        dirLight.shadow.camera.right = width;
-	        dirLight.shadow.camera.top = -height;
-	        dirLight.shadow.camera.bottom = height;
+	        dirLight.shadow.camera.top = -height * 2.5;
+	        dirLight.shadow.camera.bottom = height * 2.5;
+	        dirLight.uuid = 'shadowlight';
 
-	        return [hemiLight, dirLight];
+	        return dirLight;
 	    }
 
 	    loadVisibleTiles() {
@@ -59824,14 +59975,12 @@ var Mapbox3DTiles = (function (exports) {
 	        //this.composer.addPass( ssaoPass ); //Renders white screen
 
 	        let saoPass = new SAOPass(this.scene, this.camera, false, true);
-
 	        saoPass._render = saoPass.render;
 	        saoPass.render = function (renderer) {
 	            //renderer.setRenderTarget( _____ )
 	            renderer.clear();
 	            this._render.apply(this, arguments);
 	        };
-
 	        //this.composer.addPass( saoPass ); //Renders black screen
 
 	        //let renderScene = new RenderPass(this.scene, this.camera);
@@ -59853,14 +60002,21 @@ var Mapbox3DTiles = (function (exports) {
 	        this.renderer.autoClear = false;
 
 	        this.cameraSync = new CameraSync(this.map, this.camera, this.world);
+	        this.cameraSync.aspect = width / height;
 	        this.cameraSync.updateCallback = () => this.loadVisibleTiles();
 
 	        //raycaster for mouse events
 	        this.raycaster = new Raycaster();
 	        if (this.url) {
-	            this.tileset = new TileSet(() => this.map.triggerRepaint());
+	            this.tileset = new TileSet((ts) => {
+	                if (ts.loaded) {
+	                    //WIP, poor performance
+	                    ts.styleParams = this.style;
+	                    this.map.triggerRepaint();
+	                }
+	            });
 	            this.tileset
-	                .load(this.url, this.styleParams, this.projectToMercator)
+	                .load(this.url, this.style, this.projectToMercator)
 	                .then(() => {
 	                    if (this.tileset.root) {
 	                        this.world.add(this.tileset.root.totalContent);
@@ -59882,6 +60038,22 @@ var Mapbox3DTiles = (function (exports) {
 	        this.map.queryRenderedFeatures = this.mapQueryRenderedFeatures;
 	        this.cameraSync.detachCamera();
 	        this.cameraSync = null;
+	    }
+
+	    _resize(e) {
+	        let width = window.innerWidth;
+	        let height = window.innerHeight;
+	        this.renderer.setSize(width, height);
+	        this.cameraSync.aspect = width / height;
+	        this.camera.aspect = width / height;
+	        this.composer.setSize(width, height);
+
+	        for (let i = 0; i < this.scene.children.length; i++) {
+	            let c = this.scene.children[i];
+	            if (c.uuid === 'shadowlight') {
+	                c = this._getDefaultDirLight(width, height);
+	            }
+	        }
 	    }
 
 	    addShadow() {
@@ -59912,9 +60084,19 @@ var Mapbox3DTiles = (function (exports) {
 	        this.shadowMaterial.opacity = newOpacity;
 	    }
 
+	    setStyle(style) {
+	        //WIP
+	        this.style = style
+	            ? style
+	            : {
+	                  color: 0xff00ff
+	              };
+	        applyStyle(this.world, this.style);
+	    }
+
 	    //ToDo: currently based on default lights, can be overriden by user, handle differently
 	    setHismphereIntensity(intensity) {
-	        if(this.lights[0] instanceof HemisphereLight) {
+	        if (this.lights[0] instanceof HemisphereLight) {
 	            const newIntensity = intensity < 0 ? 0.0 : intensity > 1 ? 1.0 : intensity;
 	            this.lights[0].intensity = newIntensity;
 	        }
@@ -59937,6 +60119,21 @@ var Mapbox3DTiles = (function (exports) {
 
 	                // calculate objects intersecting the picking ray
 	                let intersects = this.raycaster.intersectObjects(this.world.children, true);
+
+	                //TODO: make this code nicer and more efficient
+	                /* temp disabled coloring 
+	                if ((intersects.length === 0 && this.previntersect) || (intersects.length && this.previntersect && intersects[0].object.uuid != this.previntersect.object.uuid)) {
+	                    const object = this.previntersect.object;
+	                    if (object.geometry.attributes.color) {
+	                        const count = object.geometry.attributes.position.count;
+	                        for (let i = 0;i<count;i++){
+	                            object.geometry.attributes.color.setXYZ(i, 0.9, 0.9, 0.9);
+	                        }
+	                        object.geometry.attributes.color.needsUpdate = true;
+	                    }
+	                    this.previntersect = null;
+	                }
+	                */
 	                if (intersects.length) {
 	                    let feature = {
 	                        type: 'Feature',
@@ -59949,12 +60146,12 @@ var Mapbox3DTiles = (function (exports) {
 	                    };
 	                    let propertyIndex;
 	                    let intersect = intersects[0];
-
+	                    this.previntersect = intersect;
 	                    if (intersect.object.userData.b3dm) {
 	                        feature.properties['b3dm'] = intersect.object.userData.b3dm;
 	                    }
 
-	                    if (intersect.instanceId) {
+	                    if (intersect.object) {
 	                        let keys = Object.keys(intersect.object.userData);
 	                        if (keys.length) {
 	                            for (let propertyName of keys) {
@@ -59970,8 +60167,10 @@ var Mapbox3DTiles = (function (exports) {
 	                        intersect.object.geometry.attributes &&
 	                        intersect.object.geometry.attributes._batchid
 	                    ) {
-	                        let geometry = intersect.object.geometry;
-	                        let vertexIdx = intersect.faceIndex;
+	                        let vertexIdx = intersect.face.a;
+	                        //Next line likely replaces the need for checking (un)indexed BufferGeometry
+	                        propertyIndex = intersect.object.geometry.attributes._batchid.getX(vertexIdx);
+	                        /*
 	                        if (geometry.index) {
 	                            // indexed BufferGeometry
 	                            vertexIdx = geometry.index.array[intersect.faceIndex * 3];
@@ -59979,16 +60178,72 @@ var Mapbox3DTiles = (function (exports) {
 	                        } else {
 	                            // un-indexed BufferGeometry
 	                            propertyIndex = geometry.attributes._batchid.array[vertexIdx * 3];
-	                        }
-	                        let keys = Object.keys(intersect.object.userData);
+	                        }*/
+	                        feature.properties.batchId = propertyIndex;
+	                        let keys = Object.keys(intersect.object.parent.userData);
 	                        if (keys.length) {
 	                            for (let propertyName of keys) {
 	                                feature.properties[propertyName] =
-	                                    intersect.object.userData[propertyName][propertyIndex];
+	                                    intersect.object.parent.userData[propertyName][propertyIndex];
 	                            }
-	                        } else {
-	                            feature.properties.batchId = propertyIndex;
 	                        }
+	                        /* WIP on coloring features with same batchId 
+	                        const object = intersect.object;
+	                        const count = object.geometry.attributes.position.count;
+	                        const batchId = object.geometry.attributes._batchid.getX(vertexIdx);
+	                        
+	                        if (batchId != this.prevbatchId)
+	                         {
+	                            for (let i = 0;i<count;i++){ 
+	                                if (object.geometry.attributes._batchid.getX(i) === this.prevbatchId) {
+	                                    object.geometry.attributes.color.setXYZ(i,0.9,0.9,0.9);
+	                                }
+	                                else if (object.geometry.attributes._batchid.getX(i) === batchId) {
+	                                    object.geometry.attributes.color.setX(i,0.1);
+	                                }
+	                            }
+	                            object.geometry.attributes.color.needsUpdate = true;
+	                            this.prevbatchId = batchId;
+	                        }
+	                        */
+
+	                        /*
+	                        let attribute = object.geometry.getAttribute('position');
+	                        let offset = attribute.offset;
+	                        let stride = attribute.data.stride;
+	                        let itemSize = attribute.itemSize;
+	                        //const positions = attribute.data.array.filter((d,i)=>i % stride >= offset-1 && i % stride <= itemSize-1);
+	                        let positions = new THREE.BufferAttribute( new Float32Array( count * 3 ),3);
+	                        for (let i =0;i<=count;i++){
+	                            mypositions.setXYZ(i,attribute.getX(i),attribute.getY(i),attribute.getZ(i));
+	                        }
+	                        
+	                        //const normals = attributes.normal.data.array.filter((d,i)=>i % 7 >= 0 && i % 7 <= 2);
+	                        
+
+	                        object.geometry.setAttribute( 'color', new THREE.BufferAttribute( new Float32Array( count * 3 ), 3 ) );
+	                        for ( let i = 0; i < count; i ++ ) {
+	                            const color = new THREE.Color();
+	                            const positions = object.geometry.attributes.position;
+	                            const colors = object.geometry.attributes.color;
+	                            if (geometry.attributes._batchid.data.array[i * 7 + 6] == propertyIndex){
+	                                color.setRGB( ( positions.getY( i ) / radius + 1 ) / 2, 1.0, 0.5 );
+	                            }
+	                            else {
+	                                color.setRGB( 0.9, 0.9, 0.9 );
+	                            }
+	                            colors.setXYZ( i, color.r, color.g, color.b );
+	                        }
+	                        
+	                        const material = new THREE.MeshPhongMaterial( {
+	                            color: 'white',
+	                            flatShading: true,
+	                            vertexColors: true,
+	                            shininess: 0
+	                        } );
+	                        
+	                        object.material = material;
+	                        /* End of WIP on coloring */
 	                    } else {
 	                        if (intersect.index != null) {
 	                            feature.properties.index = intersect.index;
@@ -60125,7 +60380,7 @@ var Mapbox3DTiles = (function (exports) {
 	    _update() {
 	        this.renderer.state.reset();
 	        //WIP on composer
-	        //this.composer.render (this.scene, this.camera);
+	        //this.composer.render ();
 	        this.renderer.render(this.scene, this.camera);
 
 	        /*if (this.loadStatus == 1) { // first render after root tile is loaded
@@ -60142,7 +60397,7 @@ var Mapbox3DTiles = (function (exports) {
 	        requestAnimationFrame(() => this._update());
 	    }
 
-	    render(gl, viewProjectionMatrix) {
+	    render() {
 	        const markers = this.marker.getMarkers();
 	        for (let i = 0; i < markers.length; i++) {
 	            markers[i].renderer.render(markers[i].marker, this.camera);
