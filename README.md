@@ -32,7 +32,7 @@ $ dotnet tool update -g i3dm.export
 
 30k trees in instanced tiles (1000m by 1000m) with random scales/rotations and batch information:
 
-https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/trees/
+https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/
 
 ## Input database table
 
@@ -63,9 +63,9 @@ Tool parameters:
 
 -g: (optional - Default: 500,0) Geometric errors
 
--e: (optional - Default: 1000) Extent per tile
+-e: (optional - Default: 1000) Extent per tile (meters)
 
--s: (optional - Default: 10000) Super extent tile, references external tilesets
+-s: (optional - Default: 10000) Super extent tile (meters)
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
