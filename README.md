@@ -4,7 +4,11 @@ Console tool for exporting Instanced 3D Models (i3dm's), i3dm composites (cmpt) 
 
 The input table contains instance information like location (epsg:4326), binary glTF model (glb), scale, rotation and instance attributes. 
 
-This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (https://github.com/Geodan/mapbox-3dtiles).
+
+This tool is intended to be used in combination with 3D Tiles support in MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles). Loading
+
+the tileset in Cesium is not supported.
+
 
 For instanced 3D Model (i3dm) specs see https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel
 
