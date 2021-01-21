@@ -15,6 +15,7 @@ namespace i3dm.export
     {
         static void Main(string[] args)
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
             {
                 string tileFolder = "tiles";
