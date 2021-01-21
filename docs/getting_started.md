@@ -68,7 +68,7 @@ We create a new table, with
 - for tags use fields 'id' and 'bevestiging' . 
 
 ```
-postgres=# CREATE TABLE traffic_signs_instances1 as (
+postgres=# CREATE TABLE traffic_signs_instances as (
 	SELECT ogc_fid as id, 
 	st_transform(wkb_geometry, 4326) as geom,
 	1 +  random() as scale,
