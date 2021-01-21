@@ -173,13 +173,13 @@ Run from source code:
 ```
 $ git clone https://github.com/Geodan/i3dm.export.git
 $ cd i3dm.export/src
-$ dotnet run -- -c "Host=myserver;Username=postgres;Password=postgres;Database=test;Port=5432" -t public.trees -m tree.glb
+$ dotnet run -- -c "Host=myserver;Username=postgres;Password=postgres;Database=test;Port=5432" -t public.trees
 ```
 
 To develop in Visual Studio Code, open .vscode/launch.json and adjust the 'args' parameter to your environment
 
 ```
-"args": ["-c" ,"Host=myserver;Username=postgres;Database=test;Port=5432", "-t", "my_table", "-m", "tree.glb"],
+"args": ["-c" ,"Host=myserver;Username=postgres;Database=test;Port=5432", "-t", "my_table"],
 ```
 
 Press F5 to start debugging.
