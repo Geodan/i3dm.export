@@ -31,6 +31,9 @@ namespace i3dm.export
         [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
         public bool UseScaleNonUniform { get; set; }
 
+        [Option("cesium", Required = false, Default = false, HelpText = "Export for cesium")]
+        public bool Cesium { get; set; }
+        
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
     }

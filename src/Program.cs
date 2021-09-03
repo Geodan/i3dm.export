@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace i3dm.export
 {
@@ -15,10 +16,13 @@ namespace i3dm.export
     {
         static void Main(string[] args)
         {
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+            
             Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
             {
                 string tileFolder = "tiles";
                 string geom_column = "geom";
+
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
@@ -47,7 +51,7 @@ namespace i3dm.export
                     ProgressCharacter = '-',
                     ProgressBarOnBottom = true
                 };
-                var pbar = new ProgressBar(potentialtiles, "Exporting i3dm tiles...", options);
+                //var pbar = new ProgressBar(potentialtiles, "Exporting i3dm tiles...", options);
 
                 var supertilesets = new List<SuperTileSetJson>();
 
@@ -65,8 +69,8 @@ namespace i3dm.export
                         {
                             for (var y = 0; y < yrange; y++)
                             {
-                                CreateTile(o, tileFolder, conn, supertilebounds, tiles, x, y, $"{x_super}_{y_super}");
-                                pbar.Tick();
+                                CreateTile(o, tileFolder, conn, supertilebounds, tiles, x, y, o.Cesium, $"{x_super}_{y_super}");
+                               // pbar.Tick();
                             }
                         }
 
@@ -74,7 +78,7 @@ namespace i3dm.export
                         supertileSet.FileName = supertiles>1? $"tileset_{x_super}_{y_super}.json" : "tileset.json";
                         supertileSet.Bounds = supertilebounds;
                         supertilesets.Add(supertileSet);
-                        WriteJson(o.Output, supertilebounds, tiles, o.GeometricErrors, supertileSet.FileName);
+                        WriteJson(conn, o.Output, supertilebounds, tiles, o.Cesium, o.GeometricErrors, supertileSet.FileName);
                     }
                 }
 
@@ -84,21 +88,21 @@ namespace i3dm.export
                     var json = JsonConvert.SerializeObject(supertileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
                     File.WriteAllText($"{o.Output}{ Path.DirectorySeparatorChar}tileset.json", json);
                 }
-                pbar.WriteLine("Export finished!");
-                pbar.Dispose();
+               // pbar.WriteLine("Export finished!");
+               // pbar.Dispose();
             });
         }
 
 
-        private static void CreateTile(Options o, string tileFolder, NpgsqlConnection conn, BoundingBox3D rootBounds, List<TileInfo> tiles, int x, int y, string prefix)
+        private static void CreateTile(Options o, string tileFolder, NpgsqlConnection conn, BoundingBox3D rootBounds, List<TileInfo> tiles, int x, int y, bool cesium, string prefix)
         {
             var tileBounds = rootBounds.GetBounds(o.ExtentTile, x, y);
-            var instances = InstancesRepository.GetInstances(conn, o.Table, tileBounds.From(), tileBounds.To(), o.Query, o.UseScaleNonUniform);
+            var instances = InstancesRepository.GetInstances(conn, o.Table, tileBounds.From(), tileBounds.To(), cesium, o.Query, o.UseScaleNonUniform);
 
             if (instances.Count > 0)
             {
-                var tile = TileHandler.GetTile(instances, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
-
+                var tile = TileHandler.GetTile(instances, o.Cesium, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
+                var convertedTileBounds = InstancesRepository.ConvertTileBounds(conn, o.Cesium, tileBounds);
                 var ext = tile.isI3dm ? "i3dm" : "cmpt";
                 var filename = $"{prefix}_{x}_{y}.{ext}";
                 var file = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}{filename}";
@@ -107,15 +111,16 @@ namespace i3dm.export
                 tiles.Add(new TileInfo
                 {
                     Filename = $"{tileFolder}/{filename}",
-                    Bounds = tileBounds
+                    Bounds = convertedTileBounds
                 });
             }
         }
 
-        private static void WriteJson(string output, BoundingBox3D rootBounds, List<TileInfo> tiles, string geometricErrors, string filename)
+        private static void WriteJson(NpgsqlConnection conn, string output, BoundingBox3D rootBounds, List<TileInfo> tiles, bool cesium, string geometricErrors, string filename)
         {
             List<double> errors = ToDoubles(geometricErrors);
-            var tilesetJSON = TilesetGenerator.GetTileSetJson(rootBounds, tiles, errors);
+            var convertedRootBounds = InstancesRepository.ConvertTileBounds(conn, cesium, rootBounds);
+            var tilesetJSON = TilesetGenerator.GetTileSetJson(convertedRootBounds, cesium, tiles, errors);
             var jsonFile = $"{output}{Path.DirectorySeparatorChar}{filename}";
             File.WriteAllText(jsonFile, tilesetJSON);
         }

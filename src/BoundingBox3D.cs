@@ -40,6 +40,7 @@ namespace i3dm.export
             var bb = new BoundingBox3D((float)from.X, (float)from.Y, 0, (float)to.X, (float)to.Y, 0);
             return bb;
         }
+
         public Boundingvolume GetBoundingVolume()
         {
             var centroid = GetCenter();
@@ -48,14 +49,15 @@ namespace i3dm.export
             var extent_z = 100;
 
             var box = new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
+            var region = GetBoundingvolumeRegion();
 
             var boundingVolume = new Boundingvolume
             {
-                box = box
+                box = box,
+                region = region
             };
             return boundingVolume;
         }
-
 
         public override string ToString()
         {
@@ -93,6 +95,19 @@ namespace i3dm.export
             var y = (YMax + YMin) / 2;
             var z = (ZMax + ZMin) / 2;
             return new Vector3((float)x, (float)y, (float)z);
+        }
+
+        public double[] GetBoundingvolumeRegion() {
+            var radiansPerDegree = (Math.PI / 180.0);
+
+            return new double[] { 
+                XMin * radiansPerDegree, 
+                YMin * radiansPerDegree, 
+                XMax * radiansPerDegree, 
+                YMax * radiansPerDegree, 
+                ZMin, 
+                ZMax <= 0.0 ? 10 : ZMax
+            };
         }
     }
 }

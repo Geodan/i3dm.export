@@ -78,6 +78,8 @@ Tool parameters:
 --use_external_model: (optional - default false) Use external model instead of embedded model
 
 --use_scale_non_uniform: (optional - default false) Use column scale_non_uniform for scaling instances
+
+--cesium: (optional - default false) Export tileset that is compatible with Cesium
 ```
 
 ## Sample running
