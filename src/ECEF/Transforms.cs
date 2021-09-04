@@ -19,7 +19,8 @@ namespace i3dm.export.ECEF
             var hprQuat = new Quaternion().FromHeadingPitchRoll(heading, pitch, roll);
             var hprMat = ECEFMath.Matrix4FromTranslationQuaternionRotationScale(Constants.VectorZero, hprQuat, new Vector3(1.0f, 1.0f, 1.0f));
             var fixedFrame = LocalToFixed(position, ellipsoid, firstAxis, secondAxis);
-            return fixedFrame.Multiply(hprMat);
+
+            return Matrix4x4.Multiply(hprMat, fixedFrame);
         }
 
          public static Matrix4x4 LocalToFixed(Vector3 position, Ellipsoid ellipsoid, Axis axis1, Axis axis2) {
