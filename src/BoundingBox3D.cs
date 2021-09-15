@@ -43,12 +43,7 @@ namespace i3dm.export
 
         public Boundingvolume GetBoundingVolume()
         {
-            var centroid = GetCenter();
-            var extent_x = ExtentX();
-            var extent_y = ExtentY();
-            var extent_z = 100;
-
-            var box = new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
+            var box = GetBoundingvolumeBox();
             var region = GetBoundingvolumeRegion();
 
             var boundingVolume = new Boundingvolume
@@ -95,6 +90,15 @@ namespace i3dm.export
             var y = (YMax + YMin) / 2;
             var z = (ZMax + ZMin) / 2;
             return new Vector3((float)x, (float)y, (float)z);
+        }
+
+        public double[] GetBoundingvolumeBox() {
+            var centroid = GetCenter();
+            var extent_x = ExtentX();
+            var extent_y = ExtentY();
+            var extent_z = 100;
+
+            return new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
         }
 
         public double[] GetBoundingvolumeRegion() {

@@ -17,7 +17,7 @@ namespace i3dm.export
         static void Main(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
-            
+
             Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
             {
                 string tileFolder = "tiles";
@@ -41,7 +41,7 @@ namespace i3dm.export
                 var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column, o.Query);
                 var r_super = rootBounds.GetRange(o.SuperExtentTile);
                 var supertiles = r_super.xrange * r_super.yrange;
-                var potentialtiles = (int)Math.Ceiling(supertiles * Math.Pow(o.SuperExtentTile / o.ExtentTile,2));
+                var potentialtiles = (int)Math.Ceiling(supertiles * Math.Pow(o.SuperExtentTile / o.ExtentTile, 2));
                 var newBounds = new BoundingBox3D(rootBounds.XMin, rootBounds.YMin, rootBounds.ZMin, rootBounds.XMin + r_super.xrange * o.SuperExtentTile, rootBounds.YMin + r_super.yrange * o.SuperExtentTile, rootBounds.ZMax);
 
                 Console.WriteLine($"Potential tiles: {potentialtiles} in {supertiles} sets.");
@@ -70,12 +70,12 @@ namespace i3dm.export
                             for (var y = 0; y < yrange; y++)
                             {
                                 CreateTile(o, tileFolder, conn, supertilebounds, tiles, x, y, o.Cesium, $"{x_super}_{y_super}");
-                               // pbar.Tick();
+                                // pbar.Tick();
                             }
                         }
 
                         var supertileSet = new SuperTileSetJson(x_super, y_super);
-                        supertileSet.FileName = supertiles>1? $"tileset_{x_super}_{y_super}.json" : "tileset.json";
+                        supertileSet.FileName = supertiles > 1 ? $"tileset_{x_super}_{y_super}.json" : "tileset.json";
                         supertileSet.Bounds = supertilebounds;
                         supertilesets.Add(supertileSet);
                         WriteJson(conn, o.Output, supertilebounds, tiles, o.Cesium, o.GeometricErrors, supertileSet.FileName);
@@ -84,12 +84,19 @@ namespace i3dm.export
 
                 if (supertiles > 1)
                 {
-                    var supertileset = TilesetGenerator.GetSuperTileSet(newBounds, supertilesets, ToDoubles(o.GeometricErrors));
+                    foreach (var ts in supertilesets)
+                    {
+                        var convertedTsBounds = InstancesRepository.ConvertTileBounds(conn, o.Cesium, ts.Bounds); 
+                        ts.Bounds = convertedTsBounds; 
+                    }
+
+                    var convertedBounds = InstancesRepository.ConvertTileBounds(conn, o.Cesium, newBounds);
+                    var supertileset = TilesetGenerator.GetSuperTileSet(convertedBounds, o.Cesium, supertilesets, ToDoubles(o.GeometricErrors));
                     var json = JsonConvert.SerializeObject(supertileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
                     File.WriteAllText($"{o.Output}{ Path.DirectorySeparatorChar}tileset.json", json);
                 }
-               // pbar.WriteLine("Export finished!");
-               // pbar.Dispose();
+                // pbar.WriteLine("Export finished!");
+                // pbar.Dispose();
             });
         }
 

@@ -19,7 +19,7 @@ namespace i3dm.export.Tileset
             return transformRoot;
         }
 
-        public static TileSetJson GetSuperTileSet(BoundingBox3D rootBounds, List<SuperTileSetJson> tilesets, List<double> geometricErrors)
+        public static TileSetJson GetSuperTileSet(BoundingBox3D rootBounds, bool cesium, List<SuperTileSetJson> tilesets, List<double> geometricErrors)
         {
             var tileset = new TileSetJson
             {
@@ -28,12 +28,10 @@ namespace i3dm.export.Tileset
 
             tileset.geometricError = geometricErrors[0];
 
-            var boundingVolume = rootBounds.GetBoundingVolume();
-
             var root = new Root
             {
                 refine = "ADD",
-                boundingVolume = boundingVolume,
+                boundingVolume = GetBoundingvolume(rootBounds, cesium),
                 geometricError = geometricErrors[0]
             };
 
@@ -43,7 +41,7 @@ namespace i3dm.export.Tileset
             {
                 var child = new Child();
                 child.geometricError = geometricErrors[0];
-                child.boundingVolume = ts.Bounds.GetBoundingVolume();
+                child.boundingVolume = GetBoundingvolume(ts.Bounds, cesium);
                 var content = new Content();
                 content.uri = ts.FileName;
                 child.content = content;
@@ -57,10 +55,6 @@ namespace i3dm.export.Tileset
 
         public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, bool cesium, List<double> geometricErrors, string refine)
         {
-            var extent_x = rootBounds.ExtentX();
-            var extent_y = rootBounds.ExtentY();
-            var extent_z = 100;
-
             var tileset = new TileSetJson
             {
                 asset = new Asset() { version = "1.0", generator = "i3dm.export" },
@@ -68,18 +62,12 @@ namespace i3dm.export.Tileset
                 {
                     geometricError = geometricErrors[0],
                     refine = refine,                
-                    boundingVolume = new Boundingvolume()
+                    boundingVolume = GetBoundingvolume(rootBounds, cesium)
                 }
             };
 
-            // if cesium use boundingVolume.region else use boundingVolume.box and transform
-            if (cesium)
+            if (!cesium)
             {
-                tileset.root.boundingVolume.region = rootBounds.GetBoundingvolumeRegion();
-            }
-            else
-            {
-                tileset.root.boundingVolume.box = new double[] { 0, 0, 0, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
                 tileset.root.transform = DoubleArrayRounder.Round(GetRootTransform(rootBounds, cesium), 8);
             }
 
@@ -116,6 +104,17 @@ namespace i3dm.export.Tileset
             }
 
             return tileset;
+        }
+
+        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, bool cesium) {
+            var boundingVolume = new Boundingvolume();
+            if(cesium) {
+                boundingVolume.region = bounds.GetBoundingvolumeRegion();
+            } else {
+                boundingVolume.box = bounds.GetBoundingvolumeBox();
+            }
+            
+            return boundingVolume;
         }
     }
 }
