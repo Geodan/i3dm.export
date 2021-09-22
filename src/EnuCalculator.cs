@@ -6,13 +6,17 @@ namespace i3dm.export
 {
     public class EnuCalculator
     {
-        public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnu(bool cesium, double angle, Vector3 position)
+        public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnu(Format format, double angle, Vector3 position)
         {
-            if(cesium) {
+            if(format == Format.Cesium) {
                 return GetLocalEnuCesium(position, (float)angle, 0, 0);
             } 
 
-            return GetLocalEnuMapbox(angle);
+            if(format == Format.Mapbox) {
+                return GetLocalEnuMapbox(angle);
+            }
+            
+            throw new Exception("Format not supported");
         }
 
         public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuMapbox(double angle)

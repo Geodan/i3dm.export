@@ -5,21 +5,21 @@ namespace i3dm.export.Tileset
 {
     public class TilesetGenerator
     {
-        public static string GetTileSetJson(BoundingBox3D bb3d, bool cesium, List<TileInfo> tiles, List<double> geometricErrors)
+        public static string GetTileSetJson(BoundingBox3D bb3d, Format format, List<TileInfo> tiles, List<double> geometricErrors)
         {
-            var tileset = GetTileSet(bb3d, cesium, tiles, geometricErrors, "REPLACE");
+            var tileset = GetTileSet(bb3d, format, tiles, geometricErrors, "REPLACE");
             var json = JsonConvert.SerializeObject(tileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
             return json;
         }
 
-        private static double[] GetRootTransform(BoundingBox3D bounds, bool cesium)
+        private static double[] GetRootTransform(BoundingBox3D bounds, Format format)
         {
             var centroid = bounds.GetCenter();
-            double[] transformRoot = TileTransform.GetTransform(centroid, new decimal[] { 1, 1, 1 }, 0, cesium);
+            double[] transformRoot = TileTransform.GetTransform(centroid, new decimal[] { 1, 1, 1 }, 0, format);
             return transformRoot;
         }
 
-        public static TileSetJson GetSuperTileSet(BoundingBox3D rootBounds, bool cesium, List<SuperTileSetJson> tilesets, List<double> geometricErrors)
+        public static TileSetJson GetSuperTileSet(BoundingBox3D rootBounds, Format format, List<SuperTileSetJson> tilesets, List<double> geometricErrors)
         {
             var tileset = new TileSetJson
             {
@@ -31,7 +31,7 @@ namespace i3dm.export.Tileset
             var root = new Root
             {
                 refine = "ADD",
-                boundingVolume = GetBoundingvolume(rootBounds, cesium),
+                boundingVolume = GetBoundingvolume(rootBounds, format),
                 geometricError = geometricErrors[0]
             };
 
@@ -41,7 +41,7 @@ namespace i3dm.export.Tileset
             {
                 var child = new Child();
                 child.geometricError = geometricErrors[0];
-                child.boundingVolume = GetBoundingvolume(ts.Bounds, cesium);
+                child.boundingVolume = GetBoundingvolume(ts.Bounds, format);
                 var content = new Content();
                 content.uri = ts.FileName;
                 child.content = content;
@@ -53,7 +53,7 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, bool cesium, List<double> geometricErrors, string refine)
+        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, Format format, List<double> geometricErrors, string refine)
         {
             var tileset = new TileSetJson
             {
@@ -62,21 +62,21 @@ namespace i3dm.export.Tileset
                 {
                     geometricError = geometricErrors[0],
                     refine = refine,                
-                    boundingVolume = GetBoundingvolume(rootBounds, cesium)
+                    boundingVolume = GetBoundingvolume(rootBounds, format)
                 }
             };
 
-            if (!cesium)
+            if (format == Format.Mapbox)
             {
-                tileset.root.transform = DoubleArrayRounder.Round(GetRootTransform(rootBounds, cesium), 8);
+                tileset.root.transform = DoubleArrayRounder.Round(GetRootTransform(rootBounds, format), 8);
             }
 
             return tileset;
         }
 
-        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, bool cesium, List<TileInfo> tiles, List<double> geometricErrors, string refine)
+        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, Format format, List<TileInfo> tiles, List<double> geometricErrors, string refine)
         {
-            var tileset = GetRootTileSet(rootBounds, cesium, geometricErrors, refine);
+            var tileset = GetRootTileSet(rootBounds, format, geometricErrors, refine);
             var centroid = rootBounds.GetCenter();
             tileset.root.children = new List<Child>();
             
@@ -89,13 +89,13 @@ namespace i3dm.export.Tileset
                 };
                 
                 // if cesium use boundingVolume.region else use boundingVolume.box and transform
-                if (cesium)
+                if (format == Format.Cesium)
                 {
                     child.boundingVolume.region = tile.Bounds.GetBoundingvolumeRegion();
                 }
                 else
                 {
-                    var tileTransform = tile.GetTransform(centroid, cesium);
+                    var tileTransform = tile.GetTransform(centroid, format);
                     child.transform = DoubleArrayRounder.Round(tileTransform, 8);
                     child.boundingVolume.box = new double[] { 0, 0, 0, tile.Bounds.ExtentX() / 2, 0.0, 0.0, 0.0, tile.Bounds.ExtentY() / 2, 0.0, 0.0, 0.0, tile.Bounds.ExtentZ() / 2 };
                 }
@@ -106,12 +106,14 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, bool cesium) {
+        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, Format format) {
             var boundingVolume = new Boundingvolume();
-            if(cesium) {
+            if(format == Format.Cesium) {
                 boundingVolume.region = bounds.GetBoundingvolumeRegion();
-            } else {
+            } else if (format == Format.Mapbox ){
                 boundingVolume.box = bounds.GetBoundingvolumeBox();
+            } else {
+                throw new System.Exception("Unsupported format");
             }
             
             return boundingVolume;

@@ -11,7 +11,7 @@ namespace i3dm.export
 {
     public static class TileHandler
     {
-        public static (byte[] tile, bool isI3dm) GetTile(List<Instance> instances, bool cesium = false, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
+        public static (byte[] tile, bool isI3dm) GetTile(List<Instance> instances, Format format, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
         {
             var firstPosition = (Point)instances[0].Position;
             var uniqueModels = instances.Select(s => s.Model).Distinct();
@@ -27,7 +27,7 @@ namespace i3dm.export
                 var tags = new List<JArray>();
 
                 var modelInstances = instances.Where(s => s.Model == model).ToList();
-                CalculateArrays(modelInstances, cesium, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
+                CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
                 var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition, UseExternalModel, UseRtcCenter, UseScaleNonUniform);
                 var bytesI3dm = I3dmWriter.Write(i3dm);
                 tiles.Add(bytesI3dm);
@@ -38,7 +38,7 @@ namespace i3dm.export
             return (bytes, isI3dm);
         }
 
-        private static void CalculateArrays(List<Instance> instances, bool cesium, bool UseRtcCenter, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition)
+        private static void CalculateArrays(List<Instance> instances, Format format, bool UseRtcCenter, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition)
         {
             foreach (var instance in instances)
             {
@@ -53,7 +53,7 @@ namespace i3dm.export
                 {
                     scalesNonUniform.Add(new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]));
                 }
-                var (East, North, Up) = EnuCalculator.GetLocalEnu(cesium, instance.Rotation, vec);
+                var (East, North, Up) = EnuCalculator.GetLocalEnu(format, instance.Rotation, vec);
                 normalUps.Add(Up);
                 normalRights.Add(East);
                 tags.Add(instance.Tags);

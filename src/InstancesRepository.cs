@@ -9,9 +9,9 @@ namespace i3dm.export
     public static class InstancesRepository
     {
 
-        public static BoundingBox3D ConvertTileBounds(NpgsqlConnection conn, bool cesium, BoundingBox3D bounds) {
+        public static BoundingBox3D ConvertTileBounds(NpgsqlConnection conn, Format format, BoundingBox3D bounds) {
             conn.Open();
-            var epsg = cesium ? "4979" : "3857";
+            var epsg = format == Format.Cesium ? "4326" : "3857";
             var sql = $"SELECT ST_Xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM ST_Transform(ST_3DMakeBox(st_setsrid(ST_MakePoint({bounds.XMin}, {bounds.YMin}, 0), 3857), st_setsrid(ST_MakePoint({bounds.XMax}, {bounds.YMax}, 0), 3857)), {epsg}) AS box";
             var cmd = new NpgsqlCommand(sql, conn);
             var reader = cmd.ExecuteReader();
@@ -28,9 +28,9 @@ namespace i3dm.export
             return new BoundingBox3D() { XMin = xmin, YMin = ymin, ZMin = zmin, XMax = xmax, YMax = ymax, ZMax = zmax };
         }
 
-        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to, bool cesium, string query = "", bool useScaleNonUniform = false)
+        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to, Format format, string query = "", bool useScaleNonUniform = false)
         {
-            var epsg = cesium ? "4978" : "3857";
+            var epsg = format == Format.Cesium ? "4978" : "3857";
             var q = string.IsNullOrEmpty(query) ? "" : $"{query} and";
             var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
             conn.Open();
