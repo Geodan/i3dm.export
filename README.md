@@ -75,11 +75,11 @@ Tool parameters:
 
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
+-f, --format: (optional - default mapbox) Output format mapbox/cesium
+
 --use_external_model: (optional - default false) Use external model instead of embedded model
 
 --use_scale_non_uniform: (optional - default false) Use column scale_non_uniform for scaling instances
-
---cesium: (optional - default false) Export tileset that is compatible with Cesium
 ```
 
 ## Sample running
