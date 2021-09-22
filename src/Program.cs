@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace i3dm.export
 {
@@ -16,8 +15,6 @@ namespace i3dm.export
     {
         static void Main(string[] args)
         {
-            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
-            
             var parser = new CommandLine.Parser(settings =>
             {
                 settings.CaseInsensitiveEnumValues = true;
@@ -57,7 +54,7 @@ namespace i3dm.export
                     ProgressCharacter = '-',
                     ProgressBarOnBottom = true
                 };
-                //var pbar = new ProgressBar(potentialtiles, "Exporting i3dm tiles...", options);
+                var pbar = new ProgressBar(potentialtiles, "Exporting i3dm tiles...", options);
 
                 var supertilesets = new List<SuperTileSetJson>();
 
@@ -76,7 +73,7 @@ namespace i3dm.export
                             for (var y = 0; y < yrange; y++)
                             {
                                 CreateTile(o, tileFolder, conn, supertilebounds, tiles, x, y, $"{x_super}_{y_super}");
-                                // pbar.Tick();
+                                pbar.Tick();
                             }
                         }
 
@@ -101,8 +98,9 @@ namespace i3dm.export
                     var json = JsonConvert.SerializeObject(supertileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
                     File.WriteAllText($"{o.Output}{ Path.DirectorySeparatorChar}tileset.json", json);
                 }
-                // pbar.WriteLine("Export finished!");
-                // pbar.Dispose();
+                
+                pbar.WriteLine("Export finished!");
+                pbar.Dispose();
             });
         }
 

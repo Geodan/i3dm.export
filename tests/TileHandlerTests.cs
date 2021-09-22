@@ -22,7 +22,7 @@ namespace i3dm.export.tests
             instances.Add(instance);
 
             // act
-            var tile = TileHandler.GetTile(instances);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
@@ -56,7 +56,7 @@ namespace i3dm.export.tests
             instances.Add(instance3);
 
             // act
-            var tile = TileHandler.GetTile(instances,UseExternalModel: true);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
             Assert.IsTrue(tile.isI3dm == false);
             var cmpt = CmptReader.Read(new MemoryStream(tile.tile));
 
@@ -87,7 +87,7 @@ namespace i3dm.export.tests
             instances.Add(instance);
 
             // act
-            var tile = TileHandler.GetTile(instances, UseScaleNonUniform: true);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox, UseScaleNonUniform: true);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
@@ -109,7 +109,7 @@ namespace i3dm.export.tests
             instances.Add(instance);
 
             // act
-            var tile = TileHandler.GetTile(instances, UseExternalModel: true);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
@@ -136,7 +136,7 @@ namespace i3dm.export.tests
             instances.Add(instance1);
 
             // act
-            var tile = TileHandler.GetTile(instances, UseRtcCenter: true);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox, UseRtcCenter: true);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
@@ -162,7 +162,7 @@ namespace i3dm.export.tests
             instances.Add(instance);
 
             // act
-            var tile = TileHandler.GetTile(instances);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
