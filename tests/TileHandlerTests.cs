@@ -117,7 +117,7 @@ namespace i3dm.export.tests
             Assert.IsTrue(tile.isI3dm == true);
             Assert.IsTrue(tile.tile.Length > 0);
             Assert.IsTrue(i3dm.Positions.Count == 1);
-            Assert.IsTrue(i3dm.GlbUrl == "box.glb");
+            Assert.IsTrue(i3dm.GlbUrl.StartsWith("box.glb"));
             Assert.IsTrue(i3dm.GlbData == null);
         }
 
