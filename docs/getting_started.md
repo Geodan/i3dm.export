@@ -1,7 +1,7 @@
 # i3dm.export getting started
 
 In this document we run i3dm.export on a sample dataset of traffic signs (GeoJSON file). The generated instanced 3D tiles are visualized using a simple glTF 
-box in a MapBox GL JS viewer.
+box in a MapBox GL JS viewer and Cesium client.
 
 ## Prerequisites
 
@@ -94,13 +94,19 @@ $ dotnet tool install -g i3dm.export
 $ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" -t  traffic_signs_instances
 ```
 
+When visualizing in Cesium add the -f cesium parameter:
+
+```
+$ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" -t  traffic_signs_instances -f cesium
+```
+
 Here we visualize the traffic lights all instances as a simple red box (box.glb), but any glTF model can be used instead.
 
 An 'output' directory will be created with a tiles subdirectory containing tileset.json and i3dm tiles.
 
 ## Visualize in MapBox GL JS
 
-Put the MapBox client (index.html), (mapbox3dtiles.js) and the output folder with tiles on a webserver:
+Put the MapBox client (index.html and mapbox3dtiles.js from directory samples/traffic_lights/mapbox ) and the output folder with tiles on a webserver:
 
 ```
 $ python3 -m http.server
@@ -114,7 +120,17 @@ Result should look like:
 
 Live demo: https://geodan.github.io/i3dm.export/docs/index.html
 
-![screenshot](screenshot.png)
+![screenshot](traffic_mapbox.png)
+
+## Visualize in Cesium
+
+Put the Cesium client (index.html and from directory samples\traffic_lights\cesium ) and the output folder with tiles on a webserver.
+
+Live demo: todo
+
+Result should look like:
+
+![screenshot](traffic_cesium.png)
 
 
 

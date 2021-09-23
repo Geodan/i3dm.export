@@ -1,0 +1,86 @@
+{
+  "root": {
+    "children": [
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08384545,
+            0.9132951,
+            0.08400223,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/0_0_5_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08400223,
+            0.9132951,
+            0.08415902,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/0_0_6_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.0843158,
+            0.9132951,
+            0.08447259,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/0_0_8_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08447259,
+            0.9132951,
+            0.08462938,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/0_0_9_9.i3dm"
+        }
+      }
+    ],
+    "geometricError": 500.0,
+    "refine": "REPLACE",
+    "boundingVolume": {
+      "region": [
+        0.08306152,
+        0.91243226,
+        0.08462938,
+        0.91339091,
+        0.0,
+        10.0
+      ]
+    }
+  },
+  "asset": {
+    "generator": "i3dm.export",
+    "version": "1.0"
+  }
+}
