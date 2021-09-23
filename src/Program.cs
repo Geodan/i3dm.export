@@ -15,7 +15,7 @@ namespace i3dm.export
     {
         static void Main(string[] args)
         {
-            var parser = new CommandLine.Parser(settings =>
+            var parser = new Parser(settings =>
             {
                 settings.CaseInsensitiveEnumValues = true;
                 settings.HelpWriter = Console.Error;

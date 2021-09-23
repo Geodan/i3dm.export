@@ -26,8 +26,6 @@ namespace i3dm.export.Tileset
                 asset = new Asset() { version = "1.0", generator = "i3dm.export" }
             };
 
-            tileset.geometricError = geometricErrors[0];
-
             var root = new Root
             {
                 refine = "ADD",
@@ -70,7 +68,6 @@ namespace i3dm.export.Tileset
             {
                 tileset.root.transform = DoubleArrayRounder.Round(GetRootTransform(rootBounds, format), 8);
             }
-
             return tileset;
         }
 
