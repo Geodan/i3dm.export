@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 
 namespace i3dm.export.tests
@@ -61,15 +62,15 @@ namespace i3dm.export.tests
             var cmpt = CmptReader.Read(new MemoryStream(tile.tile));
 
             // assert
-            Assert.IsTrue(cmpt.Tiles.Count == 2);
-            var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles[0]));
+            Assert.IsTrue(cmpt.Tiles.ToList().Count == 2);
+            var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.ToList().First()));
             Assert.IsTrue(i3dm0.Positions.Count == 1);
-            Assert.IsTrue(i3dm0.GlbUrl == "box.glb");
+            Assert.IsTrue(i3dm0.GlbUrl.StartsWith("box.glb"));
             Assert.IsTrue(i3dm0.Positions[0] == new Vector3(1,2,0));
 
-            var i3dm1 = I3dmReader.Read(new MemoryStream(cmpt.Tiles[1]));
+            var i3dm1 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.ToList()[1]));
             Assert.IsTrue(i3dm1.Positions.Count == 2);
-            Assert.IsTrue(i3dm1.GlbUrl == "box1.glb");
+            Assert.IsTrue(i3dm1.GlbUrl.StartsWith("box1.glb"));
             Assert.IsTrue(i3dm1.Positions[0] == new Vector3(3, 4, 0));
             Assert.IsTrue(i3dm1.Positions[1] == new Vector3(5, 6, 0));
         }
