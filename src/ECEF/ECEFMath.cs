@@ -5,17 +5,6 @@ namespace i3dm.export.ECEF
 {
     public static class ECEFMath 
     {
-        public static bool EqualsEpsilon(float left, float right, float relativeEpsilon, float absoluteEpsilon = 0.0f) 
-        {
-            var absDiff = Math.Abs(left - right);
-            return (absDiff <= absoluteEpsilon || absDiff <= relativeEpsilon * Math.Max(Math.Abs(left), Math.Abs(right)));
-        }
-
-        public static float ToRadians(float value) 
-        {
-            return value * Constants.RadiansPerDegree;
-        }
-
         public static Matrix4x4 Matrix4FromTranslationQuaternionRotationScale(Vector3 translation, Quaternion rotation, Vector3 scale) 
         {
             var result = new Matrix4x4();

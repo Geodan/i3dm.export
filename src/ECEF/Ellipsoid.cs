@@ -34,5 +34,7 @@ namespace i3dm.export.ECEF
             var normalized = Vector3.Normalize(result);
             return normalized;
         }
+
+        public static Ellipsoid EllipsoidWGS84 { get { return new Ellipsoid(6378137.0f, 6378137.0f, 6356752.3142451793f); } }
     }
 }

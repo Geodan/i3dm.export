@@ -17,7 +17,7 @@ namespace i3dm.export.ECEF
 
         public static Matrix4x4 GetHPRMatrixAtPosition(Vector3 position, float heading, float pitch, float roll, Ellipsoid ellipsoid, Axis firstAxis, Axis secondAxis) {
             var hprQuat = new Quaternion().FromHeadingPitchRoll(heading, pitch, roll);
-            var hprMat = ECEFMath.Matrix4FromTranslationQuaternionRotationScale(Constants.VectorZero, hprQuat, new Vector3(1.0f, 1.0f, 1.0f));
+            var hprMat = ECEFMath.Matrix4FromTranslationQuaternionRotationScale(Vector3.Zero, hprQuat, new Vector3(1.0f, 1.0f, 1.0f));
             var fixedFrame = LocalToFixed(position, ellipsoid, firstAxis, secondAxis);
 
             return Matrix4x4.Multiply(hprMat, fixedFrame);
@@ -25,9 +25,6 @@ namespace i3dm.export.ECEF
 
          public static Matrix4x4 LocalToFixed(Vector3 position, Ellipsoid ellipsoid, Axis axis1, Axis axis2) {
             var axis3 = GetVectorProductLocal(axis1, axis2);            
-            var vector1 = new Vector3(0.0f, 0.0f, 0.0f);
-            var vector2 = new Vector3(0.0f, 0.0f, 0.0f);
-            var vector3 = new Vector3(0.0f, 0.0f, 0.0f);
             var calculateVector = new Dictionary<Axis, Vector3>(){
                 { Axis.EAST, new Vector3()},
                 { Axis.NORTH, new Vector3()},
@@ -47,9 +44,10 @@ namespace i3dm.export.ECEF
 
             calculateVector[Axis.EAST] = Vector3.Normalize(east);
             calculateVector[Axis.NORTH] = Vector3.Cross(up,  calculateVector[Axis.EAST]);
-            calculateVector[Axis.UP].MultiplyByScalar(-1);
-            calculateVector[Axis.EAST].MultiplyByScalar(-1);
-            calculateVector[Axis.NORTH].MultiplyByScalar(-1);
+            // question: do we need this?
+            //calculateVector[Axis.UP].MultiplyByScalar(-1);
+            //calculateVector[Axis.EAST].MultiplyByScalar(-1);
+            //calculateVector[Axis.NORTH].MultiplyByScalar(-1);
             calculateVector[Axis.DOWN] = calculateVector[Axis.UP];
             calculateVector[Axis.WEST] = calculateVector[Axis.EAST];
             calculateVector[Axis.SOUTH] = calculateVector[Axis.NORTH];

@@ -8,10 +8,10 @@ namespace i3dm.export.Extensions
         public static Quaternion FromHeadingPitchRoll(this Quaternion quat, float heading, float pitch, float roll)
         {
             var HPRQuaternion = new Quaternion();
-            var rollQuaternion = FromAxisAngle(ECEF.Constants.VectorUnitX, roll, HPRQuaternion);
-            var pitchQuaternion = FromAxisAngle(ECEF.Constants.VectorUnitY, -pitch, quat);
+            var rollQuaternion = FromAxisAngle(Vector3.UnitX, roll, HPRQuaternion);
+            var pitchQuaternion = FromAxisAngle(Vector3.UnitY, -pitch, quat);
             quat = Quaternion.Multiply(pitchQuaternion, rollQuaternion);
-            var headingQuaternion = FromAxisAngle(ECEF.Constants.VectorUnitZ, -heading, HPRQuaternion);
+            var headingQuaternion = FromAxisAngle(Vector3.UnitZ, -heading, HPRQuaternion);
 
             return Quaternion.Multiply(headingQuaternion, quat);
         }

@@ -35,7 +35,7 @@ namespace i3dm.export
             pitch = ToRadians(heading);
             roll = ToRadians(roll);
 
-            var matrix = Transforms.GetHPRMatrixAtPosition(position, (float)heading, (float)pitch, (float)roll, Constants.EllipsoidWGS84, Axis.EAST, Axis.NORTH);
+            var matrix = Transforms.GetHPRMatrixAtPosition(position, (float)heading, (float)pitch, (float)roll, Ellipsoid.EllipsoidWGS84, Axis.EAST, Axis.NORTH);
             var east = new Vector3(matrix.M11, matrix.M12, matrix.M13);
             var up = new Vector3(matrix.M21, matrix.M22, matrix.M23);
             var north = new Vector3(matrix.M31, matrix.M32, matrix.M33);
