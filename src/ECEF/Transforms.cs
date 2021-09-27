@@ -44,10 +44,6 @@ namespace i3dm.export.ECEF
 
             calculateVector[Axis.EAST] = Vector3.Normalize(east);
             calculateVector[Axis.NORTH] = Vector3.Cross(up,  calculateVector[Axis.EAST]);
-            // question: do we need this?
-            //calculateVector[Axis.UP].MultiplyByScalar(-1);
-            //calculateVector[Axis.EAST].MultiplyByScalar(-1);
-            //calculateVector[Axis.NORTH].MultiplyByScalar(-1);
             calculateVector[Axis.DOWN] = calculateVector[Axis.UP];
             calculateVector[Axis.WEST] = calculateVector[Axis.EAST];
             calculateVector[Axis.SOUTH] = calculateVector[Axis.NORTH];

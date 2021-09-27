@@ -5,6 +5,7 @@ using System.Numerics;
 
 namespace i3dm.export
 {
+    /**
     public class Bert
     {
          public static double[] GetTransformer(double x, double y, double z, decimal[] scale, double heading)
@@ -240,4 +241,5 @@ namespace i3dm.export
             return res;
         }
     }
+    */
 }

@@ -29,7 +29,7 @@ namespace i3dm.export
             return (east, north, up);
         }
 
-       /*public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuCesium(Vector3 position, double heading, double pitch, double roll)
+       public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuCesium(Vector3 position, double heading, double pitch, double roll)
         {
             heading = ToRadians(heading);
             pitch = ToRadians(heading);
@@ -40,14 +40,14 @@ namespace i3dm.export
             var up = new Vector3(matrix.M21, matrix.M22, matrix.M23);
             var north = new Vector3(matrix.M31, matrix.M32, matrix.M33);
             return (east, north, up);
-        } */
+        }
 
         
-        public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuCesium(Vector3 position, double heading, double pitch, double roll)
-        {
-            var eastUp = Bert.GetEastUp(position, heading);
-            return (eastUp.East, new Vector3(0,0,0), eastUp.Up);
-        }
+        //public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuCesium(Vector3 position, double heading, double pitch, double roll)
+        //{
+        //    var eastUp = Bert.GetEastUp(position, heading);
+        //    return (eastUp.East, new Vector3(0,0,0), eastUp.Up);
+        //}
 
         private static double ToRadians(double degrees)
         {
