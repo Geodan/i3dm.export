@@ -42,6 +42,9 @@ namespace i3dm.export
         {
             foreach (var instance in instances)
             {
+                var pos = (Point)instance.Position;
+                var positionVector3 = new Vector3((float)pos.X, (float)pos.Y, (float)pos.Z.GetValueOrDefault());
+
                 var vec = GetPosition((Point)instance.Position, UseRtcCenter, firstPosition);
                 positions.Add(vec);
 
@@ -53,7 +56,7 @@ namespace i3dm.export
                 {
                     scalesNonUniform.Add(new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]));
                 }
-                var (East, North, Up) = EnuCalculator.GetLocalEnu(format, instance.Rotation, vec);
+                var (East, North, Up) = EnuCalculator.GetLocalEnu(format, instance.Rotation, positionVector3);
                 normalUps.Add(Up);
                 normalRights.Add(East);
                 tags.Add(instance.Tags);
