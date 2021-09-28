@@ -78,7 +78,7 @@ Tool parameters:
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
--r: (optional - Default: false) Use RTC_CENTER for high precision relative positions
+-r: (optional - Default: true) Use RTC_CENTER for high precision relative positions
 
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
