@@ -1,6 +1,6 @@
+using i3dm.export.Cesium;
 using System;
 using System.Numerics;
-using i3dm.export.ECEF;
 
 namespace i3dm.export
 {
@@ -8,14 +8,16 @@ namespace i3dm.export
     {
         public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnu(Format format, double angle, Vector3 position)
         {
-            if(format == Format.Cesium) {
+            if (format == Format.Cesium)
+            {
                 return GetLocalEnuCesium(position, (float)angle, 0, 0);
-            } 
+            }
 
-            if(format == Format.Mapbox) {
+            if (format == Format.Mapbox)
+            {
                 return GetLocalEnuMapbox(angle);
             }
-            
+
             throw new Exception("Format not supported");
         }
 
@@ -29,25 +31,12 @@ namespace i3dm.export
             return (east, north, up);
         }
 
-       public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuCesium(Vector3 position, double heading, double pitch, double roll)
+
+        public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuCesium(Vector3 position, double heading, double pitch = 0, double roll = 0)
         {
-            heading = ToRadians(heading);
-            pitch = ToRadians(heading);
-            roll = ToRadians(roll);
-
-            var matrix = Transforms.GetHPRMatrixAtPosition(position, (float)heading, (float)pitch, (float)roll, Ellipsoid.EllipsoidWGS84, Axis.EAST, Axis.NORTH);
-            var east = new Vector3(matrix.M11, matrix.M12, matrix.M13);
-            var up = new Vector3(matrix.M21, matrix.M22, matrix.M23);
-            var north = new Vector3(matrix.M31, matrix.M32, matrix.M33);
-            return (east, north, up);
+            var eastUp = CesiumTransformer.GetEastUp(position, heading);
+            return (eastUp.East, new Vector3(0, 0, 0), eastUp.Up);
         }
-
-        
-        //public static (Vector3 East, Vector3 North, Vector3 Up) GetLocalEnuCesium(Vector3 position, double heading, double pitch, double roll)
-        //{
-        //    var eastUp = Bert.GetEastUp(position, heading);
-        //    return (eastUp.East, new Vector3(0,0,0), eastUp.Up);
-        //}
 
         private static double ToRadians(double degrees)
         {
