@@ -23,6 +23,7 @@ namespace i3dm.export.Tileset
 
     public class TileSetJson
     {
+        public double geometricError { get; set; }
         public Root root { get; set; }
         public Asset asset { get; set; }
     }

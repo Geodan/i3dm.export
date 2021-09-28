@@ -23,8 +23,10 @@ namespace i3dm.export.Tileset
         {
             var tileset = new TileSetJson
             {
-                asset = new Asset() { version = "1.0", generator = "i3dm.export" }
+                asset = new Asset() { version = "1.0", generator = $"i3dm.export {new AssemblyVersion().GetAssemblyVersion()} (https://github.com/geodan/i3dm.export) - 2021" }
             };
+
+            tileset.geometricError = geometricErrors[0];
 
             var root = new Root
             {
@@ -55,13 +57,14 @@ namespace i3dm.export.Tileset
         {
             var tileset = new TileSetJson
             {
-                asset = new Asset() { version = "1.0", generator = "i3dm.export" },
+                asset = new Asset() { version = "1.0", generator = $"i3dm.export {new AssemblyVersion().GetAssemblyVersion()} (https://github.com/geodan/i3dm.export) - 2021" },
                 root = new Root
                 {
                     geometricError = geometricErrors[0],
                     refine = refine,                
                     boundingVolume = GetBoundingvolume(rootBounds, format)
-                }
+                },
+                geometricError = geometricErrors[0]
             };
 
             if (format == Format.Mapbox)
@@ -114,6 +117,15 @@ namespace i3dm.export.Tileset
             }
             
             return boundingVolume;
+        }
+    }
+
+
+    public class AssemblyVersion
+    {
+        public string GetAssemblyVersion()
+        {
+            return GetType().Assembly.GetName().Version.ToString();
         }
     }
 }
