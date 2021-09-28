@@ -36,7 +36,7 @@ namespace i3dm.export
         [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
         public bool UseScaleNonUniform { get; set; }
 
-        [Option('f', "format", Required = false, Default = Format.Mapbox, HelpText = "Output format mapbox/cesium")]
+        [Option('f', "format", Required = false, Default = Format.Cesium, HelpText = "Output format mapbox/cesium")]
         public Format Format { get; set; }
         
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]

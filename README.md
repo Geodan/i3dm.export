@@ -82,7 +82,7 @@ Tool parameters:
 
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
--f, --format: (optional - default mapbox) Output format mapbox/cesium
+-f, --format: (optional - default Cesium) Output format mapbox/cesium
 
 --use_external_model: (optional - default false) Use external model instead of embedded model
 

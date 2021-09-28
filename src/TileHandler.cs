@@ -73,6 +73,7 @@ namespace i3dm.export
 
         private static I3dm.Tile.I3dm GetI3dm(string model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
         {
+            model = "pole.glb";
             I3dm.Tile.I3dm i3dm;
             if (!UseExternalModel)
             {
