@@ -5,9 +5,9 @@ namespace i3dm.export.Tileset
 {
     public class TilesetGenerator
     {
-        public static string GetTileSetJson(BoundingBox3D bb3d, Format format, List<TileInfo> tiles, List<double> geometricErrors)
+        public static string GetTileSetJson(BoundingBox3D bb3d, Format format, List<TileInfo> tiles, List<double> geometricErrors, bool isChild=false)
         {
-            var tileset = GetTileSet(bb3d, format, tiles, geometricErrors, "REPLACE");
+            var tileset = GetTileSet(bb3d, format, tiles, geometricErrors, "REPLACE", isChild);
             var json = JsonConvert.SerializeObject(tileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
             return json;
         }
@@ -53,7 +53,7 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, Format format, List<double> geometricErrors, string refine)
+        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, Format format, List<double> geometricErrors, string refine, bool isChild=false)
         {
             var tileset = new TileSetJson
             {
@@ -62,9 +62,9 @@ namespace i3dm.export.Tileset
                 {
                     geometricError = geometricErrors[0],
                     refine = refine,                
-                    boundingVolume = GetBoundingvolume(rootBounds, format, true)
+                    boundingVolume = GetBoundingvolume(rootBounds, format, isChild)
                 },
-                geometricError = geometricErrors[1]
+                geometricError = isChild?geometricErrors[1]:geometricErrors[0]
             };
 
             if (format == Format.Mapbox)
@@ -74,9 +74,9 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, Format format, List<TileInfo> tiles, List<double> geometricErrors, string refine)
+        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, Format format, List<TileInfo> tiles, List<double> geometricErrors, string refine, bool isChild = false)
         {
-            var tileset = GetRootTileSet(rootBounds, format, geometricErrors, refine);
+            var tileset = GetRootTileSet(rootBounds, format, geometricErrors, refine, isChild);
             var centroid = rootBounds.GetCenter();
             tileset.root.children = new List<Child>();
             

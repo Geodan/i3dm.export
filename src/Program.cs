@@ -131,7 +131,7 @@ namespace i3dm.export
         {
             List<double> errors = ToDoubles(geometricErrors);
             var convertedRootBounds = InstancesRepository.ConvertTileBounds(conn, format, rootBounds);
-            var tilesetJSON = TilesetGenerator.GetTileSetJson(convertedRootBounds, format, tiles, errors);
+            var tilesetJSON = TilesetGenerator.GetTileSetJson(convertedRootBounds, format, tiles, errors, true);
             var jsonFile = $"{output}{Path.DirectorySeparatorChar}{filename}";
             File.WriteAllText(jsonFile, tilesetJSON);
         }
