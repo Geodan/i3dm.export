@@ -62,9 +62,9 @@ namespace i3dm.export.Tileset
                 {
                     geometricError = geometricErrors[0],
                     refine = refine,                
-                    boundingVolume = GetBoundingvolume(rootBounds, format)
+                    boundingVolume = GetBoundingvolume(rootBounds, format, true)
                 },
-                geometricError = geometricErrors[0]
+                geometricError = geometricErrors[1]
             };
 
             if (format == Format.Mapbox)
@@ -106,12 +106,12 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, Format format) {
+        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, Format format, bool isChildTile=false) {
             var boundingVolume = new Boundingvolume();
             if(format == Format.Cesium) {
                 boundingVolume.region = bounds.GetBoundingvolumeRegion();
             } else if (format == Format.Mapbox ){
-                boundingVolume.box = bounds.GetBoundingvolumeBox();
+                boundingVolume.box = bounds.GetBoundingvolumeBox(isChildTile);
             } else {
                 throw new System.Exception("Unsupported format");
             }

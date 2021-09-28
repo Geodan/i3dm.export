@@ -1,165 +1,165 @@
 {
-  "geometricError": 500.0,
   "root": {
     "children": [
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08531309,
-            0.91347187,
-            0.08546987,
-            0.91356766,
+            0.08306152,
+            0.91243226,
+            0.08462938,
+            0.91339091,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_0_0.i3dm"
+          "uri": "tileset_0_0.json"
         }
       },
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08531309,
-            0.91356766,
-            0.08546987,
-            0.91366343,
+            0.08306152,
+            0.91339091,
+            0.08462938,
+            0.91434838,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_0_1.i3dm"
+          "uri": "tileset_0_1.json"
         }
       },
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08531309,
-            0.91366343,
-            0.08546987,
-            0.9137592,
+            0.08306152,
+            0.91434838,
+            0.08462938,
+            0.91530466,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_0_2.i3dm"
+          "uri": "tileset_0_2.json"
         }
       },
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08546987,
-            0.91347187,
-            0.08562666,
-            0.91356766,
+            0.08462938,
+            0.91243226,
+            0.08619723,
+            0.91339091,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_1_0.i3dm"
+          "uri": "tileset_1_0.json"
         }
       },
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08546987,
-            0.91356766,
-            0.08562666,
-            0.91366343,
+            0.08462938,
+            0.91339091,
+            0.08619723,
+            0.91434838,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_1_1.i3dm"
+          "uri": "tileset_1_1.json"
         }
       },
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08546987,
-            0.91366343,
-            0.08562666,
-            0.9137592,
+            0.08462938,
+            0.91434838,
+            0.08619723,
+            0.91530466,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_1_2.i3dm"
+          "uri": "tileset_1_2.json"
         }
       },
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08562666,
-            0.91347187,
-            0.08578344,
-            0.91356766,
+            0.08619723,
+            0.91243226,
+            0.08776509,
+            0.91339091,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_2_0.i3dm"
+          "uri": "tileset_2_0.json"
         }
       },
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08562666,
-            0.91356766,
-            0.08578344,
-            0.91366343,
+            0.08619723,
+            0.91339091,
+            0.08776509,
+            0.91434838,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_2_1.i3dm"
+          "uri": "tileset_2_1.json"
         }
       },
       {
-        "geometricError": 0.0,
+        "geometricError": 500.0,
         "boundingVolume": {
           "region": [
-            0.08562666,
-            0.91366343,
-            0.08578344,
-            0.9137592,
+            0.08619723,
+            0.91434838,
+            0.08776509,
+            0.91530466,
             0.0,
             10.0
           ]
         },
         "content": {
-          "uri": "tiles/0_0_2_2.i3dm"
+          "uri": "tileset_2_2.json"
         }
       }
     ],
     "geometricError": 500.0,
-    "refine": "REPLACE",
+    "refine": "ADD",
     "boundingVolume": {
       "region": [
-        0.08531309,
-        0.91347187,
-        0.08688094,
-        0.91442923,
+        0.08306152,
+        0.91243226,
+        0.08776509,
+        0.91530466,
         0.0,
         10.0
       ]
     }
   },
+  "geometricError": 500.0,
   "asset": {
     "generator": "i3dm.export 1.8.0.0 (https://github.com/geodan/i3dm.export) - 2021",
     "version": "1.0"

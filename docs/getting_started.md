@@ -90,8 +90,10 @@ $ dotnet tool install -g i3dm.export
 
 ## Run i3dm.export on instance table
 
+When visualizing in MapBox add the -f mapbox parameter:
+
 ```
-$ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" -t  traffic_signs_instances
+$ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" -t  traffic_signs_instances -f mapbox
 ```
 
 When visualizing in Cesium add the -f cesium parameter:
