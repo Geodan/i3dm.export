@@ -18,7 +18,7 @@ namespace i3dm.export
             Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
             {
                 string tileFolder = "tiles";
-                string geom_column = "geom";
+                string geom_column = o.GeometryColumn;
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
