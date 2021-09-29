@@ -92,20 +92,13 @@ namespace i3dm.export
             return new Vector3((float)x, (float)y, (float)z);
         }
 
-        public double[] GetBoundingvolumeBox(bool isChildTile=false) {
+        public double[] GetBoundingvolumeBox() {
             var centroid = GetCenter();
             var extent_x = ExtentX();
             var extent_y = ExtentY();
             var extent_z = 100;
 
-            if (!isChildTile)
-            {
-                return new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
-            }
-            else
-            {
-                return new double[] { 0, 0, 0, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
-            }
+            return new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
         }
 
         public double[] GetBoundingvolumeRegion() {

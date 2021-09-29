@@ -5,9 +5,9 @@ namespace i3dm.export.Tileset
 {
     public class TilesetGenerator
     {
-        public static string GetTileSetJson(BoundingBox3D bb3d, Format format, List<TileInfo> tiles, List<double> geometricErrors, bool isChild=false)
+        public static string GetTileSetJson(BoundingBox3D bb3d, Format format, List<TileInfo> tiles, List<double> geometricErrors, bool isRoot=false)
         {
-            var tileset = GetTileSet(bb3d, format, tiles, geometricErrors, "REPLACE", isChild);
+            var tileset = GetTileSet(bb3d, format, tiles, geometricErrors, "REPLACE", isRoot);
             var json = JsonConvert.SerializeObject(tileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
             return json;
         }
@@ -53,7 +53,7 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, Format format, List<double> geometricErrors, string refine, bool isChild=false)
+        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, Format format, List<double> geometricErrors, string refine, bool isRoot=false)
         {
             var tileset = new TileSetJson
             {
@@ -62,10 +62,15 @@ namespace i3dm.export.Tileset
                 {
                     geometricError = geometricErrors[0],
                     refine = refine,                
-                    boundingVolume = GetBoundingvolume(rootBounds, format, isChild)
-                },
-                geometricError = isChild?geometricErrors[1]:geometricErrors[0]
+                    boundingVolume = GetBoundingvolume(rootBounds, format)
+                }
             };
+
+            if (isRoot)
+            {
+                tileset.geometricError = geometricErrors[0];
+            }
+
 
             if (format == Format.Mapbox)
             {
@@ -74,9 +79,9 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, Format format, List<TileInfo> tiles, List<double> geometricErrors, string refine, bool isChild = false)
+        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, Format format, List<TileInfo> tiles, List<double> geometricErrors, string refine, bool isRoot = false)
         {
-            var tileset = GetRootTileSet(rootBounds, format, geometricErrors, refine, isChild);
+            var tileset = GetRootTileSet(rootBounds, format, geometricErrors, refine, isRoot);
             var centroid = rootBounds.GetCenter();
             tileset.root.children = new List<Child>();
             
@@ -106,12 +111,12 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, Format format, bool isChildTile=false) {
+        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, Format format) {
             var boundingVolume = new Boundingvolume();
             if(format == Format.Cesium) {
                 boundingVolume.region = bounds.GetBoundingvolumeRegion();
             } else if (format == Format.Mapbox ){
-                boundingVolume.box = bounds.GetBoundingvolumeBox(isChildTile);
+                boundingVolume.box = bounds.GetBoundingvolumeBox();
             } else {
                 throw new System.Exception("Unsupported format");
             }
