@@ -58,6 +58,19 @@ namespace i3dm.export.Tileset
                 _box = value.Select(d => Math.Round(d, 6)).ToArray();
             }
         }
+
+        private double[] _region;
+        public double[] region 
+        {
+            get
+            {
+                return this._region;
+            }
+            set
+            {
+                _region = value.Select(d => Math.Round(d, 8)).ToArray();
+            }
+        }
     }
 
     public class Content : ICloneable

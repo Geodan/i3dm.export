@@ -60,17 +60,17 @@ namespace i3dm.export
             return res;
         }
 
-        public static double[] GetTransform(Vector3 p, decimal[] scale, double heading)
+        public static double[] GetTransform(Vector3 p, decimal[] scale, double heading, Format format)
         {
             var center = new Vector3(p.X, p.Y, p.Z);
-            var transform = GetLocalTransform(scale, heading, center);
+            var transform = GetLocalTransform(scale, heading, center, format);
             return transform;
         }
 
-        public static double[] GetLocalTransform(decimal[] scale, double heading, Vector3 relativeCenter)
+        public static double[] GetLocalTransform(decimal[] scale, double heading, Vector3 relativeCenter, Format format)
         {
             double[] transform;
-            var res = EnuCalculator.GetLocalEnuMapbox(heading);
+            var res = EnuCalculator.GetLocalEnu(format, heading, relativeCenter);
             var m = GetMatrix(relativeCenter, res.East, res.North, res.Up);
             transform = Flatten(m, scale);
             return transform;

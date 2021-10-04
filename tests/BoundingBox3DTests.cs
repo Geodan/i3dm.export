@@ -27,7 +27,7 @@ namespace i3dm.export.tests
             var expectedBoundingVolume = new Boundingvolume() { box = new double[] { 5, 5, 5, 5, 0, 0, 0, 5, 0, 0, 0, 100 } };
 
             // act
-            var boundingvolume = bounds.GetBoundingVolume();
+            var boundingvolume = bounds.GetBoundingVolume(false);
 
             // assert
             Assert.IsTrue(boundingvolume.box.Length == expectedBoundingVolume.box.Length);
@@ -36,7 +36,6 @@ namespace i3dm.export.tests
                 Assert.IsTrue(boundingvolume.box[i] == expectedBoundingVolume.box[i]);
             }
         }
-
 
         [Test]
         public void GetBoundsTest()

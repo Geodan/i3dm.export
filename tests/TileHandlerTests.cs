@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 
 namespace i3dm.export.tests
@@ -22,7 +23,7 @@ namespace i3dm.export.tests
             instances.Add(instance);
 
             // act
-            var tile = TileHandler.GetTile(instances);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
@@ -56,20 +57,20 @@ namespace i3dm.export.tests
             instances.Add(instance3);
 
             // act
-            var tile = TileHandler.GetTile(instances,UseExternalModel: true);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
             Assert.IsTrue(tile.isI3dm == false);
             var cmpt = CmptReader.Read(new MemoryStream(tile.tile));
 
             // assert
-            Assert.IsTrue(cmpt.Tiles.Count == 2);
-            var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles[0]));
+            Assert.IsTrue(cmpt.Tiles.ToList().Count == 2);
+            var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.ToList().First()));
             Assert.IsTrue(i3dm0.Positions.Count == 1);
-            Assert.IsTrue(i3dm0.GlbUrl == "box.glb");
+            Assert.IsTrue(i3dm0.GlbUrl.StartsWith("box.glb"));
             Assert.IsTrue(i3dm0.Positions[0] == new Vector3(1,2,0));
 
-            var i3dm1 = I3dmReader.Read(new MemoryStream(cmpt.Tiles[1]));
+            var i3dm1 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.ToList()[1]));
             Assert.IsTrue(i3dm1.Positions.Count == 2);
-            Assert.IsTrue(i3dm1.GlbUrl == "box1.glb");
+            Assert.IsTrue(i3dm1.GlbUrl.StartsWith("box1.glb"));
             Assert.IsTrue(i3dm1.Positions[0] == new Vector3(3, 4, 0));
             Assert.IsTrue(i3dm1.Positions[1] == new Vector3(5, 6, 0));
         }
@@ -87,7 +88,7 @@ namespace i3dm.export.tests
             instances.Add(instance);
 
             // act
-            var tile = TileHandler.GetTile(instances, UseScaleNonUniform: true);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox, UseScaleNonUniform: true);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
@@ -109,14 +110,14 @@ namespace i3dm.export.tests
             instances.Add(instance);
 
             // act
-            var tile = TileHandler.GetTile(instances, UseExternalModel: true);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
             Assert.IsTrue(tile.isI3dm == true);
             Assert.IsTrue(tile.tile.Length > 0);
             Assert.IsTrue(i3dm.Positions.Count == 1);
-            Assert.IsTrue(i3dm.GlbUrl == "box.glb");
+            Assert.IsTrue(i3dm.GlbUrl.StartsWith("box.glb"));
             Assert.IsTrue(i3dm.GlbData == null);
         }
 
@@ -136,7 +137,7 @@ namespace i3dm.export.tests
             instances.Add(instance1);
 
             // act
-            var tile = TileHandler.GetTile(instances, UseRtcCenter: true);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox, UseRtcCenter: true);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert
@@ -162,7 +163,7 @@ namespace i3dm.export.tests
             instances.Add(instance);
 
             // act
-            var tile = TileHandler.GetTile(instances);
+            var tile = TileHandler.GetTile(instances, Format.Mapbox);
             var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
 
             // assert

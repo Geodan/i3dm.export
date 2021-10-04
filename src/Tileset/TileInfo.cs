@@ -16,10 +16,10 @@ namespace i3dm.export.Tileset
             return new Vector3((float)x, (float)y, z);
         }
 
-        public double[] GetTransform(Vector3 centroid)
+        public double[] GetTransform(Vector3 centroid, Format format)
         {
             var distance = Distance(centroid, GetCenter());
-            return TileTransform.GetLocalTransform(new decimal[]{1M, 1M, 1M}, 0, distance);
+            return TileTransform.GetLocalTransform(new decimal[]{1M, 1M, 1M}, 0, distance, format);
         }
 
         public static Vector3 Distance(Vector3 from, Vector3 to)

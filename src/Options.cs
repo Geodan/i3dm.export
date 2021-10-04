@@ -2,6 +2,11 @@
 
 namespace i3dm.export
 {
+    public enum Format {
+        Mapbox,
+        Cesium
+    }
+
     public class Options
     {
         [Option('c', "connection", Required = true, HelpText = "database connection string")]
@@ -22,7 +27,7 @@ namespace i3dm.export
         [Option('s', "superextenttile", Required = false, Default = 10000.0, HelpText = "Super Extent per tile")]
         public double SuperExtentTile { get; set; }
 
-        [Option('r', "rtccenter", Required = false, Default = false, HelpText = "Use RTC_CENTER for positions")]
+        [Option('r', "rtccenter", Required = false, Default = true, HelpText = "Use RTC_CENTER for positions")]
         public bool UseRtcCenter { get; set; }
 
         [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
@@ -31,6 +36,9 @@ namespace i3dm.export
         [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
         public bool UseScaleNonUniform { get; set; }
 
+        [Option('f', "format", Required = false, Default = Format.Cesium, HelpText = "Output format mapbox/cesium")]
+        public Format Format { get; set; }
+        
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
 

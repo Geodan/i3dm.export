@@ -1,0 +1,503 @@
+{
+  "root": {
+    "children": [
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08462938,
+            0.91310344,
+            0.08478616,
+            0.91319928,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_0_7.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08462938,
+            0.91319928,
+            0.08478616,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_0_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08462938,
+            0.9132951,
+            0.08478616,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_0_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08478616,
+            0.91310344,
+            0.08494295,
+            0.91319928,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_1_7.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08478616,
+            0.91319928,
+            0.08494295,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_1_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08478616,
+            0.9132951,
+            0.08494295,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_1_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08494295,
+            0.91310344,
+            0.08509973,
+            0.91319928,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_2_7.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08494295,
+            0.91319928,
+            0.08509973,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_2_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08494295,
+            0.9132951,
+            0.08509973,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_2_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08509973,
+            0.91310344,
+            0.08525652,
+            0.91319928,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_3_7.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08509973,
+            0.91319928,
+            0.08525652,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_3_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08509973,
+            0.9132951,
+            0.08525652,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_3_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08525652,
+            0.91310344,
+            0.0854133,
+            0.91319928,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_4_7.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08525652,
+            0.91319928,
+            0.0854133,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_4_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08525652,
+            0.9132951,
+            0.0854133,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_4_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.0854133,
+            0.91310344,
+            0.08557009,
+            0.91319928,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_5_7.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.0854133,
+            0.91319928,
+            0.08557009,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_5_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.0854133,
+            0.9132951,
+            0.08557009,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_5_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08557009,
+            0.91310344,
+            0.08572687,
+            0.91319928,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_6_7.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08557009,
+            0.91319928,
+            0.08572687,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_6_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08557009,
+            0.9132951,
+            0.08572687,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_6_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08572687,
+            0.91319928,
+            0.08588366,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_7_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08572687,
+            0.9132951,
+            0.08588366,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_7_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08588366,
+            0.91319928,
+            0.08604045,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_8_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08588366,
+            0.9132951,
+            0.08604045,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_8_9.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08604045,
+            0.91281586,
+            0.08619723,
+            0.91291173,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_9_4.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08604045,
+            0.91291173,
+            0.08619723,
+            0.91300759,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_9_5.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08604045,
+            0.91300759,
+            0.08619723,
+            0.91310344,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_9_6.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08604045,
+            0.91319928,
+            0.08619723,
+            0.9132951,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_9_8.i3dm"
+        }
+      },
+      {
+        "geometricError": 0.0,
+        "boundingVolume": {
+          "region": [
+            0.08604045,
+            0.9132951,
+            0.08619723,
+            0.91339091,
+            0.0,
+            10.0
+          ]
+        },
+        "content": {
+          "uri": "tiles/1_0_9_9.i3dm"
+        }
+      }
+    ],
+    "geometricError": 500.0,
+    "refine": "REPLACE",
+    "boundingVolume": {
+      "region": [
+        0.08462938,
+        0.91243226,
+        0.08619723,
+        0.91339091,
+        0.0,
+        10.0
+      ]
+    }
+  },
+  "geometricError": 0.0,
+  "asset": {
+    "generator": "i3dm.export 1.8.0.0 (https://github.com/geodan/i3dm.export) - 2021",
+    "version": "1.0"
+  }
+}
