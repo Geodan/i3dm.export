@@ -16,6 +16,7 @@
 	<Company>Geodan</Company>
 	<Authors>Bert Temme</Authors>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
