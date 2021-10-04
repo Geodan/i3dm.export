@@ -41,5 +41,8 @@ namespace i3dm.export
         
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
+
+        [Option("geometrycolumn", Required = false, Default = "geom", HelpText = "Column with geometry")]
+        public string GeometryColumn { get; set; }
     }
 }
