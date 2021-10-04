@@ -66,7 +66,7 @@ namespace i3dm.export.Tileset
                 }
             };
 
-            if (!isLeave)
+            if (isLeave)
             {
                 tileset.geometricError = geometricErrors[0];
             }
