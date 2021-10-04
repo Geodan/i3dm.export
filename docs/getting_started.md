@@ -134,6 +134,7 @@ Result should look like:
 
 ![screenshot](traffic_cesium.png)
 
+Live demo: https://geodan.github.io/i3dm.export/samples/traffic_lights/mapbox/#16.79/52.367926/4.89836/0/45
 
 
 
