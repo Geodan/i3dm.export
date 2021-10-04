@@ -41,9 +41,10 @@ namespace i3dm.export
             return bb;
         }
 
-        public Boundingvolume GetBoundingVolume()
+        // this method is used in testing
+        public Boundingvolume GetBoundingVolume(bool isRoot = false)
         {
-            var box = GetBoundingvolumeBox();
+            var box = GetBoundingvolumeBox(isRoot);
             var region = GetBoundingvolumeRegion();
 
             var boundingVolume = new Boundingvolume
@@ -53,6 +54,7 @@ namespace i3dm.export
             };
             return boundingVolume;
         }
+
 
         public override string ToString()
         {
@@ -92,13 +94,20 @@ namespace i3dm.export
             return new Vector3((float)x, (float)y, (float)z);
         }
 
-        public double[] GetBoundingvolumeBox() {
+        public double[] GetBoundingvolumeBox(bool isLeave=false) {
             var centroid = GetCenter();
             var extent_x = ExtentX();
             var extent_y = ExtentY();
             var extent_z = 100;
 
-            return new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
+            if (!isLeave)
+            {
+                return new double[] { centroid.X, centroid.Y, centroid.Z, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
+            }
+            else
+            {
+                return new double[] { 0,0,0, extent_x / 2, 0.0, 0.0, 0.0, extent_y / 2, 0.0, 0.0, 0.0, extent_z };
+            }
         }
 
         public double[] GetBoundingvolumeRegion() {

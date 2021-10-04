@@ -5,9 +5,9 @@ namespace i3dm.export.Tileset
 {
     public class TilesetGenerator
     {
-        public static string GetTileSetJson(BoundingBox3D bb3d, Format format, List<TileInfo> tiles, List<double> geometricErrors, bool isRoot=false)
+        public static string GetTileSetJson(BoundingBox3D bb3d, Format format, List<TileInfo> tiles, List<double> geometricErrors, bool isLeave=false)
         {
-            var tileset = GetTileSet(bb3d, format, tiles, geometricErrors, "REPLACE", isRoot);
+            var tileset = GetTileSet(bb3d, format, tiles, geometricErrors, "REPLACE", isLeave);
             var json = JsonConvert.SerializeObject(tileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
             return json;
         }
@@ -31,7 +31,7 @@ namespace i3dm.export.Tileset
             var root = new Root
             {
                 refine = "ADD",
-                boundingVolume = GetBoundingvolume(rootBounds, format),
+                boundingVolume = GetBoundingvolume(rootBounds, format, false),
                 geometricError = geometricErrors[0]
             };
 
@@ -41,7 +41,7 @@ namespace i3dm.export.Tileset
             {
                 var child = new Child();
                 child.geometricError = geometricErrors[0];
-                child.boundingVolume = GetBoundingvolume(ts.Bounds, format);
+                child.boundingVolume = GetBoundingvolume(ts.Bounds, format, false);
                 var content = new Content();
                 content.uri = ts.FileName;
                 child.content = content;
@@ -53,7 +53,7 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, Format format, List<double> geometricErrors, string refine, bool isRoot=false)
+        public static TileSetJson GetRootTileSet(BoundingBox3D rootBounds, Format format, List<double> geometricErrors, string refine, bool isLeave=false)
         {
             var tileset = new TileSetJson
             {
@@ -62,11 +62,11 @@ namespace i3dm.export.Tileset
                 {
                     geometricError = geometricErrors[0],
                     refine = refine,                
-                    boundingVolume = GetBoundingvolume(rootBounds, format)
+                    boundingVolume = GetBoundingvolume(rootBounds, format, isLeave)
                 }
             };
 
-            if (isRoot)
+            if (!isLeave)
             {
                 tileset.geometricError = geometricErrors[0];
             }
@@ -79,9 +79,9 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, Format format, List<TileInfo> tiles, List<double> geometricErrors, string refine, bool isRoot = false)
+        public static TileSetJson GetTileSet(BoundingBox3D rootBounds, Format format, List<TileInfo> tiles, List<double> geometricErrors, string refine, bool isLeave = false)
         {
-            var tileset = GetRootTileSet(rootBounds, format, geometricErrors, refine, isRoot);
+            var tileset = GetRootTileSet(rootBounds, format, geometricErrors, refine, isLeave);
             var centroid = rootBounds.GetCenter();
             tileset.root.children = new List<Child>();
             
@@ -111,12 +111,12 @@ namespace i3dm.export.Tileset
             return tileset;
         }
 
-        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, Format format) {
+        public static Boundingvolume GetBoundingvolume(BoundingBox3D bounds, Format format, bool isLeave = false) {
             var boundingVolume = new Boundingvolume();
             if(format == Format.Cesium) {
                 boundingVolume.region = bounds.GetBoundingvolumeRegion();
             } else if (format == Format.Mapbox ){
-                boundingVolume.box = bounds.GetBoundingvolumeBox();
+                boundingVolume.box = bounds.GetBoundingvolumeBox(isLeave);
             } else {
                 throw new System.Exception("Unsupported format");
             }

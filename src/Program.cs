@@ -81,7 +81,8 @@ namespace i3dm.export
                         supertileSet.FileName = supertiles > 1 ? $"tileset_{x_super}_{y_super}.json" : "tileset.json";
                         supertileSet.Bounds = supertilebounds;
                         supertilesets.Add(supertileSet);
-                        WriteJson(conn, o.Output, supertilebounds, tiles, o.Format, o.GeometricErrors, supertileSet.FileName, supertiles == 1);
+                        var isLeave = supertiles == 1; 
+                        WriteJson(conn, o.Output, supertilebounds, tiles, o.Format, o.GeometricErrors, supertileSet.FileName, true);
                     }
                 }
 
@@ -127,11 +128,11 @@ namespace i3dm.export
             }
         }
 
-        private static void WriteJson(NpgsqlConnection conn, string output, BoundingBox3D rootBounds, List<TileInfo> tiles, Format format, string geometricErrors, string filename, bool isRoot = false)
+        private static void WriteJson(NpgsqlConnection conn, string output, BoundingBox3D rootBounds, List<TileInfo> tiles, Format format, string geometricErrors, string filename, bool isLeave = false)
         {
             List<double> errors = ToDoubles(geometricErrors);
             var convertedRootBounds = InstancesRepository.ConvertTileBounds(conn, format, rootBounds);
-            var tilesetJSON = TilesetGenerator.GetTileSetJson(convertedRootBounds, format, tiles, errors, isRoot);
+            var tilesetJSON = TilesetGenerator.GetTileSetJson(convertedRootBounds, format, tiles, errors, isLeave);
             var jsonFile = $"{output}{Path.DirectorySeparatorChar}{filename}";
             File.WriteAllText(jsonFile, tilesetJSON);
         }

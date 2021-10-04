@@ -37,7 +37,7 @@ namespace i3dm.export.tests
             // assert (todo add more checks)
             Assert.IsNotNull(result);
             Assert.IsTrue(result.asset.version == "1.0");
-            Assert.IsTrue(result.geometricError == 500);
+            Assert.IsTrue(result.geometricError == 0);
         }
     }
 }
