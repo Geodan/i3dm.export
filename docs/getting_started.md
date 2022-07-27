@@ -88,6 +88,8 @@ postgres=# exit;
 $ dotnet tool install -g i3dm.export
 ```
 
+Download Box.glb from https://raw.githubusercontent.com/Geodan/i3dm.export/main/docs/Box.glb
+
 ## Run i3dm.export on instance table
 
 When visualizing in MapBox add the -f mapbox parameter:
