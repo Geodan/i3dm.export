@@ -88,6 +88,8 @@ postgres=# exit;
 $ dotnet tool install -g i3dm.export
 ```
 
+Download Box.glb from https://raw.githubusercontent.com/Geodan/i3dm.export/main/docs/Box.glb
+
 ## Run i3dm.export on instance table
 
 When visualizing in MapBox add the -f mapbox parameter:
@@ -134,6 +136,7 @@ Result should look like:
 
 ![screenshot](traffic_cesium.png)
 
+Live demo: https://geodan.github.io/i3dm.export/samples/traffic_lights/mapbox/#16.79/52.367926/4.89836/0/45
 
 
 

@@ -43,6 +43,12 @@ $ dotnet tool update -g i3dm.export
 
 https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/
 
+Boxes sample:
+
+MapBox: https://geodan.github.io/i3dm.export/samples/traffic_lights/mapbox/#16.79/52.367926/4.89836/0/45
+
+Cesium: https://geodan.github.io/i3dm.export/samples/traffic_lights/cesium/
+
 ## Input database table
 
 Input database table contains following columns: 
@@ -237,6 +243,8 @@ where:
 - {from.X}, {from.Y}, {to.X}, {to.Y} envelope of a tile
 
 ## History
+
+2021-10-04: release 1.9 adding Cesium support
 
 2020-11-12: release 1.8 add external tileset support
 
