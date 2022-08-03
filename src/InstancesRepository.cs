@@ -44,17 +44,18 @@ namespace i3dm.export
             var q = string.IsNullOrEmpty(query) ? "" : $"{query} and";
             var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
             conn.Open();
-            var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform(st_force3d({geometry_column}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometry_table} WHERE {q} ST_Intersects({geometry_column}, ST_Transform(ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 3857), 4326))");
+            var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform(st_force3d({geometry_column}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometry_table} WHERE {q} ST_Intersects(st_transform({geometry_column}, {epsg}), ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, {epsg}))");
             var res = conn.Query<Instance>(sql).AsList();
             conn.Close();
             return res;
         }
 
-        public static BoundingBox3D GetBoundingBox3DForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, string query = "")
+        public static BoundingBox3D GetBoundingBox3DForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, Format format, string query = "")
         {
+            var epsg = (format ==  Format.Mapbox ? 3857 : 4978);
             conn.Open();
             var q = string.IsNullOrEmpty(query) ? "" : $"where {query}";
-            var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, 3857)) AS box from {geometry_table} {q}) as total";
+            var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, {epsg})) AS box from {geometry_table} {q}) as total";
             var cmd = new NpgsqlCommand(sql, conn);
             var reader = cmd.ExecuteReader();
             reader.Read();

@@ -40,7 +40,7 @@ namespace i3dm.export
                 }
 
                 var conn = new NpgsqlConnection(o.ConnectionString);
-                var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column, o.Query);
+                var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column, o.Format, o.Query);
                 var r_super = rootBounds.GetRange(o.SuperExtentTile);
                 var supertiles = r_super.xrange * r_super.yrange;
                 var potentialtiles = (int)Math.Ceiling(supertiles * Math.Pow(o.SuperExtentTile / o.ExtentTile, 2));
