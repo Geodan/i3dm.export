@@ -54,7 +54,7 @@ namespace i3dm.export
         {
             conn.Open();
             var q = string.IsNullOrEmpty(query) ? "" : $"where {query}";
-            var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, 3857)) AS box from {geometry_table} {q}) as total";
+            var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform(st_force3d({geometry_column}), 4978)) AS box from {geometry_table} {q}) as total";
             var cmd = new NpgsqlCommand(sql, conn);
             var reader = cmd.ExecuteReader();
             reader.Read();

@@ -24,12 +24,6 @@ namespace i3dm.export
         [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
         public string Output { get; set; }
 
-        [Option('e', "extenttile", Required = false, Default = 1000.0, HelpText = "Extent per tile")]
-        public double ExtentTile { get; set; }
-
-        [Option('s', "superextenttile", Required = false, Default = 10000.0, HelpText = "Super Extent per tile")]
-        public double SuperExtentTile { get; set; }
-
         [Option('r', "rtccenter", Required = false, Default = true, HelpText = "Use RTC_CENTER for positions")]
         public bool UseRtcCenter { get; set; }
 
@@ -44,5 +38,10 @@ namespace i3dm.export
         
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
+
+        [Option("implicit_tiling_max_features", Required = false, Default = 1000, HelpText = "1.1 implicit tiling maximum features per tile")]
+        public int ImplicitTilingMaxFeatures { get; set; }
+
+
     }
 }
