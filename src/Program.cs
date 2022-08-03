@@ -104,11 +104,10 @@ namespace i3dm.export
             });
         }
 
-
         private static void CreateTile(Options o, string tileFolder, NpgsqlConnection conn, BoundingBox3D rootBounds, List<TileInfo> tiles, int x, int y, string prefix)
         {
             var tileBounds = rootBounds.GetBounds(o.ExtentTile, x, y);
-            var instances = InstancesRepository.GetInstances(conn, o.Table, tileBounds.From(), tileBounds.To(), o.Format, o.Query, o.UseScaleNonUniform);
+            var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds.From(), tileBounds.To(), o.Format, o.Query, o.UseScaleNonUniform);
 
             if (instances.Count > 0)
             {

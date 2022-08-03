@@ -33,7 +33,7 @@ namespace i3dm.export
             return new BoundingBox3D() { XMin = xmin, YMin = ymin, ZMin = zmin, XMax = xmax, YMax = ymax, ZMax = zmax };
         }
 
-        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, Point from, Point to, Format format, string query = "", bool useScaleNonUniform = false)
+        public static List<Instance> GetInstances(NpgsqlConnection conn, string geometry_table, string geometry_column, Point from, Point to, Format format, string query = "", bool useScaleNonUniform = false)
         {
             var epsg = format == Format.Cesium ? "4978" : "3857";
             var fromX = ToInvariantCulture(from.X.Value);
@@ -44,7 +44,7 @@ namespace i3dm.export
             var q = string.IsNullOrEmpty(query) ? "" : $"{query} and";
             var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
             conn.Open();
-            var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform(st_force3d(geom), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 3857), 4326))");
+            var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform(st_force3d({geometry_column}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometry_table} WHERE {q} ST_Intersects({geometry_column}, ST_Transform(ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 3857), 4326))");
             var res = conn.Query<Instance>(sql).AsList();
             conn.Close();
             return res;

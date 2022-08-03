@@ -15,6 +15,9 @@ namespace i3dm.export
         [Option('t', "table", Required = true, HelpText = "table")]
         public string Table { get; set; }
 
+        [Option("geometrycolumn", Required = false, Default = "geom", HelpText = "Column with geometry")]
+        public string GeometryColumn { get; set; }
+
         [Option('g', "geometricerrors", Required = false, Default = "500,0", HelpText = "Geometric errors")]
         public string GeometricErrors { get; set; }
 
@@ -41,8 +44,5 @@ namespace i3dm.export
         
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
-
-        [Option("geometrycolumn", Required = false, Default = "geom", HelpText = "Column with geometry")]
-        public string GeometryColumn { get; set; }
     }
 }
