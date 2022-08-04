@@ -1,6 +1,5 @@
 ﻿using CommandLine;
 using Dapper;
-using i3dm.export.Tileset;
 using Npgsql;
 using ShellProgressBar;
 using System;
@@ -29,15 +28,12 @@ namespace i3dm.export
 
                 Console.WriteLine($"Exporting i3dm's from {o.Table}...");
 
-                var tilefolder = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}";
-
-                if (!Directory.Exists(tilefolder))
-                {
-                    Directory.CreateDirectory(tilefolder);
-                }
-
                 var conn = new NpgsqlConnection(o.ConnectionString);
-                var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column, o.Query);
+                var epsg = o.Format == Format.Cesium ? 4978 : 3857;
+                var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column, epsg, o.Query);
+                var box = rootBounds.GetBox();
+                var geometricErrors = Array.ConvertAll(o.GeometricErrors.Split(','), double.Parse); ;
+
                 var translation = rootBounds.GetCenter();
 
                 var options = new ProgressBarOptions
@@ -67,47 +63,29 @@ namespace i3dm.export
                 Console.WriteLine($"Maximum features per tile: " + o.ImplicitTilingMaxFeatures);
 
                 var tile = new subtree.Tile(0, 0, 0);
-                // todo!
-                //var tiles = ImplicitTiling.GenerateTiles(geometryTable, conn, sr, geometryColumn, idcolumn, bbox, o.ImplicitTilingMaxFeatures, tile, new List<subtree.Tile>(), query, translation, o.ShadersColumn, o.AttributeColumns, contentDirectory, o.Copyright);
-                //Console.WriteLine();
-                //Console.WriteLine("Tiles created: " + tiles.Count);
+                var tiles = ImplicitTiling.GenerateTiles(o, conn, rootBounds, tile, new List<subtree.Tile>(), contentDirectory, epsg);
+
+                var mortonIndex = subtree.MortonIndex.GetMortonIndex(tiles);
+                var subtreebytes = ImplicitTiling.GetSubtreeBytes(mortonIndex);
+
+                var subtreeFile = $"{subtreesDirectory}{Path.AltDirectorySeparatorChar}0_0_0.subtree";
+                Console.WriteLine($"Writing {subtreeFile}...");
+                File.WriteAllBytes(subtreeFile, subtreebytes);
+
+                var subtreeLevels = tiles.Max(t => t.Z) + 1;
+                var tilesetjson = TreeSerializer.ToImplicitTileset(translation, box, geometricErrors[0], subtreeLevels);
+                var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
+                Console.WriteLine("SubtreeLevels: " + subtreeLevels);
+                Console.WriteLine("SubdivisionScheme: QUADTREE");
+                Console.WriteLine("Refine method: ADD");
+                Console.WriteLine($"Geometric errors: {geometricErrors[0]}, {geometricErrors[0]}");
+                Console.WriteLine($"Writing {file}...");
+                File.WriteAllText(file, tilesetjson);
+
+                Console.WriteLine();
+                Console.WriteLine("Tiles created: " + tiles.Count);
 
             });
-        }
-
-        private static void CreateTile(Options o, string tileFolder, NpgsqlConnection conn, BoundingBox3D tileBounds, List<TileInfo> tiles, int x, int y, string prefix)
-        {
-            var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds.From(), tileBounds.To(), o.Format, o.Query, o.UseScaleNonUniform);
-
-            if (instances.Count > 0)
-            {
-                var tile = TileHandler.GetTile(instances, o.Format, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
-                var convertedTileBounds = InstancesRepository.ConvertTileBounds(conn, o.Format, tileBounds);
-                var ext = tile.isI3dm ? "i3dm" : "cmpt";
-                var filename = $"{prefix}_{x}_{y}.{ext}";
-                var file = $"{o.Output}{Path.DirectorySeparatorChar}{tileFolder}{Path.DirectorySeparatorChar}{filename}";
-                File.WriteAllBytes(file, tile.tile);
-
-                tiles.Add(new TileInfo
-                {
-                    Filename = $"{tileFolder}/{filename}",
-                    Bounds = convertedTileBounds
-                });
-            }
-        }
-
-        private static void WriteJson(NpgsqlConnection conn, string output, BoundingBox3D rootBounds, List<TileInfo> tiles, Format format, string geometricErrors, string filename, bool isLeave = false)
-        {
-            List<double> errors = ToDoubles(geometricErrors);
-            var convertedRootBounds = InstancesRepository.ConvertTileBounds(conn, format, rootBounds);
-            var tilesetJSON = TilesetGenerator.GetTileSetJson(convertedRootBounds, format, tiles, errors, isLeave);
-            var jsonFile = $"{output}{Path.DirectorySeparatorChar}{filename}";
-            File.WriteAllText(jsonFile, tilesetJSON);
-        }
-
-        private static List<double> ToDoubles(string geometricErrors)
-        {
-            return geometricErrors.Split(',').Select(double.Parse).ToList();
         }
     }
 }

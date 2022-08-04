@@ -39,7 +39,7 @@ namespace i3dm.export
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
 
-        [Option("implicit_tiling_max_features", Required = false, Default = 1000, HelpText = "1.1 implicit tiling maximum features per tile")]
+        [Option("implicit_tiling_max_features", Required = false, Default = 10000, HelpText = "1.1 implicit tiling maximum features per tile")]
         public int ImplicitTilingMaxFeatures { get; set; }
 
 

@@ -1,5 +1,4 @@
-﻿using i3dm.export.Tileset;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Numerics;
 
@@ -41,18 +40,17 @@ namespace i3dm.export
             return bb;
         }
 
-        // this method is used in testing
-        public Boundingvolume GetBoundingVolume(bool isRoot = false)
+        public double[] GetBox()
         {
-            var box = GetBoundingvolumeBox(isRoot);
-            var region = GetBoundingvolumeRegion();
+            var center = GetCenter();
+            var xAxis = ExtentX() / 2;
+            var yAxis = ExtentY() / 2;
+            var zAxis = ExtentZ() / 2;
 
-            var boundingVolume = new Boundingvolume
-            {
-                box = box,
-                region = region
+            var result = new double[] { (double)center.X, (double)center.Y, (double)center.Z,
+                xAxis,0,0,0,yAxis,0,0,0,zAxis
             };
-            return boundingVolume;
+            return result;
         }
 
 

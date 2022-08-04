@@ -4,24 +4,7 @@ using System.Linq;
 
 namespace i3dm.export.Tileset
 {
-    public class SuperTileSetJson
-    {
-        public SuperTileSetJson(int X, int Y)
-        {
-            this.X = X;
-            this.Y = Y;
-        }
-        public int Y { get; set; }
-        public int X { get; set; }
-        public string FileName { get; set; }
-
-        public BoundingBox3D Bounds { get; set; }
-    }
-
-
-    public class Root : Child {}
-
-    public class TileSetJson
+    public class TileSet
     {
         public Root root { get; set; }
         public double geometricError { get; set; }
@@ -42,6 +25,26 @@ namespace i3dm.export.Tileset
             c.content = (Content)content.Clone();
             return c;
         }
+
+        public Implicittiling implicitTiling { get; set; }
+    }
+
+    public class Implicittiling
+    {
+        public string subdivisionScheme { get; set; }
+        public int subtreeLevels { get; set; }
+        public Subtrees subtrees { get; set; }
+    }
+
+    public class Subtrees
+    {
+        public string uri { get; set; }
+    }
+
+
+
+    public class Root : Child
+    {
     }
 
     public class Boundingvolume
@@ -55,20 +58,7 @@ namespace i3dm.export.Tileset
             }
             set
             {
-                _box = value.Select(d => Math.Round(d, 6)).ToArray();
-            }
-        }
-
-        private double[] _region;
-        public double[] region 
-        {
-            get
-            {
-                return this._region;
-            }
-            set
-            {
-                _region = value.Select(d => Math.Round(d, 8)).ToArray();
+                _box = value.Select(d => Math.Round(d, 3)).ToArray();
             }
         }
     }
@@ -76,15 +66,19 @@ namespace i3dm.export.Tileset
     public class Content : ICloneable
     {
         public string uri { get; set; }
+
         public object Clone()
         {
             return MemberwiseClone();
         }
+
     }
 
     public class Asset
     {
         public string generator { get; set; }
+
         public string version { get; set; }
     }
+
 }
