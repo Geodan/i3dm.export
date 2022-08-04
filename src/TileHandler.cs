@@ -11,7 +11,7 @@ namespace i3dm.export
 {
     public static class TileHandler
     {
-        public static (byte[] tile, bool isI3dm) GetTile(List<Instance> instances, Format format, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
+        public static byte[] GetTile(List<Instance> instances, Format format, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
         {
             var firstPosition = (Point)instances[0].Position;
             var uniqueModels = instances.Select(s => s.Model).Distinct();
@@ -33,9 +33,8 @@ namespace i3dm.export
                 tiles.Add(bytesI3dm);
             }
 
-            var bytes = tiles.Count == 1 ? tiles[0] : CmptWriter.Write(tiles);
-            var isI3dm = tiles.Count == 1;
-            return (bytes, isI3dm);
+            var bytes = CmptWriter.Write(tiles);
+            return bytes;
         }
 
         private static void CalculateArrays(List<Instance> instances, Format format, bool UseRtcCenter, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition)

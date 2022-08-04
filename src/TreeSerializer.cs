@@ -16,7 +16,7 @@ namespace i3dm.export
             var t = new double[] { 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, transform.X, transform.Y, transform.Z, 1.0 };
             tileset.geometricError = geometricError;
             var root = GetRoot(geometricError, t, box, "ADD");
-            var content = new Content() { uri = "content/{level}_{x}_{y}.i3dm" };
+            var content = new Content() { uri = "content/{level}_{x}_{y}.cmpt" };
 root.content = content;
             var subtrees = new Subtrees() { uri = "subtrees/{level}_{x}_{y}.subtree" };
             root.implicitTiling = new Implicittiling() { subdivisionScheme = "QUADTREE", subtreeLevels = subtreeLevels, subtrees = subtrees };

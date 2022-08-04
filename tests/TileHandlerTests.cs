@@ -24,11 +24,13 @@ namespace i3dm.export.tests
 
             // act
             var tile = TileHandler.GetTile(instances, Format.Mapbox);
-            var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
+            var cmpt = CmptReader.Read(new MemoryStream(tile));
+            var i3dmBytes = cmpt.Tiles.First();
+            var i3dm = I3dmReader.Read(new MemoryStream(i3dmBytes));
+
 
             // assert
-            Assert.IsTrue(tile.isI3dm == true);
-            Assert.IsTrue(tile.tile.Length > 0);
+            Assert.IsTrue(tile.Length > 0);
             Assert.IsTrue(i3dm.Positions.Count == 1);
             Assert.IsTrue(i3dm.Positions[0] == new System.Numerics.Vector3(1, 2, 0));
         }
@@ -58,12 +60,11 @@ namespace i3dm.export.tests
 
             // act
             var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
-            Assert.IsTrue(tile.isI3dm == false);
-            var cmpt = CmptReader.Read(new MemoryStream(tile.tile));
+            var cmpt = CmptReader.Read(new MemoryStream(tile));
 
             // assert
             Assert.IsTrue(cmpt.Tiles.ToList().Count == 2);
-            var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.ToList().First()));
+            var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
             Assert.IsTrue(i3dm0.Positions.Count == 1);
             Assert.IsTrue(i3dm0.GlbUrl.StartsWith("box.glb"));
             Assert.IsTrue(i3dm0.Positions[0] == new Vector3(1,2,0));
@@ -89,11 +90,11 @@ namespace i3dm.export.tests
 
             // act
             var tile = TileHandler.GetTile(instances, Format.Mapbox, UseScaleNonUniform: true);
-            var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
+            var cmpt = CmptReader.Read(new MemoryStream(tile));
+            var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
             // assert
-            Assert.IsTrue(tile.isI3dm == true);
-            Assert.IsTrue(tile.tile.Length > 0);
+            Assert.IsTrue(tile.Length > 0);
             Assert.IsTrue(i3dm.Positions.Count == 1);
             Assert.IsTrue(i3dm.GlbData.Length > 0);
             Assert.IsTrue(i3dm.ScaleNonUniforms[0] == new Vector3((float)scaleNonuniform[0], (float)scaleNonuniform[1], (float)scaleNonuniform[2]));
@@ -111,11 +112,11 @@ namespace i3dm.export.tests
 
             // act
             var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
-            var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
+            var cmpt = CmptReader.Read(new MemoryStream(tile));
+            var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
             // assert
-            Assert.IsTrue(tile.isI3dm == true);
-            Assert.IsTrue(tile.tile.Length > 0);
+            Assert.IsTrue(tile.Length > 0);
             Assert.IsTrue(i3dm.Positions.Count == 1);
             Assert.IsTrue(i3dm.GlbUrl.StartsWith("box.glb"));
             Assert.IsTrue(i3dm.GlbData == null);
@@ -138,11 +139,11 @@ namespace i3dm.export.tests
 
             // act
             var tile = TileHandler.GetTile(instances, Format.Mapbox, UseRtcCenter: true);
-            var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
+            var cmpt = CmptReader.Read(new MemoryStream(tile));
+            var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
             // assert
-            Assert.IsTrue(tile.isI3dm == true);
-            Assert.IsTrue(tile.tile.Length > 0);
+            Assert.IsTrue(tile.Length > 0);
             Assert.IsTrue(i3dm.Positions.Count == 2);
             Assert.IsTrue(i3dm.Positions[0] == new Vector3(0, 0, 0));
             Assert.IsTrue(i3dm.Positions[1] == new Vector3(9, 18, 0));
@@ -164,10 +165,10 @@ namespace i3dm.export.tests
 
             // act
             var tile = TileHandler.GetTile(instances, Format.Mapbox);
-            var i3dm = I3dmReader.Read(new MemoryStream(tile.tile));
+            var cmpt = CmptReader.Read(new MemoryStream(tile));
+            var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
             // assert
-            Assert.IsTrue(tile.isI3dm == true);
             Assert.IsTrue(i3dm.Positions.Count == 1);
             Assert.IsTrue(i3dm.BatchTableJson == "{\"id\":[\"123\"],\"name\":[\"test\"]}  ");
         }

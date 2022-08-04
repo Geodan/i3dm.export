@@ -21,12 +21,12 @@ namespace i3dm.export
 
             parser.ParseArguments<Options>(args).WithParsed(o =>
             {
-                string tileFolder = "tiles";
                 string geom_column = o.GeometryColumn;
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
                 Console.WriteLine($"Exporting i3dm's from {o.Table}...");
+
 
                 var conn = new NpgsqlConnection(o.ConnectionString);
                 var epsg = o.Format == Format.Cesium ? 4978 : 3857;
@@ -60,7 +60,7 @@ namespace i3dm.export
                     Directory.CreateDirectory(subtreesDirectory);
                 }
 
-                Console.WriteLine($"Maximum features per tile: " + o.ImplicitTilingMaxFeatures);
+                Console.WriteLine($"Maximum instances per tile: " + o.ImplicitTilingMaxFeatures);
 
                 var tile = new subtree.Tile(0, 0, 0);
                 var tiles = ImplicitTiling.GenerateTiles(o, conn, rootBounds, tile, new List<subtree.Tile>(), contentDirectory, epsg);
@@ -69,6 +69,7 @@ namespace i3dm.export
                 var subtreebytes = ImplicitTiling.GetSubtreeBytes(mortonIndex);
 
                 var subtreeFile = $"{subtreesDirectory}{Path.AltDirectorySeparatorChar}0_0_0.subtree";
+                Console.WriteLine();
                 Console.WriteLine($"Writing {subtreeFile}...");
                 File.WriteAllBytes(subtreeFile, subtreebytes);
 
@@ -84,7 +85,6 @@ namespace i3dm.export
 
                 Console.WriteLine();
                 Console.WriteLine("Tiles created: " + tiles.Count);
-
             });
         }
     }

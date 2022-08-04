@@ -66,13 +66,10 @@ namespace i3dm.export
             {
                 var bytes = CreateTile(o, conn, bbox, epsg, where);
 
-                var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.i3dm";
+                var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.cmpt";
                 Console.Write($"\rCreating tile: {file}  ");
 
-                // todo: support cmpt sort of
-                // var ext = tile.isI3dm ? "i3dm" : "cmpt";
-
-                File.WriteAllBytes(file, bytes.tile);
+                File.WriteAllBytes(file, bytes);
 
                 var t1 = new Tile(tile.Z, tile.X, tile.Y);
                 t1.Available = true;
@@ -83,7 +80,7 @@ namespace i3dm.export
         }
 
 
-        private static (byte[] tile, bool isI3dm) CreateTile(Options o, NpgsqlConnection conn, BoundingBox3D tileBounds, int epsg, string where)
+        private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox3D tileBounds, int epsg, string where)
         {
             var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, o.UseScaleNonUniform);
             var tile = TileHandler.GetTile(instances, o.Format, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
