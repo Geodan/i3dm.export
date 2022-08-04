@@ -36,7 +36,7 @@ root.content = content;
             {
                 geometricError = geometricError,
                 refine = refinement,
-                transform = translation,
+                // transform = translation,
                 boundingVolume = boundingVolume
             };
 

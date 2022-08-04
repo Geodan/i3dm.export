@@ -24,7 +24,7 @@ namespace i3dm.export
         [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
         public string Output { get; set; }
 
-        [Option('r', "rtccenter", Required = false, Default = true, HelpText = "Use RTC_CENTER for positions")]
+        [Option('r', "rtccenter", Required = false, Default = false, HelpText = "Use RTC_CENTER for positions")]
         public bool UseRtcCenter { get; set; }
 
         [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
@@ -41,7 +41,5 @@ namespace i3dm.export
 
         [Option("implicit_tiling_max_features", Required = false, Default = 10000, HelpText = "1.1 implicit tiling maximum features per tile")]
         public int ImplicitTilingMaxFeatures { get; set; }
-
-
     }
 }
