@@ -117,8 +117,7 @@ the binary glTF. The client is responsible for retrieving the binary glTF's. Bot
 ## Composites
 
 Starting release 2.0, for every tile there will be a composiste tile (cmpt) - even if there is only 1 model available in the tile.  
-Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm. When there is only 1 model used in the instances, an i3dm tile 
-will be generated.
+Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm.
 
 ## Implicit tiling
 
