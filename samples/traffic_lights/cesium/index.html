@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.85/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.85/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css" rel="stylesheet">
   
     <style>
       html, body, #cesiumContainer {
@@ -27,7 +27,7 @@
   <script>
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiNDc1ZjQwMS1hOGI2LTQyNmUtYmYxMi1jODlhNDNlMjViZTkiLCJpZCI6NDc4OSwic2NvcGVzIjpbImFzciIsImdjIl0sImlhdCI6MTU0MTYyNTg3OX0.mNoGLdYuwqsnRRkQtdYNMbJfMBoZF2hPkbc4SRVVqNw';
     var viewer = new Cesium.Viewer('cesiumContainer', {
-       // terrainProvider : Cesium.createWorldTerrain()
+      // terrainProvider : Cesium.createWorldTerrain()
     });
     viewer.scene.debugShowFramesPerSecond = true;
     var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
@@ -35,7 +35,6 @@
     }));
 
     viewer.scene.globe.depthTestAgainstTerrain = true;
-
     viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(0, -0.5, 0));
     viewer.scene.primitives.add(tileset);
     var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);

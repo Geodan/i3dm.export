@@ -88,6 +88,12 @@ postgres=# exit;
 $ dotnet tool install -g i3dm.export
 ```
 
+To visualize in MapBox GL JS use a 2.X version (because 3D Tiles 1.1 - implicit tiling is not supported yet):
+
+```
+$ dotnet tool install --global i3dm.export --version 1.9.0
+```
+
 Download Box.glb from https://raw.githubusercontent.com/Geodan/i3dm.export/main/docs/Box.glb
 
 ## Run i3dm.export on instance table

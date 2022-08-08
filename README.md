@@ -4,7 +4,6 @@ Console tool for exporting Instanced 3D Models (i3dm's), i3dm composites (cmpt) 
 
 The input table contains instance information like location (epsg:4326), binary glTF model (glb), scale, rotation and instance attributes. 
 
-
 The 3D tiles created by this tool are tested in:
 
 - MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles);
@@ -25,7 +24,7 @@ For composite tile (cmpt) specs see https://github.com/CesiumGS/3d-tiles/blob/ma
 ## Installation
 
 
-Prerequisite: .NET 5.0 SDK is installed https://dotnet.microsoft.com/download/dotnet/5.0
+Prerequisite: .NET 6.0 SDK is installed https://dotnet.microsoft.com/download/dotnet/6.0
 
 ```
 $ dotnet tool install -g i3dm.export
@@ -76,11 +75,7 @@ Tool parameters:
 
 -t: (required) table with instance positions
 
--g: (optional - Default: 500,0) Geometric errors
-
--e: (optional - Default: 1000) Extent per tile (meters)
-
--s: (optional - Default: 10000) Super extent tile (meters)
+-g: (optional - Default: 5000,4000) Geometric errors
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
@@ -93,6 +88,8 @@ Tool parameters:
 --use_external_model: (optional - default false) Use external model instead of embedded model
 
 --use_scale_non_uniform: (optional - default false) Use column scale_non_uniform for scaling instances
+
+--implicit_tiling_max_features (optional - default 1000). Maximum number of features/instances of tile
 
 --geometrycolumn: (optional - default: geom) Geometry column name
 ```
@@ -117,17 +114,21 @@ When parameter 'use_external_model' is set to true, only the model name will be 
 In the i3dm header the value 'gltfFormat' is set to 0. In this case, the model should be a valid absolute or relative url to 
 the binary glTF. The client is responsible for retrieving the binary glTF's. Both the i3dm's and binary glTF's should be copied to a production server.
 
-## External tilesets
-
-When the spatial extent of the input table is larger then the super extent (option -s), multiple tileset files will be generated. Those tilesets
-are referenced in the super tileset.json file, using the external tilesets technique (https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#45). 
-When the spatial extent of the input table is smaller then the super extent (option -s), only 1 tileset.json file will be generated.
-
 ## Composites
 
-When there are multiple models in the tile instances, a composite tile (cmpt) will be generated. Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . 
-The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm. When there is only 1 model used in the instances, an i3dm tile 
+Starting release 2.0, for every tile there will be a composiste tile (cmpt) - even if there is only 1 model available in the tile.  
+Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm. When there is only 1 model used in the instances, an i3dm tile 
 will be generated.
+
+## Implicit tiling
+
+Starting release 2.0, tiles are generated according to the 3D Tiles 1.1 Implicit Tiling technique. Tiles are generated in a quadtree, maximum number of features/instances 
+is defined by parameter 'implicit_tiling_max_features'. At the moment, there is no support (yet) for Implicit Tiling in the MapBox client, use 
+a 1.X version of this tool to workaround this.
+Content tiles will be generated in output folder 'content', subtree file '0_0_0.subtree' will be created in folder 'subtrees'. In the root output folder file 'tileset.json' 
+will be created.
+
+Limitation: At the moment, 1 subtree file will be created (0_0_0.subtree), there is no support for tree of subtree files (yet).
 
 ## Instance batch info
 
@@ -226,23 +227,38 @@ Queries used in this tool:
 1] Query bounding box of table
 
 ```
-postgres=# SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform({geometry_column}, 3857)) AS box from {geometry_table} {q}) as total
+postgres=# SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform(st_force3d({geometry_column}), {epsg})) AS box from {geometry_table} {q}) as total
 ````
 
-2] Query instances per tile
+2] Count features per tile
 
 ```
-postgres=# SELECT ST_ASBinary(ST_Transform(geom, 3857)) as position, scale, rotation, model, tags FROM {geometry_table} WHERE {q} ST_Intersects(geom, ST_Transform(ST_MakeEnvelope({from.X}, {from.Y}, {to.X}, {to.Y}, 3857), 4326))
+postgres=# select count({geometryColumn}) from {geometryTable} where ST_Intersects(st_transform({geometryColumn}, {epsg}), ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, {epsg})) {where}
+```
+
+3] Query instances per tile
+
+```
+postgres=# SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometryTable} where ST_Intersects(st_transform({geometryColumn}, {epsg}), ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, {epsg})) {where}
 ```
 
 where:
 
+- {epsg}: 4978 for Cesium format, 3857 for MapBox format
 - {q} option is the optional query parameter.
-- {geometry_column} column with geometry (default: geom)
-- {geometry_table} input geometry table
+- {geometryColumn} column with geometry (default: geom)
+- {geometryTable} input geometry table
 - {from.X}, {from.Y}, {to.X}, {to.Y} envelope of a tile
 
 ## History
+
+2022-08-08: release 2.0 adding 3D Tiles 1.1 Implicit Tiling. 
+
+Breaking change: 
+
+Parameters removed: -e and -s (extent tile and super extent tile)
+
+Parameters added: implicit_tiling_max_features (default 1000)
 
 2021-10-04: release 1.9 adding Cesium support
 

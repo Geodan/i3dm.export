@@ -6,7 +6,7 @@
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
-	<Version>1.9</Version>
+	<Version>2.0</Version>
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
@@ -17,6 +17,8 @@
 	<Authors>Bert Temme</Authors>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<AssemblyVersion>2.0</AssemblyVersion>
+	<FileVersion>2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +29,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Npgsql" Version="6.0.5" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
+    <PackageReference Include="subtree" Version="1.0.1" />
     <PackageReference Include="Wkx" Version="0.5.1" />
   </ItemGroup>
 
@@ -35,12 +38,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Box_blue.glb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="external.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="pole.glb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="tree.glb">
