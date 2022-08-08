@@ -1,5 +1,4 @@
-﻿
-using Dapper;
+﻿using Dapper;
 using Newtonsoft.Json.Linq;
 using System.Data;
 using Wkx;

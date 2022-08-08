@@ -18,7 +18,7 @@ namespace i3dm.export
         [Option("geometrycolumn", Required = false, Default = "geom", HelpText = "Column with geometry")]
         public string GeometryColumn { get; set; }
 
-        [Option('g', "geometricerrors", Required = false, Default = "500,0", HelpText = "Geometric errors")]
+        [Option('g', "geometricerrors", Required = false, Default = "5000,4000", HelpText = "Geometric errors")]
         public string GeometricErrors { get; set; }
 
         [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
@@ -39,7 +39,7 @@ namespace i3dm.export
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
 
-        [Option("implicit_tiling_max_features", Required = false, Default = 10000, HelpText = "1.1 implicit tiling maximum features per tile")]
+        [Option("implicit_tiling_max_features", Required = false, Default = 1000, HelpText = "1.1 implicit tiling maximum features per tile")]
         public int ImplicitTilingMaxFeatures { get; set; }
     }
 }

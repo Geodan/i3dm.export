@@ -4,14 +4,6 @@ using System.Collections.Generic;
 
 namespace i3dm.export.tests
 {
-
-    public class CustomItem
-    {
-        public string PropertyName { get; set; }
-        public List<object> Values { get; set; }
-
-    }
-
     public class BatchTableJsonTests
     {
         [Test]

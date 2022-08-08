@@ -150,7 +150,6 @@ namespace i3dm.export.tests
             Assert.IsTrue(i3dm.RtcCenter == new Vector3(1,2,0));
         }
 
-
         [Test]
         public void GetTileWithTagsTest()
         {
@@ -172,6 +171,5 @@ namespace i3dm.export.tests
             Assert.IsTrue(i3dm.Positions.Count == 1);
             Assert.IsTrue(i3dm.BatchTableJson == "{\"id\":[\"123\"],\"name\":[\"test\"]}  ");
         }
-
     }
 }

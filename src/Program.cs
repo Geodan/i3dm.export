@@ -74,12 +74,12 @@ namespace i3dm.export
                 File.WriteAllBytes(subtreeFile, subtreebytes);
 
                 var subtreeLevels = tiles.Max(t => t.Z) + 1;
-                var tilesetjson = TreeSerializer.ToImplicitTileset(translation, box, geometricErrors[0], subtreeLevels);
+                var tilesetjson = TreeSerializer.ToImplicitTileset(translation, box, geometricErrors, subtreeLevels);
                 var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
                 Console.WriteLine("SubtreeLevels: " + subtreeLevels);
                 Console.WriteLine("SubdivisionScheme: QUADTREE");
                 Console.WriteLine("Refine method: ADD");
-                Console.WriteLine($"Geometric errors: {geometricErrors[0]}, {geometricErrors[0]}");
+                Console.WriteLine($"Geometric errors: {geometricErrors[0]}, {geometricErrors[1]}");
                 Console.WriteLine($"Writing {file}...");
                 File.WriteAllText(file, tilesetjson);
 
