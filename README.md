@@ -121,13 +121,17 @@ Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . The co
 
 ## Implicit tiling
 
-Starting release 2.0, tiles are generated according to the 3D Tiles 1.1 Implicit Tiling technique. Tiles are generated in a quadtree, maximum number of features/instances 
-is defined by parameter 'implicit_tiling_max_features'. At the moment, there is no support (yet) for Implicit Tiling in the MapBox client, use 
-a 1.X version of this tool to workaround this.
-Content tiles will be generated in output folder 'content', subtree file '0_0_0.subtree' will be created in folder 'subtrees'. In the root output folder file 'tileset.json' 
-will be created.
+Starting release 2.0, tiles are generated according to the 3D Tiles 1.1 Implicit Tiling technique. Tiles are generated in a quadtree, maximum number of features/instances is defined by parameter 'implicit_tiling_max_features'. 
 
-Limitation: At the moment, 1 subtree file will be created (0_0_0.subtree), there is no support for tree of subtree files (yet).
+Content tiles will be generated in output folder 'content', subtree file '0_0_0.subtree' will be created in folder 'subtrees'. In the root output folder file 'tileset.json' will be created.
+
+Limitation: 
+
+- 1 subtree file will be created (0_0_0.subtree), there is no support for tree of subtree files (yet);
+
+- there is no support (yet) for Implicit Tiling in the MapBox client, use 
+a 1.X version of this tool to workaround this.
+
 
 ## Instance batch info
 
@@ -138,8 +142,6 @@ For example:
 ```
 [{"customer" : "John Doe"}, {"id" : 5454577}]
 ```
-
-In the MapBox GL JS client this attribute information can be displayed when selecting the instance.
 
 Note: 
 
@@ -200,6 +202,12 @@ To develop in Visual Studio Code, open .vscode/launch.json and adjust the 'args'
 ```
 
 Press F5 to start debugging.
+
+To Visualize in CesiumJS, add references to:
+
+- https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"
+
+- https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 To visualize in MapBox GL JS, add a reference to MapBox3DTiles.js:
 
