@@ -42,11 +42,15 @@ $ dotnet tool update -g i3dm.export
 
 https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/
 
+
+Trees sample with implicit tiling:
+
+Cesium: https://geodan.github.io/i3dm.export/samples/traffic_lights/cesium/
+
 Boxes sample:
 
 MapBox: https://geodan.github.io/i3dm.export/samples/traffic_lights/mapbox/#16.79/52.367926/4.89836/0/45
 
-Cesium: https://geodan.github.io/i3dm.export/samples/traffic_lights/cesium/
 
 ## Input database table
 
@@ -75,7 +79,7 @@ Tool parameters:
 
 -t: (required) table with instance positions
 
--g: (optional - Default: 5000,4000) Geometric errors
+-g: (optional - Default: 5000) Geometric error
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
@@ -251,6 +255,8 @@ where:
 - {from.X}, {from.Y}, {to.X}, {to.Y} envelope of a tile
 
 ## History
+
+2022-08-09: release 2.1 use 1 geometric error as input parameter
 
 2022-08-08: release 2.0 adding 3D Tiles 1.1 Implicit Tiling. 
 

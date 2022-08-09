@@ -1,6 +1,6 @@
 {
   "root": {
-    "geometricError": 4000.0,
+    "geometricError": 5000.0,
     "refine": "ADD",
     "boundingVolume": {
       "box": [
@@ -29,7 +29,6 @@
       }
     }
   },
-  "geometricError": 5000.0,
   "asset": {
     "generator": "i3dm.export",
     "version": "1.1"

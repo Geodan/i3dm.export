@@ -7,7 +7,6 @@ namespace i3dm.export.Tileset
     public class TileSet
     {
         public Root root { get; set; }
-        public double geometricError { get; set; }
         public Asset asset { get; set; }
     }
 
@@ -41,8 +40,6 @@ namespace i3dm.export.Tileset
         public string uri { get; set; }
     }
 
-
-
     public class Root : Child
     {
     }
@@ -62,7 +59,6 @@ namespace i3dm.export.Tileset
             }
         }
     }
-
     public class Content : ICloneable
     {
         public string uri { get; set; }
@@ -71,7 +67,6 @@ namespace i3dm.export.Tileset
         {
             return MemberwiseClone();
         }
-
     }
 
     public class Asset

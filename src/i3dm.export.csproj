@@ -6,7 +6,7 @@
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
-	<Version>2.0</Version>
+	<Version>2.1</Version>
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
@@ -17,8 +17,8 @@
 	<Authors>Bert Temme</Authors>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	<AssemblyVersion>2.0</AssemblyVersion>
-	<FileVersion>2.0</FileVersion>
+	<AssemblyVersion>2.1</AssemblyVersion>
+	<FileVersion>2.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

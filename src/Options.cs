@@ -18,8 +18,8 @@ namespace i3dm.export
         [Option("geometrycolumn", Required = false, Default = "geom", HelpText = "Column with geometry")]
         public string GeometryColumn { get; set; }
 
-        [Option('g', "geometricerrors", Required = false, Default = "5000,4000", HelpText = "Geometric errors")]
-        public string GeometricErrors { get; set; }
+        [Option('g', "geometricerror", Required = false, Default = 5000, HelpText = "Geometric error")]
+        public double GeometricError { get; set; }
 
         [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
         public string Output { get; set; }

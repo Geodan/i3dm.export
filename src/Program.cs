@@ -32,7 +32,6 @@ namespace i3dm.export
                 var epsg = o.Format == Format.Cesium ? 4978 : 3857;
                 var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column, epsg, o.Query);
                 var box = rootBounds.GetBox();
-                var geometricErrors = Array.ConvertAll(o.GeometricErrors.Split(','), double.Parse); ;
 
                 var translation = rootBounds.GetCenter();
 
@@ -74,12 +73,12 @@ namespace i3dm.export
                 File.WriteAllBytes(subtreeFile, subtreebytes);
 
                 var subtreeLevels = tiles.Max(t => t.Z) + 1;
-                var tilesetjson = TreeSerializer.ToImplicitTileset(translation, box, geometricErrors, subtreeLevels);
+                var tilesetjson = TreeSerializer.ToImplicitTileset(translation, box, o.GeometricError, subtreeLevels);
                 var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
                 Console.WriteLine("SubtreeLevels: " + subtreeLevels);
                 Console.WriteLine("SubdivisionScheme: QUADTREE");
                 Console.WriteLine("Refine method: ADD");
-                Console.WriteLine($"Geometric errors: {geometricErrors[0]}, {geometricErrors[1]}");
+                Console.WriteLine($"Geometric error: {o.GeometricError}");
                 Console.WriteLine($"Writing {file}...");
                 File.WriteAllText(file, tilesetjson);
 
