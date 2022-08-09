@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace i3dm.export
 {
@@ -25,8 +26,11 @@ namespace i3dm.export
                 SqlMapper.AddTypeHandler(new GeometryTypeHandler());
                 SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
-                Console.WriteLine($"Exporting i3dm's from {o.Table}...");
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
 
+                Console.WriteLine("Tool: I3dm.export");
+                Console.WriteLine("Version: " + version);
+                Console.WriteLine($"Exporting i3dm's from {o.Table}...");
 
                 var conn = new NpgsqlConnection(o.ConnectionString);
                 var epsg = o.Format == Format.Cesium ? 4978 : 3857;
@@ -73,7 +77,7 @@ namespace i3dm.export
                 File.WriteAllBytes(subtreeFile, subtreebytes);
 
                 var subtreeLevels = tiles.Max(t => t.Z) + 1;
-                var tilesetjson = TreeSerializer.ToImplicitTileset(translation, box, o.GeometricError, subtreeLevels);
+                var tilesetjson = TreeSerializer.ToImplicitTileset(translation, box, o.GeometricError, subtreeLevels, version);
                 var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
                 Console.WriteLine("SubtreeLevels: " + subtreeLevels);
                 Console.WriteLine("SubdivisionScheme: QUADTREE");

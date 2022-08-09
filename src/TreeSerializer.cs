@@ -1,16 +1,17 @@
 ﻿using i3dm.export.Tileset;
 using Newtonsoft.Json;
+using System;
 using System.Numerics;
 
 namespace i3dm.export
 {
     public static class TreeSerializer
     {
-        public static string ToImplicitTileset(Vector3 transform, double[] box, double geometricError, int subtreeLevels)
+        public static string ToImplicitTileset(Vector3 transform, double[] box, double geometricError, int subtreeLevels, Version version)
         {
             var tileset = new TileSet
             {
-                asset = new Asset() { version = "1.1", generator = "i3dm.export" }
+                asset = new Asset() { version = "1.1", generator = $"i3dm.export {version}" }
             };
             var t = new double[] { 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, transform.X, transform.Y, transform.Z, 1.0 };
             var root = GetRoot(geometricError, t, box, "ADD");
