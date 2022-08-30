@@ -6,9 +6,9 @@ The input table contains instance information like location (epsg:4326), binary 
 
 The 3D tiles created by this tool are tested in:
 
-- MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles);
+- Cesium JS
 
-- Cesium
+MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles) is NOT supported at the moment.
 
 Sample of trees in Cesium viewer using instanced (i3dm) and composite (cmpt) 3D Tiles
 
@@ -93,7 +93,7 @@ Tool parameters:
 
 --use_scale_non_uniform: (optional - default false) Use column scale_non_uniform for scaling instances
 
---implicit_tiling_max_features (optional - default 1000). Maximum number of features/instances of tile
+--max_features_per_tile (optional - default 1000). Maximum number of features/instances of tile
 
 --geometrycolumn: (optional - default: geom) Geometry column name
 ```
@@ -213,57 +213,10 @@ To Visualize in CesiumJS, add references to:
 
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
-To visualize in MapBox GL JS, add a reference to MapBox3DTiles.js:
-
-```
-<script src="Mapbox3DTiles.js"></script>
-```
-
-and load the tileset:
-
-```
- map.on('style.load', function() {
-     let tileslayerTree = new Mapbox3DTiles.Mapbox3DTilesLayer( { 
-       id: 'tree', 
-       url: 'tileset.json'
-      } );
-      map.addLayer(tileslayerTree, 'waterway-label');
-});
-```
-
-## Queries
-
-Queries used in this tool:
-
-1] Query bounding box of table
-
-```
-postgres=# SELECT st_xmin(box), ST_Ymin(box), ST_Zmin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmax(box) FROM (select ST_3DExtent(st_transform(st_force3d({geometry_column}), {epsg})) AS box from {geometry_table} {q}) as total
-````
-
-2] Count features per tile
-
-```
-postgres=# select count({geometryColumn}) from {geometryTable} where ST_Intersects(st_transform({geometryColumn}, {epsg}), ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, {epsg})) {where}
-```
-
-3] Query instances per tile
-
-```
-postgres=# SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometryTable} where ST_Intersects(st_transform({geometryColumn}, {epsg}), ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, {epsg})) {where}
-```
-
-where:
-
-- {epsg}: 4978 for Cesium format, 3857 for MapBox format
-- {q} option is the optional query parameter.
-- {geometryColumn} column with geometry (default: geom)
-- {geometryTable} input geometry table
-- {from.X}, {from.Y}, {to.X}, {to.Y} envelope of a tile
-
 ## History
 
-2022-08-31: release 2.2 fix skewed bounding volumes
+2022-08-31: release 2.2 renamed parameter 'implicit_tiling_max_features' to 'max_features_per_tile', 
+fix skewed bounding volumes
 
 2022-08-09: release 2.1 use 1 geometric error as input parameter
 
