@@ -3,6 +3,7 @@ using subtree;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Wkx;
 
 namespace i3dm.export
 {
@@ -28,7 +29,7 @@ namespace i3dm.export
             return subtreebytes;
         }
 
-        public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox3D bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg)
+        public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg)
         {
             var where = (o.Query != string.Empty ? $" and {o.Query}" : String.Empty);
 
@@ -40,7 +41,7 @@ namespace i3dm.export
                 t2.Available = false;
                 tiles.Add(t2);
             }
-            else if (numberOfFeatures > o.ImplicitTilingMaxFeatures)
+            else if (numberOfFeatures > o.MaxFeaturesPerTile)
             {
                 // split in quadtree
                 for (var x = 0; x < 2; x++)
@@ -55,7 +56,7 @@ namespace i3dm.export
                         var xend = xstart + dx;
                         var yend = ystart + dy;
 
-                        var bboxQuad = new BoundingBox3D(xstart, ystart, bbox.ZMin, xend, yend, bbox.ZMax);
+                        var bboxQuad = new BoundingBox(xstart, ystart, xend, yend);
 
                         var new_tile = new Tile(tile.Z + 1, tile.X * 2 + x, tile.Y * 2 + y);
                         GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, epsg);
@@ -79,7 +80,7 @@ namespace i3dm.export
             return tiles;
         }
 
-        private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox3D tileBounds, int epsg, string where)
+        private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int epsg, string where)
         {
             var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, o.UseScaleNonUniform);
             var tile = TileHandler.GetTile(instances, o.Format, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);

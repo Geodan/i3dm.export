@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Dapper;
+using i3dm.export.extensions;
 using Npgsql;
 using ShellProgressBar;
 using System;
@@ -34,10 +35,16 @@ namespace i3dm.export
 
                 var conn = new NpgsqlConnection(o.ConnectionString);
                 var epsg = o.Format == Format.Cesium ? 4978 : 3857;
-                var rootBounds = InstancesRepository.GetBoundingBox3DForTable(conn, o.Table, geom_column, epsg, o.Query);
-                var box = rootBounds.GetBox();
+                var bbox_wgs84 = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, o.Query);
+                Console.WriteLine($"Bounding box for table (WGS84): {Math.Round(bbox_wgs84.XMin, 4)}, {Math.Round(bbox_wgs84.YMin, 4)}, {Math.Round(bbox_wgs84.XMax, 4)}, {Math.Round(bbox_wgs84.YMax, 4)}");
 
-                var translation = rootBounds.GetCenter();
+                var heightsArray = o.BoundingVolumeHeights.Split(',');
+                (double min, double max) heights = (double.Parse(heightsArray[0]), double.Parse(heightsArray[1]));
+                Console.WriteLine($"Heights for bounding volume: [{heights.min} m, {heights.max} m] ");
+
+                var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(heights.min, heights.max);
+
+                var center_wgs84 = bbox_wgs84.GetCenter();
 
                 var options = new ProgressBarOptions
                 {
@@ -63,10 +70,10 @@ namespace i3dm.export
                     Directory.CreateDirectory(subtreesDirectory);
                 }
 
-                Console.WriteLine($"Maximum instances per tile: " + o.ImplicitTilingMaxFeatures);
+                Console.WriteLine($"Maximum instances per tile: " + o.MaxFeaturesPerTile);
 
                 var tile = new subtree.Tile(0, 0, 0);
-                var tiles = ImplicitTiling.GenerateTiles(o, conn, rootBounds, tile, new List<subtree.Tile>(), contentDirectory, epsg);
+                var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<subtree.Tile>(), contentDirectory, epsg);
 
                 var mortonIndices = subtree.MortonIndex.GetMortonIndices(tiles);
                 var subtreebytes = ImplicitTiling.GetSubtreeBytes(mortonIndices.tileAvailability, mortonIndices.contentAvailability);
@@ -77,7 +84,7 @@ namespace i3dm.export
                 File.WriteAllBytes(subtreeFile, subtreebytes);
 
                 var subtreeLevels = tiles.Max(t => t.Z) + 1;
-                var tilesetjson = TreeSerializer.ToImplicitTileset(translation, box, o.GeometricError, subtreeLevels, version);
+                var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, subtreeLevels, version);
                 var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
                 Console.WriteLine("SubtreeLevels: " + subtreeLevels);
                 Console.WriteLine("SubdivisionScheme: QUADTREE");

@@ -46,16 +46,16 @@ namespace i3dm.export.Tileset
 
     public class Boundingvolume
     {
-        private double[] _box;
-        public double[] box
+        private double[] _region;
+        public double[] region
         {
             get
             {
-                return this._box;
+                return this._region;
             }
             set
             {
-                _box = value.Select(d => Math.Round(d, 3)).ToArray();
+                _region = value.Select(d => Math.Round(d, 3)).ToArray();
             }
         }
     }
