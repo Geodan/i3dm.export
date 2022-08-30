@@ -27,9 +27,9 @@
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="i3dm.tile" Version="0.5.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Npgsql" Version="6.0.5" />
+    <PackageReference Include="Npgsql" Version="6.0.6" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
-    <PackageReference Include="subtree" Version="1.0.1" />
+    <PackageReference Include="subtree" Version="1.1.1" />
     <PackageReference Include="Wkx" Version="0.5.1" />
   </ItemGroup>
 

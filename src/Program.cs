@@ -68,8 +68,8 @@ namespace i3dm.export
                 var tile = new subtree.Tile(0, 0, 0);
                 var tiles = ImplicitTiling.GenerateTiles(o, conn, rootBounds, tile, new List<subtree.Tile>(), contentDirectory, epsg);
 
-                var mortonIndex = subtree.MortonIndex.GetMortonIndex(tiles);
-                var subtreebytes = ImplicitTiling.GetSubtreeBytes(mortonIndex);
+                var mortonIndices = subtree.MortonIndex.GetMortonIndices(tiles);
+                var subtreebytes = ImplicitTiling.GetSubtreeBytes(mortonIndices.tileAvailability, mortonIndices.contentAvailability);
 
                 var subtreeFile = $"{subtreesDirectory}{Path.AltDirectorySeparatorChar}0_0_0.subtree";
                 Console.WriteLine();

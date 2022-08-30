@@ -8,11 +8,12 @@ namespace i3dm.export
 {
     public static class ImplicitTiling
     {
-        public static byte[] GetSubtreeBytes(string contentAvailability, string subtreeAvailability = null)
+        public static byte[] GetSubtreeBytes(string tileAvailability, string contentAvailability, string subtreeAvailability = null)
         {
             var subtree_root = new Subtree();
-            // todo: use other constant for tile availability
-            subtree_root.TileAvailabiltyConstant = 1;
+            var tileavailiability = BitArrayCreator.FromString(tileAvailability);
+
+            subtree_root.TileAvailability = tileavailiability;
 
             var s0_root = BitArrayCreator.FromString(contentAvailability);
             subtree_root.ContentAvailability = s0_root;
@@ -26,7 +27,6 @@ namespace i3dm.export
             var subtreebytes = SubtreeWriter.ToBytes(subtree_root);
             return subtreebytes;
         }
-
 
         public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox3D bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg)
         {
