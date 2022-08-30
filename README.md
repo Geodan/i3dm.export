@@ -263,6 +263,8 @@ where:
 
 ## History
 
+2022-08-31: release 2.2 fix skewed bounding volumes
+
 2022-08-09: release 2.1 use 1 geometric error as input parameter
 
 2022-08-08: release 2.0 adding 3D Tiles 1.1 Implicit Tiling. 
