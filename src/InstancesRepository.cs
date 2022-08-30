@@ -16,7 +16,9 @@ namespace i3dm.export
             var toX = bbox.XMax.ToString(CultureInfo.InvariantCulture);
             var toY = bbox.YMax.ToString(CultureInfo.InvariantCulture);
 
-            var sql = $"select count({geometryColumn}) from {geometryTable} where ST_Intersects({geometryColumn}, ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 4326)) {where}";
+            string whereStatement = GetWhere(geometryColumn, where, epsg, fromX, fromY, toX, toY);
+
+            var sql = $"select count({geometryColumn}) from {geometryTable} where {whereStatement}";
             conn.Open();
             var cmd = new NpgsqlCommand(sql, conn);
             var reader = cmd.ExecuteReader();
@@ -24,6 +26,11 @@ namespace i3dm.export
             var count = reader.GetInt32(0);
             conn.Close();
             return count;
+        }
+
+        private static string GetWhere(string geometryColumn, string where, int epsg, string fromX, string fromY, string toX, string toY)
+        {
+            return $"ST_Intersects(st_transform({geometryColumn},{epsg}), st_transform(ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 4326), {epsg})) {where}";
         }
 
         public static List<Instance> GetInstances(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, int epsg, string where = "", bool useScaleNonUniform = false)
@@ -35,7 +42,7 @@ namespace i3dm.export
 
             var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
             conn.Open();
-            var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometryTable} where ST_Intersects({geometryColumn}, ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 4326)) {where}");
+            var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometryTable} where {GetWhere(geometryColumn, where, epsg, fromX, fromY, toX, toY)}");
             var res = conn.Query<Instance>(sql).AsList();
             conn.Close();
             return res;
