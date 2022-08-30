@@ -39,7 +39,7 @@ namespace i3dm.export
         [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
         public string Query { get; set; }
 
-        [Option("max_features_per_tile", Required = false, Default = 30000, HelpText = "Maximum features per tile")]
+        [Option("max_features_per_tile", Required = false, Default = 1000, HelpText = "Maximum features per tile")]
         public int MaxFeaturesPerTile { get; set; }
 
         [Option("boundingvolume_heights", Required = false, Default = "0,50", HelpText = "Tile boundingVolume heights (min, max) in meters")]

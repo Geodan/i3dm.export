@@ -55,7 +55,7 @@ namespace i3dm.export.Tileset
             }
             set
             {
-                _region = value.Select(d => Math.Round(d, 3)).ToArray();
+                _region = value.Select(d => Math.Round(d, 5)).ToArray();
             }
         }
     }
