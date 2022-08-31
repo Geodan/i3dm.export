@@ -6,7 +6,7 @@
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
-	<Version>2.1</Version>
+	<Version>2.2</Version>
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
@@ -17,8 +17,8 @@
 	<Authors>Bert Temme</Authors>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	<AssemblyVersion>2.1</AssemblyVersion>
-	<FileVersion>2.1</FileVersion>
+	<AssemblyVersion>2.2</AssemblyVersion>
+	<FileVersion>2.2</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,9 +27,9 @@
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="i3dm.tile" Version="0.5.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Npgsql" Version="6.0.5" />
+    <PackageReference Include="Npgsql" Version="6.0.6" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
-    <PackageReference Include="subtree" Version="1.0.1" />
+    <PackageReference Include="subtree" Version="1.1.1" />
     <PackageReference Include="Wkx" Version="0.5.1" />
   </ItemGroup>
 
