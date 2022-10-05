@@ -64,7 +64,7 @@ Input database table contains following columns:
 
 . tags - json with instance attribute information;
 
-. model - string with name of binary glTF model per instance. Should be valid path on tool runtime or valid uri on display in client; 
+. model - byte[] or string column with glb or name of binary glTF model per instance. Should be valid path on tool runtime or valid uri on display in client; 
 
 . (optional) scale_non_uniform - double precision[3] - for scale per instance in 3 directions.
 
