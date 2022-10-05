@@ -28,6 +28,7 @@ namespace i3dm.export
 
                 var modelInstances = instances.Where(s => s.Model == model).ToList();
                 CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
+                
                 var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition, UseExternalModel, UseRtcCenter, UseScaleNonUniform);
                 var bytesI3dm = I3dmWriter.Write(i3dm);
                 tiles.Add(bytesI3dm);
@@ -69,17 +70,25 @@ namespace i3dm.export
                 new Vector3((float)p.X, (float)p.Y, (float)p.Z.GetValueOrDefault());
             return vec;
         }
-        private static I3dm.Tile.I3dm GetI3dm(string model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
+        private static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
         {
-            I3dm.Tile.I3dm i3dm;
-            if (!UseExternalModel)
+            I3dm.Tile.I3dm i3dm=null;
+
+            if(model is string)
             {
-                var glbBytes = File.ReadAllBytes(model);
-                i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
+                if (!UseExternalModel)
+                {
+                    var glbBytes = File.ReadAllBytes((string)model);
+                    i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
+                }
+                else
+                {
+                    i3dm = new I3dm.Tile.I3dm(positions, (string)model);
+                }
             }
-            else
+            if (model is byte[])
             {
-                i3dm = new I3dm.Tile.I3dm(positions, model);
+                i3dm = new I3dm.Tile.I3dm(positions, (byte[])model);
             }
 
             if (!UseScaleNonUniform)

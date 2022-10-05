@@ -15,6 +15,6 @@ namespace i3dm.export
 
         public JArray Tags { get; set; }
 
-        public string Model { get; set; }
+        public object Model { get; set; }
     }
 }
