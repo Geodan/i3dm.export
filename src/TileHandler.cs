@@ -26,7 +26,7 @@ namespace i3dm.export
                 var normalRights = new List<Vector3>();
                 var tags = new List<JArray>();
 
-                var modelInstances = instances.Where(s => s.Model == model).ToList();
+                var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
                 CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
                 
                 var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition, UseExternalModel, UseRtcCenter, UseScaleNonUniform);

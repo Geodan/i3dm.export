@@ -215,6 +215,8 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
+2022-10-05: release 2.3.1 bug fix for showing all instances per tile
+
 2022-10-05: release 2.3 add support for byte[] type column (in addition to string) for glb's from database
 
 2022-08-31: release 2.2 renamed parameter 'implicit_tiling_max_features' to 'max_features_per_tile', 
