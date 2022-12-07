@@ -96,6 +96,8 @@ Tool parameters:
 --max_features_per_tile (optional - default 1000). Maximum number of features/instances of tile
 
 --geometrycolumn: (optional - default: geom) Geometry column name
+
+--boundingvolume_heights (option - default: 0,50) - Tile boundingVolume heights (min, max) in meters
 ```
 
 ## Sample running
