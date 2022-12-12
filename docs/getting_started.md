@@ -15,7 +15,7 @@ Some open source tooling is used in this tutorial:
 
 - psql https://www.postgresql.org/docs/9.2/app-psql.html
 
-- .NET 5.0 https://dotnet.microsoft.com/download/dotnet/5.0
+- .NET 6.0 https://dotnet.microsoft.com/download/dotnet/6.0
 
 - Python 3 https://www.python.org/
 
