@@ -191,6 +191,14 @@ Fill column:
 postgres=# update traffic_signs_instances set scale_non_uniform = '{10.0, 20.0, 30.0}'
 ```
 
+## Spatial index
+
+When using large tables create a spatial index on the geometry column:
+
+```
+psql> CREATE INDEX ON m_table USING gist(geom)
+```
+
 ## Developing
 
 Run from source code:
@@ -216,6 +224,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2023-01-30: release 2.3.2 improve spatial index performance 
 
 2022-10-05: release 2.3.1 bug fix for showing all instances per tile
 
