@@ -33,7 +33,7 @@ namespace i3dm.export
         {
             var where = (o.Query != string.Empty ? $" and {o.Query}" : String.Empty);
 
-            var numberOfFeatures = InstancesRepository.CountFeaturesInBox(conn, o.Table, o.GeometryColumn, bbox, where, epsg);
+            var numberOfFeatures = InstancesRepository.CountFeaturesInBox(conn, o.Table, o.GeometryColumn, bbox, where);
 
             if (numberOfFeatures == 0)
             {
