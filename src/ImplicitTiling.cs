@@ -43,6 +43,9 @@ namespace i3dm.export
             }
             else if (numberOfFeatures > o.MaxFeaturesPerTile)
             {
+                tile.Available = false;
+                tiles.Add(tile);
+
                 // split in quadtree
                 for (var x = 0; x < 2; x++)
                 {

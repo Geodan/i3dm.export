@@ -225,6 +225,8 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
+2023-02-21: release 2.4 split root subtree file in multiple subtree files
+
 2023-01-30: release 2.3.2 improve spatial index performance 
 
 2022-10-05: release 2.3.1 bug fix for showing all instances per tile

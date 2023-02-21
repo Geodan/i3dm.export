@@ -18,6 +18,7 @@ namespace i3dm.export
                 var values = GetValues(tags, prop);
                 // todo: check types, do not always serialize to string
                 sb.Append(string.Join(",", values.Select(x => string.Format("\"{0}\"", x))));
+
                 sb.Append("]");
 
                 if (prop != properties.Last())

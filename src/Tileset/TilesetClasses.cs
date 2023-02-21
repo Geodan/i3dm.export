@@ -6,6 +6,7 @@ namespace i3dm.export.Tileset
 {
     public class TileSet
     {
+        public double geometricError { get; set; }
         public Root root { get; set; }
         public Asset asset { get; set; }
     }
@@ -30,6 +31,8 @@ namespace i3dm.export.Tileset
 
     public class Implicittiling
     {
+        public int availableLevels { get; set; }
+
         public string subdivisionScheme { get; set; }
         public int subtreeLevels { get; set; }
         public Subtrees subtrees { get; set; }

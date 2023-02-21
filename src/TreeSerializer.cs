@@ -6,17 +6,18 @@ namespace i3dm.export
 {
     public static class TreeSerializer
     {
-        public static string ToImplicitTileset(double[] box, double geometricError, int subtreeLevels, Version version)
+        public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version)
         {
             var tileset = new TileSet
             {
-                asset = new Asset() { version = "1.1", generator = $"i3dm.export {version}" }
+                asset = new Asset() { version = "1.1", generator = $"i3dm.export {version}" },
+                geometricError = geometricError
             };
             var root = GetRoot(geometricError, box, "ADD");
             var content = new Content() { uri = "content/{level}_{x}_{y}.cmpt" };
             root.content = content;
             var subtrees = new Subtrees() { uri = "subtrees/{level}_{x}_{y}.subtree" };
-            root.implicitTiling = new Implicittiling() { subdivisionScheme = "QUADTREE", subtreeLevels = subtreeLevels, subtrees = subtrees };
+            root.implicitTiling = new Implicittiling() { subdivisionScheme = "QUADTREE", availableLevels = availableLevels, subtreeLevels = subtreeLevels, subtrees = subtrees };
             tileset.root = root;
             var json = JsonConvert.SerializeObject(tileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
             return json;

@@ -3,6 +3,7 @@ using Dapper;
 using i3dm.export.extensions;
 using Npgsql;
 using ShellProgressBar;
+using subtree;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -72,19 +73,23 @@ namespace i3dm.export
 
                 Console.WriteLine($"Maximum instances per tile: " + o.MaxFeaturesPerTile);
 
-                var tile = new subtree.Tile(0, 0, 0);
-                var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<subtree.Tile>(), contentDirectory, epsg);
+                var tile = new Tile(0, 0, 0);
+                var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg);
 
-                var mortonIndices = subtree.MortonIndex.GetMortonIndices(tiles);
-                var subtreebytes = ImplicitTiling.GetSubtreeBytes(mortonIndices.tileAvailability, mortonIndices.contentAvailability);
 
-                var subtreeFile = $"{subtreesDirectory}{Path.AltDirectorySeparatorChar}0_0_0.subtree";
-                Console.WriteLine();
-                Console.WriteLine($"Writing {subtreeFile}...");
-                File.WriteAllBytes(subtreeFile, subtreebytes);
+                var subtreeFiles = SubtreeCreator.GenerateSubtreefiles(tiles);
+                Console.WriteLine($"Writing {subtreeFiles.Count} subtree files...");
+                foreach (var s in subtreeFiles)
+                {
+                    var t = s.Key;
+                    var subtreefile = $"{subtreesDirectory}{Path.AltDirectorySeparatorChar}{t.Z}_{t.X}_{t.Y}.subtree";
+                    File.WriteAllBytes(subtreefile, s.Value);
+                }
 
-                var subtreeLevels = tiles.Max(t => t.Z) + 1;
-                var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, subtreeLevels, version);
+                var subtreeLevels = ((Tile)subtreeFiles.ElementAt(1).Key).Z;
+                var availableLevels = tiles.Max(t => t.Z) + 1;
+
+                var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version);
                 var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
                 Console.WriteLine("SubtreeLevels: " + subtreeLevels);
                 Console.WriteLine("SubdivisionScheme: QUADTREE");
