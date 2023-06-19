@@ -76,7 +76,7 @@ namespace i3dm.export
                 var tile = new Tile(0, 0, 0);
                 var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg);
 
-
+                Console.WriteLine();
                 var subtreeFiles = SubtreeCreator.GenerateSubtreefiles(tiles);
                 Console.WriteLine($"Writing {subtreeFiles.Count} subtree files...");
                 foreach (var s in subtreeFiles)
