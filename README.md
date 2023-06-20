@@ -214,7 +214,7 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
-2023-06-20: release 2.4.2 fix for generating 1 tile
+2023-06-20: release 2.4.3 fix for generating 1 tile
 
 2023-02-21: release 2.4.1 fix version number
 

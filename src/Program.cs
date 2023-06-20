@@ -87,7 +87,7 @@ namespace i3dm.export
                 }
                 Console.WriteLine($"Subtree tiles written: {subtreeFiles.Count}");
 
-                var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 1;
+                var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 2;
                 var availableLevels = tiles.Max(t => t.Z) + 1;
 
                 var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version);
