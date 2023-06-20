@@ -38,19 +38,9 @@ $ dotnet tool update -g i3dm.export
 
 ## Live demo 3D instanced tiles
 
-30k trees in instanced tiles (1000m by 1000m) with random scales/rotations and batch information:
-
-https://bertt.github.io/mapbox_3dtiles_samples/samples/instanced/
-
-
 Trees sample with implicit tiling:
 
-Cesium: https://geodan.github.io/i3dm.export/samples/traffic_lights/cesium/
-
-Boxes sample:
-
-MapBox: https://geodan.github.io/i3dm.export/samples/traffic_lights/mapbox/#16.79/52.367926/4.89836/0/45
-
+https://geodan.github.io/i3dm.export/samples/traffic_lights/cesium/
 
 ## Input database table
 
@@ -224,6 +214,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2023-06-20: release 2.4.2 fix for generating 1 tile
 
 2023-02-21: release 2.4.1 fix version number
 

@@ -75,18 +75,19 @@ namespace i3dm.export
 
                 var tile = new Tile(0, 0, 0);
                 var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg);
-
                 Console.WriteLine();
+                Console.WriteLine($"Tiles written: {tiles.Count}");
+
                 var subtreeFiles = SubtreeCreator.GenerateSubtreefiles(tiles);
-                Console.WriteLine($"Writing {subtreeFiles.Count} subtree files...");
                 foreach (var s in subtreeFiles)
                 {
                     var t = s.Key;
                     var subtreefile = $"{subtreesDirectory}{Path.AltDirectorySeparatorChar}{t.Z}_{t.X}_{t.Y}.subtree";
                     File.WriteAllBytes(subtreefile, s.Value);
                 }
+                Console.WriteLine($"Subtree tiles written: {subtreeFiles.Count}");
 
-                var subtreeLevels = ((Tile)subtreeFiles.ElementAt(1).Key).Z;
+                var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 1;
                 var availableLevels = tiles.Max(t => t.Z) + 1;
 
                 var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version);
@@ -97,9 +98,7 @@ namespace i3dm.export
                 Console.WriteLine($"Geometric error: {o.GeometricError}");
                 Console.WriteLine($"Writing {file}...");
                 File.WriteAllText(file, tilesetjson);
-
-                Console.WriteLine();
-                Console.WriteLine("Tiles created: " + tiles.Count);
+                Console.WriteLine("End of process");
             });
         }
     }
