@@ -72,7 +72,7 @@ Tool parameters:
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
--r: (optional - Default: false) Use RTC_CENTER for high precision relative positions
+-r: (optional - Default: true) Use RTC_CENTER for high precision relative positions
 
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
@@ -213,6 +213,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2023-09-27: release 2.4.4 change default -r (relative positions) from false to true
 
 2023-06-20: release 2.4.3 fix for generating 1 tile
 

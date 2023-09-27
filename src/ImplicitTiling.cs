@@ -86,7 +86,7 @@ namespace i3dm.export
         private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int epsg, string where)
         {
             var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, o.UseScaleNonUniform);
-            var tile = TileHandler.GetTile(instances, o.Format, o.UseExternalModel, o.UseRtcCenter, o.UseScaleNonUniform);
+            var tile = TileHandler.GetTile(instances, o.Format, o.UseExternalModel, (bool)o.UseRtcCenter, o.UseScaleNonUniform);
             return tile;
         }
     }
