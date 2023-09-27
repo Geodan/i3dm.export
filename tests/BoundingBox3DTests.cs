@@ -1,8 +1,7 @@
 ﻿using NUnit.Framework;
 
-namespace i3dm.export.tests
+namespace i3dm.export.tests;
+
+public class BoundingBox3DTests
 {
-    public class BoundingBox3DTests
-    {
-    }
 }
