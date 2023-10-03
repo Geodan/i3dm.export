@@ -24,7 +24,7 @@
   <ItemGroup>
     <PackageReference Include="cmpt-tile" Version="0.2.4" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Dapper" Version="2.0.151" />
+    <PackageReference Include="Dapper" Version="2.1.4" />
     <PackageReference Include="i3dm.tile" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql" Version="7.0.6" />
