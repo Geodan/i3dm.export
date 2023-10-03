@@ -33,6 +33,7 @@ class Program
             Console.WriteLine("Tool: I3dm.export");
             Console.WriteLine("Version: " + version);
             Console.WriteLine($"Exporting i3dm's from {o.Table}...");
+            Console.WriteLine($"Use GPU instancing: {o.UseGpuInstancing}");
 
             var conn = new NpgsqlConnection(o.ConnectionString);
             var epsg = o.Format == Format.Cesium ? 4978 : 3857;
