@@ -6,7 +6,7 @@ namespace i3dm.export;
 
 public static class TreeSerializer
 {
-    public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version)
+    public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version, bool useGpuInstancing = false)
     {
         var tileset = new TileSet
         {
@@ -14,7 +14,9 @@ public static class TreeSerializer
             geometricError = geometricError
         };
         var root = GetRoot(geometricError, box, "ADD");
-        var content = new Content() { uri = "content/{level}_{x}_{y}.cmpt" };
+        var extension = useGpuInstancing ? "glb" : "i3dm";
+
+        var content = new Content() { uri = "content/{level}_{x}_{y}." + extension };
         root.content = content;
         var subtrees = new Subtrees() { uri = "subtrees/{level}_{x}_{y}.subtree" };
         root.implicitTiling = new Implicittiling() { subdivisionScheme = "QUADTREE", availableLevels = availableLevels, subtreeLevels = subtreeLevels, subtrees = subtrees };

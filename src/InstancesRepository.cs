@@ -43,6 +43,7 @@ public static class InstancesRepository
         var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
         conn.Open();
         var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY)}");
+        // var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform({geometryColumn}, {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY)}");
         var res = conn.Query<Instance>(sql).AsList();
         conn.Close();
         return res;

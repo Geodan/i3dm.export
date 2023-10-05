@@ -32,7 +32,7 @@ class Program
 
             Console.WriteLine("Tool: I3dm.export");
             Console.WriteLine("Version: " + version);
-            Console.WriteLine($"Exporting i3dm's from {o.Table}...");
+            Console.WriteLine($"Exporting instances from {o.Table}...");
             Console.WriteLine($"Use GPU instancing: {o.UseGpuInstancing}");
 
             var conn = new NpgsqlConnection(o.ConnectionString);
@@ -75,7 +75,7 @@ class Program
             Console.WriteLine($"Maximum instances per tile: " + o.MaxFeaturesPerTile);
 
             var tile = new Tile(0, 0, 0);
-            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg);
+            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, o.UseGpuInstancing);
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");
 
@@ -91,7 +91,7 @@ class Program
             var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 2;
             var availableLevels = tiles.Max(t => t.Z) + 1;
 
-            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version);
+            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, o.UseGpuInstancing);
             var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
             Console.WriteLine("SubtreeLevels: " + subtreeLevels);
             Console.WriteLine("SubdivisionScheme: QUADTREE");

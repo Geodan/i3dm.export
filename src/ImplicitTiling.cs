@@ -29,7 +29,7 @@ public static class ImplicitTiling
         return subtreebytes;
     }
 
-    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg)
+    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg, bool useGpuInstancing = false)
     {
         var where = (o.Query != string.Empty ? $" and {o.Query}" : String.Empty);
 
@@ -62,15 +62,15 @@ public static class ImplicitTiling
                     var bboxQuad = new BoundingBox(xstart, ystart, xend, yend);
 
                     var new_tile = new Tile(tile.Z + 1, tile.X * 2 + x, tile.Y * 2 + y);
-                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, epsg);
+                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, epsg, useGpuInstancing);
                 }
             }
         }
         else
         {
-            var bytes = CreateTile(o, conn, bbox, epsg, where);
-
-            var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.cmpt";
+            var bytes = CreateTile(o, conn, bbox, epsg, where, useGpuInstancing);
+            var extension = useGpuInstancing? "glb": "cmpt";
+            var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.{extension}";
             Console.Write($"\rCreating tile: {file}  ");
 
             File.WriteAllBytes(file, bytes);
@@ -83,10 +83,10 @@ public static class ImplicitTiling
         return tiles;
     }
 
-    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int epsg, string where)
+    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int epsg, string where, bool useGpuInstancing = false)
     {
         var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, o.UseScaleNonUniform);
-        var tile = TileHandler.GetTile(instances, o.Format, o.UseExternalModel, (bool)o.UseRtcCenter, o.UseScaleNonUniform);
+        var tile = TileHandler.GetTile(instances, o.Format, o.UseExternalModel, (bool)o.UseRtcCenter, o.UseScaleNonUniform, useGpuInstancing);
         return tile;
     }
 }
