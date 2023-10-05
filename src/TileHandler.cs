@@ -1,8 +1,11 @@
 ﻿using Cmpt.Tile;
+using i3dm.export.Cesium;
 using I3dm.Tile;
 using Newtonsoft.Json.Linq;
 using SharpGLTF.Scenes;
 using SharpGLTF.Schema2;
+using SharpGLTF.Transforms;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +16,7 @@ namespace i3dm.export;
 
 public static class TileHandler
 {
-    public static byte[] GetTile(List<Instance> instances, Format format, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false, bool useGpuInstancing = false)
+    public static byte[] GetTile(List<Instance> instances, Format format, Vector3 translate, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false, bool useGpuInstancing = false)
     {
         var firstPosition = (Point)instances[0].Position;
         var uniqueModels = instances.Select(s => s.Model).Distinct();
@@ -29,15 +32,15 @@ public static class TileHandler
             var tags = new List<JArray>();
 
             var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
-            CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
             
             if (useGpuInstancing)
             {
-                var bytesGlb = GetGpuGlb(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition, UseExternalModel, UseRtcCenter);
+                var bytesGlb = GetGpuGlb(model, instances, translate);
                 tiles.Add(bytesGlb);
             }
             else
             {
+                CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
                 var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition, UseExternalModel, UseRtcCenter, UseScaleNonUniform);
                 var bytesI3dm = I3dmWriter.Write(i3dm);
                 tiles.Add(bytesI3dm);
@@ -82,11 +85,34 @@ public static class TileHandler
         return vec;
     }
 
-    private static byte[] GetGpuGlb(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition, bool UseExternalModel = false, bool UseRtcCenter = false)
+    private static byte[] GetGpuGlb(object model, List<Instance> positions, Vector3 translate)
     {
         var modelRoot = ModelRoot.Load((string)model);
         var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder();
         var sceneBuilder = new SceneBuilder();
+        var random = new Random();
+
+        foreach (var p in positions)
+        {
+            var point = (Point)p.Position;
+
+            var rad = Radian.ToRadius(random.Next(0, 360));
+
+            var enu = Transforms.EastNorthUpToFixedFrame(new Vector3((float)point.X, (float)point.Y, (float)point.Z));
+            var quaternion = Transforms.GetQuaterion(enu, rad);
+
+            var p1 = new Point((double)point.X - translate.X, (double)point.Z - translate.Z, ((double)point.Y - translate.Y) * -1);
+
+            var scaleRandom = random.Next(1, 5);
+            var scale = new Vector3(scaleRandom, scaleRandom, scaleRandom);
+
+            var translation = new Vector3((float)p1.X, (float)p1.Y + 5f * scaleRandom, (float)p1.Z);
+            sceneBuilder.AddRigidMesh(meshBuilder, new AffineTransform(
+                scale,
+                quaternion,
+                translation));
+        }
+
         var gltf = sceneBuilder.ToGltf2(SceneBuilderSchema2Settings.WithGpuInstancing);
         var bytes = gltf.WriteGLB().Array;
         return bytes;

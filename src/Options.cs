@@ -47,7 +47,7 @@ public class Options
 
 
     [Option("use_gpu_instancing", Required = false, Default = false, HelpText = "Use EXT_mesh_gpu_instancing instead of I3dm's")]
-    public bool UseGpuInstancing { get; set; }
+    public bool? UseGpuInstancing { get; set; }
 }
 
 

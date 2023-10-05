@@ -23,7 +23,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dmBytes = cmpt.Tiles.First();
         var i3dm = I3dmReader.Read(new MemoryStream(i3dmBytes));
@@ -32,7 +32,7 @@ public class TileHandlerTests
         // assert
         Assert.IsTrue(tile.Length > 0);
         Assert.IsTrue(i3dm.Positions.Count == 1);
-        Assert.IsTrue(i3dm.Positions[0] == new System.Numerics.Vector3(1, 2, 0));
+        Assert.IsTrue(i3dm.Positions[0] == new Vector3(1, 2, 0));
     }
 
     [Test]
@@ -59,7 +59,7 @@ public class TileHandlerTests
         instances.Add(instance3);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero, UseExternalModel: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
 
         // assert
@@ -89,7 +89,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseScaleNonUniform: true);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero, UseScaleNonUniform: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -111,7 +111,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero, UseExternalModel: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -138,7 +138,7 @@ public class TileHandlerTests
         instances.Add(instance1);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseRtcCenter: true);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero, UseRtcCenter: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -163,7 +163,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 

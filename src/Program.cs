@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Dapper;
+using i3dm.export.Cesium;
 using i3dm.export.extensions;
 using Npgsql;
 using ShellProgressBar;
@@ -47,6 +48,7 @@ class Program
             var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(heights.min, heights.max);
 
             var center_wgs84 = bbox_wgs84.GetCenter();
+            var translate = SpatialConverter.GeodeticToEcef((double)center_wgs84.X, (double)center_wgs84.Y, (double)center_wgs84.Z);
 
             var options = new ProgressBarOptions
             {
@@ -75,7 +77,7 @@ class Program
             Console.WriteLine($"Maximum instances per tile: " + o.MaxFeaturesPerTile);
 
             var tile = new Tile(0, 0, 0);
-            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, o.UseGpuInstancing);
+            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, translate, (bool)o.UseGpuInstancing);
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");
 
@@ -91,7 +93,7 @@ class Program
             var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 2;
             var availableLevels = tiles.Max(t => t.Z) + 1;
 
-            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, o.UseGpuInstancing);
+            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, translate, (bool)o.UseGpuInstancing);
             var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
             Console.WriteLine("SubtreeLevels: " + subtreeLevels);
             Console.WriteLine("SubdivisionScheme: QUADTREE");
