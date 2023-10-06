@@ -118,15 +118,7 @@ Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . The co
 
 Starting release 2.0, tiles are generated according to the 3D Tiles 1.1 Implicit Tiling technique. Tiles are generated in a quadtree, maximum number of features/instances is defined by parameter 'implicit_tiling_max_features'. 
 
-Content tiles will be generated in output folder 'content', subtree file '0_0_0.subtree' will be created in folder 'subtrees'. In the root output folder file 'tileset.json' will be created.
-
-Limitation: 
-
-- 1 subtree file will be created (0_0_0.subtree), there is no support for tree of subtree files (yet);
-
-- there is no support (yet) for Implicit Tiling in the MapBox client, use 
-a 1.X version of this tool to workaround this.
-
+Content tiles will be generated in output folder 'content', subtree files will be created in folder 'subtrees'. In the root output folder file 'tileset.json' will be created.
 
 ## Instance batch info
 
