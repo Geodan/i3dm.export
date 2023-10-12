@@ -48,22 +48,28 @@ public static class InstancesRepository
         return res;
     }
 
-    public static BoundingBox GetBoundingBoxForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, string query = "")
+    public static (BoundingBox bbox, double zmin, double zmax) GetBoundingBoxForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, string query = "")
     {
         conn.Open();
         var q = string.IsNullOrEmpty(query) ? "" : $"where {query}";
-        var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Xmax(box), ST_Ymax(box) FROM (select st_extent({geometry_column}) AS box from {geometry_table} {q}) as total";
-        
+
+        var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmin(box), ST_Zmax(box) FROM (select st_3dextent({geometry_column}) AS box from {geometry_table} {q}) as total";
+
         var cmd = new NpgsqlCommand(sql, conn);
+
         var reader = cmd.ExecuteReader();
         reader.Read();
         var xmin = reader.GetDouble(0);
         var ymin = reader.GetDouble(1);
         var xmax = reader.GetDouble(2);
         var ymax = reader.GetDouble(3);
+        var zmin = reader.GetDouble(4);
+        var zmax = reader.GetDouble(5);
+
         reader.Close();
         conn.Close();
-        return new BoundingBox(xmin, ymin, xmax, ymax);
+        var bbox = new BoundingBox(xmin, ymin, xmax, ymax);
+        return (bbox, zmin, zmax);
     }
 
     private static string ToInvariantCulture(double value) {
