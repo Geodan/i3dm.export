@@ -9,9 +9,10 @@ The 3D tiles created by this tool are tested in Cesium JS.
 
 MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles) is NOT supported at the moment.
 
-Sample of trees in Cesium viewer using instanced (i3dm) and composite (cmpt) 3D Tiles
+Sample of trees in Cesium viewer using instanced 3D Tiles in Lyon:
 
-![Cesium trees](trees.png)
+![image](https://github.com/Geodan/i3dm.export/assets/538812/f67c6126-64be-42a9-9ee5-8f64c452c4aa)
+
 
 For instanced 3D Model (i3dm) specs see https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel
 
