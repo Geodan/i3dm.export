@@ -205,6 +205,8 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
+2023-09-27: release 2.4.5: Get boundingvolume z from input table + option boundingvolume_heights removed
+
 2023-09-27: release 2.4.4 change default -r (relative positions) from false to true
 
 2023-06-20: release 2.4.3 fix for generating 1 tile
