@@ -36,14 +36,16 @@ class Program
 
             var conn = new NpgsqlConnection(o.ConnectionString);
             var epsg = o.Format == Format.Cesium ? 4978 : 3857;
-            var bbox_wgs84 = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, o.Query);
+            var bbox = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, o.Query);
+
+            var bbox_wgs84 = bbox.bbox;
+            var zmin = bbox.zmin;
+            var zmax = bbox.zmax;
+
             Console.WriteLine($"Bounding box for table (WGS84): {Math.Round(bbox_wgs84.XMin, 4)}, {Math.Round(bbox_wgs84.YMin, 4)}, {Math.Round(bbox_wgs84.XMax, 4)}, {Math.Round(bbox_wgs84.YMax, 4)}");
+            Console.WriteLine($"Vertical for table (meters): {zmin}, {zmax}");
 
-            var heightsArray = o.BoundingVolumeHeights.Split(',');
-            (double min, double max) heights = (double.Parse(heightsArray[0]), double.Parse(heightsArray[1]));
-            Console.WriteLine($"Heights for bounding volume: [{heights.min} m, {heights.max} m] ");
-
-            var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(heights.min, heights.max);
+            var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(zmin, zmax);
 
             var center_wgs84 = bbox_wgs84.GetCenter();
 
