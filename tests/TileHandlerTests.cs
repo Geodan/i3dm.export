@@ -12,6 +12,32 @@ namespace i3dm.export.tests;
 public class TileHandlerTests
 {
     [Test]
+    public void GetGpuTileTest()
+    {
+        // arrange
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "box.glb";
+        instances.Add(instance);
+
+        // act
+        var tile = TileHandler.GetTile(instances, Format.Cesium, Vector3.Zero,useGpuInstancing:true);
+
+        var fileName = Path.Combine(TestContext.CurrentContext.WorkDirectory, "ams_building_multiple_colors.glb");
+        File.WriteAllBytes(fileName, tile);
+
+        var model = SharpGLTF.Schema2.ModelRoot.Load(fileName);
+        
+        // assert
+        // todo: can we read the instance positions from the glb?
+        Assert.IsTrue(tile.Length > 0);
+    }
+
+
+
+    [Test]
     public void GetTileTest()
     {
         // arrange

@@ -96,11 +96,12 @@ public static class TileHandler
         {
             var point = (Point)p.Position;
 
-            var rad = Radian.ToRadius(random.Next(0, 360));
+            var rad = Radian.ToRadius(p.Rotation);
 
             var enu = Transforms.EastNorthUpToFixedFrame(new Vector3((float)point.X, (float)point.Y, (float)point.Z));
             var quaternion = Transforms.GetQuaterion(enu, rad);
 
+            // here we swap the y and z axis and invert the y axis
             var p1 = new Point((double)point.X - translate.X, (double)point.Z - translate.Z, ((double)point.Y - translate.Y) * -1);
 
             var scale = UseScaleNonUniform ? 
