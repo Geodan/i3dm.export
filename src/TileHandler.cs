@@ -35,7 +35,7 @@ public static class TileHandler
             
             if (useGpuInstancing)
             {
-                var bytesGlb = GetGpuGlb(model, instances, translate);
+                var bytesGlb = GetGpuGlb(model, instances, translate, UseScaleNonUniform);
                 tiles.Add(bytesGlb);
             }
             else
@@ -85,7 +85,7 @@ public static class TileHandler
         return vec;
     }
 
-    private static byte[] GetGpuGlb(object model, List<Instance> positions, Vector3 translate)
+    private static byte[] GetGpuGlb(object model, List<Instance> positions, Vector3 translate, bool UseScaleNonUniform)
     {
         var modelRoot = ModelRoot.Load((string)model);
         var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder();
@@ -103,7 +103,9 @@ public static class TileHandler
 
             var p1 = new Point((double)point.X - translate.X, (double)point.Z - translate.Z, ((double)point.Y - translate.Y) * -1);
 
-            var scale = new Vector3(1, 1, 1);
+            var scale = UseScaleNonUniform ? 
+                new Vector3((float)p.ScaleNonUniform[0], (float)p.ScaleNonUniform[1], (float)p.ScaleNonUniform[2]):
+                new Vector3((float)p.Scale, (float)p.Scale, (float)p.Scale);            
 
             var translation = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
             sceneBuilder.AddRigidMesh(meshBuilder, new AffineTransform(
