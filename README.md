@@ -86,6 +86,8 @@ Tool parameters:
 --max_features_per_tile (optional - default 1000). Maximum number of features/instances of tile
 
 --geometrycolumn: (optional - default: geom) Geometry column name
+
+--use_gpu_instancing (optional - default false) Use GPU instancing (only for Cesium)
 ```
 
 ## Sample running
