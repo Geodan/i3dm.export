@@ -9,9 +9,10 @@ The 3D tiles created by this tool are tested in Cesium JS.
 
 MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles) is NOT supported at the moment.
 
-Sample of trees in Cesium viewer using instanced (i3dm) and composite (cmpt) 3D Tiles
+Sample of trees in Cesium viewer using instanced 3D Tiles in Lyon:
 
-![Cesium trees](trees.png)
+![image](https://github.com/Geodan/i3dm.export/assets/538812/f67c6126-64be-42a9-9ee5-8f64c452c4aa)
+
 
 For instanced 3D Model (i3dm) specs see https://github.com/CesiumGS/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel
 
@@ -85,8 +86,6 @@ Tool parameters:
 --max_features_per_tile (optional - default 1000). Maximum number of features/instances of tile
 
 --geometrycolumn: (optional - default: geom) Geometry column name
-
---boundingvolume_heights (option - default: 0,50) - Tile boundingVolume heights (min, max) in meters
 ```
 
 ## Sample running
@@ -118,15 +117,7 @@ Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . The co
 
 Starting release 2.0, tiles are generated according to the 3D Tiles 1.1 Implicit Tiling technique. Tiles are generated in a quadtree, maximum number of features/instances is defined by parameter 'implicit_tiling_max_features'. 
 
-Content tiles will be generated in output folder 'content', subtree file '0_0_0.subtree' will be created in folder 'subtrees'. In the root output folder file 'tileset.json' will be created.
-
-Limitation: 
-
-- 1 subtree file will be created (0_0_0.subtree), there is no support for tree of subtree files (yet);
-
-- there is no support (yet) for Implicit Tiling in the MapBox client, use 
-a 1.X version of this tool to workaround this.
-
+Content tiles will be generated in output folder 'content', subtree files will be created in folder 'subtrees'. In the root output folder file 'tileset.json' will be created.
 
 ## Instance batch info
 
@@ -213,6 +204,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2023-09-27: release 2.4.5: Get boundingvolume z from input table + option boundingvolume_heights removed
 
 2023-09-27: release 2.4.4 change default -r (relative positions) from false to true
 
