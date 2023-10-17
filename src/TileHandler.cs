@@ -103,10 +103,9 @@ public static class TileHandler
 
             var p1 = new Point((double)point.X - translate.X, (double)point.Z - translate.Z, ((double)point.Y - translate.Y) * -1);
 
-            var scaleRandom = random.Next(1, 5);
-            var scale = new Vector3(scaleRandom, scaleRandom, scaleRandom);
+            var scale = new Vector3(1, 1, 1);
 
-            var translation = new Vector3((float)p1.X, (float)p1.Y + 5f * scaleRandom, (float)p1.Z);
+            var translation = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
             sceneBuilder.AddRigidMesh(meshBuilder, new AffineTransform(
                 scale,
                 quaternion,

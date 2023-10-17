@@ -45,7 +45,6 @@ public class Options
     [Option("boundingvolume_heights", Required = false, Default = "0,50", HelpText = "Tile boundingVolume heights (min, max) in meters")]
     public string BoundingVolumeHeights { get; set; }
 
-
     [Option("use_gpu_instancing", Required = false, Default = false, HelpText = "Use EXT_mesh_gpu_instancing instead of I3dm's")]
     public bool? UseGpuInstancing { get; set; }
 }
