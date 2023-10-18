@@ -42,6 +42,8 @@ public class Options
     [Option("max_features_per_tile", Required = false, Default = 1000, HelpText = "Maximum features per tile")]
     public int MaxFeaturesPerTile { get; set; }
 
+    [Option("boundingvolume_heights", Required = false, Default = "0,10", HelpText = "Tile boundingVolume heights (min, max) in meters")]
+    public string BoundingVolumeHeights { get; set; }
 }
 
 
