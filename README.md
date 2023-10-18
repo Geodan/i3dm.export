@@ -88,6 +88,8 @@ Tool parameters:
 --geometrycolumn: (optional - default: geom) Geometry column name
 
 --use_gpu_instancing (optional - default false) Use GPU instancing (only for Cesium)
+
+--boundingvolume_heights (option - default: 0,10) - Tile boundingVolume heights (min, max) in meters
 ```
 
 ## Sample running
@@ -149,6 +151,14 @@ The batch table information in the i3dm tile is stored as follows (for 2 instanc
 ```
 {"customer":["John Doe","John Doe2"], "id": [5454577, 5454579]}
 ```
+
+## Bounding volume
+
+The root bounding volume in Tileset.json is calculated from the input table in 3 dimensions (xmin, ymin, xmax, ymax, zmin, zmax). 
+
+- The values for the boundingbox (xmin, ymin, xmax, ymax) are increased by 10%;
+    
+- The height values (zmin, zmax) are increased by the value of setting 'boundingvolume_heights' (default 0,10).  
 
 ## Scale non uniform
 

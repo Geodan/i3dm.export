@@ -49,7 +49,7 @@ public static class InstancesRepository
         return res;
     }
 
-    public static (BoundingBox bbox, double zmin, double zmax) GetBoundingBoxForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, string query = "")
+    public static (BoundingBox bbox, double zmin, double zmax) GetBoundingBoxForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, double[] heights, string query = "")
     {
         conn.Open();
         var q = string.IsNullOrEmpty(query) ? "" : $"where {query}";
@@ -64,11 +64,18 @@ public static class InstancesRepository
         var ymin = reader.GetDouble(1);
         var xmax = reader.GetDouble(2);
         var ymax = reader.GetDouble(3);
-        var zmin = reader.GetDouble(4);
-        var zmax = reader.GetDouble(5);
+        var zmin = reader.GetDouble(4) + heights[0];
+        var zmax = reader.GetDouble(5) + heights[1];
 
         reader.Close();
         conn.Close();
+
+        // make 10% larger
+        xmin = xmin - (xmax - xmin) * 0.1;
+        ymin = ymin - (ymax - ymin) * 0.1;
+        xmax = xmax + (xmax - xmin) * 0.1;
+        ymax = ymax + (ymax - ymin) * 0.1;
+
         var bbox = new BoundingBox(xmin, ymin, xmax, ymax);
         return (bbox, zmin, zmax);
     }

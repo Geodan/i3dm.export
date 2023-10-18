@@ -38,7 +38,12 @@ class Program
 
             var conn = new NpgsqlConnection(o.ConnectionString);
             var epsg = o.Format == Format.Cesium ? 4978 : 3857;
-            var bbox = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, o.Query);
+
+            var heightsArray = o.BoundingVolumeHeights.Split(',');
+            var heights = new double[2] { double.Parse(heightsArray[0]), double.Parse(heightsArray[1]) };
+            Console.WriteLine($"Heights for bounding volume: [{heights[0]} m, {heights[1]} m] ");
+
+            var bbox = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, heights, o.Query);
 
             var bbox_wgs84 = bbox.bbox;
             var zmin = bbox.zmin;
