@@ -54,11 +54,11 @@ public class Boundingvolume
     {
         get
         {
-            return this._region;
+            return _region;
         }
         set
         {
-            _region = value.Select(d => Math.Round(d, 5)).ToArray();
+            _region = value;
         }
     }
 }
