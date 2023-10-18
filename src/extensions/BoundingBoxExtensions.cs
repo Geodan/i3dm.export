@@ -5,6 +5,14 @@ namespace i3dm.export.extensions;
 
 public static class BoundingBoxExtensions
 {
+    public static double Area(this BoundingBox bb)
+    {
+        // get area of bounding box
+        var width = bb.XMax - bb.XMin;
+        var height = bb.YMax - bb.YMin;
+        return width * height;
+    }
+
     public static Point GetCenter(this BoundingBox bb)
     {
         var x = (bb.XMax + bb.XMin) / 2;
