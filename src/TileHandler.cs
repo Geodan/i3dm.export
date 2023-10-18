@@ -11,9 +11,8 @@ namespace i3dm.export;
 
 public static class TileHandler
 {
-    public static byte[] GetTile(List<Instance> instances, Format format, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
+    public static byte[] GetTile(List<Instance> instances, Format format, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false, Point Center = null)
     {
-        var firstPosition = (Point)instances[0].Position;
         var uniqueModels = instances.Select(s => s.Model).Distinct();
         var tiles = new List<byte[]>();
         
@@ -27,9 +26,9 @@ public static class TileHandler
             var tags = new List<JArray>();
 
             var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
-            CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
+            CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, Center);
             
-            var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition, UseExternalModel, UseRtcCenter, UseScaleNonUniform);
+            var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, Center, UseExternalModel, UseRtcCenter, UseScaleNonUniform);
             var bytesI3dm = I3dmWriter.Write(i3dm);
             tiles.Add(bytesI3dm);
         }
@@ -70,7 +69,7 @@ public static class TileHandler
             new Vector3((float)p.X, (float)p.Y, (float)p.Z.GetValueOrDefault());
         return vec;
     }
-    private static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
+    private static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point center, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
     {
         I3dm.Tile.I3dm i3dm=null;
 
@@ -105,7 +104,7 @@ public static class TileHandler
 
         if (UseRtcCenter)
         {
-            i3dm.RtcCenter = new Vector3((float)firstPosition.X, (float)firstPosition.Y, (float)firstPosition.Z.GetValueOrDefault());
+            i3dm.RtcCenter = new Vector3((float)center.X, (float)center.Y, (float)center.Z.GetValueOrDefault());
         }
 
         if (tags[0] != null)
