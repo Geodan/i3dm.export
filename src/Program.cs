@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Dapper;
+using i3dm.export.Cesium;
 using i3dm.export.extensions;
 using Npgsql;
 using ShellProgressBar;
@@ -53,7 +54,8 @@ class Program
             var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(zmin, zmax);
 
             var center_wgs84 = bbox_wgs84.GetCenter();
-
+            var center_spherical = SpatialConverter.GeodeticToEcef((double)center_wgs84.X, (double)center_wgs84.Y, (double)center_wgs84.Z);
+            var center = new Wkx.Point(center_spherical.X, center_spherical.Y, center_spherical.Z);
             var options = new ProgressBarOptions
             {
                 ProgressCharacter = '-',
@@ -81,7 +83,7 @@ class Program
             Console.WriteLine($"Maximum instances per tile: " + o.MaxFeaturesPerTile);
 
             var tile = new Tile(0, 0, 0);
-            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg);
+            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, center);
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");
 
