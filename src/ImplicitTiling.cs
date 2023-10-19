@@ -30,7 +30,7 @@ public static class ImplicitTiling
         return subtreebytes;
     }
 
-    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg, Vector3 translate, bool useGpuInstancing = false)
+    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg, Point center, bool useGpuInstancing = false)
     {
         var where = (o.Query != string.Empty ? $" and {o.Query}" : String.Empty);
 
@@ -63,7 +63,7 @@ public static class ImplicitTiling
                     var bboxQuad = new BoundingBox(xstart, ystart, xend, yend);
 
                     var new_tile = new Tile(tile.Z + 1, tile.X * 2 + x, tile.Y * 2 + y);
-                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, epsg, translate, useGpuInstancing);
+                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, epsg, center, useGpuInstancing);
                 }
             }
         }

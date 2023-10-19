@@ -18,7 +18,6 @@ public static class TileHandler
 {
     public static byte[] GetTile(List<Instance> instances, Format format, Vector3 translate, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false, bool useGpuInstancing = false)
     {
-        var firstPosition = (Point)instances[0].Position;
         var uniqueModels = instances.Select(s => s.Model).Distinct();
         var tiles = new List<byte[]>();
         
@@ -155,7 +154,7 @@ public static class TileHandler
 
         if (UseRtcCenter)
         {
-            i3dm.RtcCenter = new Vector3((float)firstPosition.X, (float)firstPosition.Y, (float)firstPosition.Z.GetValueOrDefault());
+            i3dm.RtcCenter = new Vector3((float)center.X, (float)center.Y, (float)center.Z.GetValueOrDefault());
         }
 
         if (tags[0] != null)

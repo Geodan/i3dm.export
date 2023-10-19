@@ -42,10 +42,27 @@ class Program
             var heightsArray = o.BoundingVolumeHeights.Split(',');
             var heights = new double[2] { double.Parse(heightsArray[0]), double.Parse(heightsArray[1]) };
             Console.WriteLine($"Heights for bounding volume: [{heights[0]} m, {heights[1]} m] ");
+            if (o.Query != string.Empty)
+            {
+                Console.WriteLine($"Query: {o.Query}");
+            }
 
             var bbox = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, heights, o.Query);
 
+
             var bbox_wgs84 = bbox.bbox;
+
+            if (Math.Abs(bbox_wgs84.Area()) < 0.0001)
+            {
+                // all features are on a point, make it 100 meter larger
+                // todo: make configurable
+                var delta = 0.001; // about 111 meter
+                bbox_wgs84 = new Wkx.BoundingBox(
+                    bbox_wgs84.XMin - delta / 2,
+                    bbox_wgs84.YMin - delta / 2,
+                    bbox_wgs84.XMax + delta / 2,
+                    bbox_wgs84.YMax + delta / 2);
+            }
             var zmin = bbox.zmin;
             var zmax = bbox.zmax;
 
@@ -55,8 +72,7 @@ class Program
             var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(zmin, zmax);
 
             var center_wgs84 = bbox_wgs84.GetCenter();
-            var translate = SpatialConverter.GeodeticToEcef((double)center_wgs84.X, (double)center_wgs84.Y, (double)center_wgs84.Z);
-
+            var center_spherical = SpatialConverter.GeodeticToEcef((double)center_wgs84.X, (double)center_wgs84.Y, (double)center_wgs84.Z);
             var options = new ProgressBarOptions
             {
                 ProgressCharacter = '-',
@@ -85,6 +101,7 @@ class Program
 
             var tile = new Tile(0, 0, 0);
             var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, translate, (bool)o.UseGpuInstancing);
+            Console.WriteLine("Start generating tiles...");
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");
 

@@ -93,7 +93,7 @@ public class TileHandlerTests
         var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
         Assert.IsTrue(i3dm0.Positions.Count == 1);
         Assert.IsTrue(i3dm0.GlbUrl.StartsWith("box.glb"));
-        Assert.IsTrue(i3dm0.Positions[0] == new Vector3(1,2,0));
+        Assert.IsTrue(i3dm0.Positions[0] == new Vector3(1, 2, 0));
 
         var i3dm1 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.ToList()[1]));
         Assert.IsTrue(i3dm1.Positions.Count == 2);
@@ -164,16 +164,16 @@ public class TileHandlerTests
         instances.Add(instance1);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero, UseRtcCenter: true);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseRtcCenter: true, Center: new Wkx.Point(5, 5));
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
         // assert
         Assert.IsTrue(tile.Length > 0);
         Assert.IsTrue(i3dm.Positions.Count == 2);
-        Assert.IsTrue(i3dm.Positions[0] == new Vector3(0, 0, 0));
-        Assert.IsTrue(i3dm.Positions[1] == new Vector3(9, 18, 0));
-        Assert.IsTrue(i3dm.RtcCenter == new Vector3(1,2,0));
+        Assert.IsTrue(i3dm.Positions[0] == new Vector3(-4, -3, 0));
+        Assert.IsTrue(i3dm.Positions[1] == new Vector3(5, 15, 0));
+        Assert.IsTrue(i3dm.RtcCenter == new Vector3(5, 5, 0));
     }
 
     [Test]
