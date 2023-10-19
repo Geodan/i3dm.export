@@ -39,8 +39,8 @@ public static class TileHandler
             }
             else
             {
-                CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition);
-                var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, firstPosition, UseExternalModel, UseRtcCenter, UseScaleNonUniform);
+                CalculateArrays(modelInstances, format, UseRtcCenter, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, translate);
+                var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, translate, UseExternalModel, UseRtcCenter, UseScaleNonUniform);
                 var bytesI3dm = I3dmWriter.Write(i3dm);
                 tiles.Add(bytesI3dm);
             }
@@ -51,14 +51,14 @@ public static class TileHandler
         return bytes;
     }
 
-    private static void CalculateArrays(List<Instance> instances, Format format, bool UseRtcCenter, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition)
+    private static void CalculateArrays(List<Instance> instances, Format format, bool UseRtcCenter, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Vector3 translate)
     {
         foreach (var instance in instances)
         {
             var pos = (Point)instance.Position;
             var positionVector3 = new Vector3((float)pos.X, (float)pos.Y, (float)pos.Z.GetValueOrDefault());
 
-            var vec = GetPosition((Point)instance.Position, UseRtcCenter, firstPosition);
+            var vec = GetPosition((Point)instance.Position, UseRtcCenter, translate);
             positions.Add(vec);
 
             if (!UseScaleNonUniform)
@@ -76,10 +76,10 @@ public static class TileHandler
         }
     }
 
-    private static Vector3 GetPosition(Point p, bool UseRtcCenter, Point firstPosition)
+    private static Vector3 GetPosition(Point p, bool UseRtcCenter, Vector3 translate)
     {
         var vec = UseRtcCenter ?
-            new Vector3((float)(p.X - firstPosition.X), (float)(p.Y - firstPosition.Y), (float)(p.Z.GetValueOrDefault() - firstPosition.Z.GetValueOrDefault())) :
+            new Vector3((float)(p.X - translate.X), (float)(p.Y - translate.Y), (float)(p.Z.GetValueOrDefault() - translate.Z)) :
             new Vector3((float)p.X, (float)p.Y, (float)p.Z.GetValueOrDefault());
         return vec;
     }
@@ -119,7 +119,7 @@ public static class TileHandler
         return bytes;
     }
 
-    private static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Point firstPosition, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
+    private static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Vector3 translate, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false)
     {
         I3dm.Tile.I3dm i3dm=null;
 
@@ -154,7 +154,7 @@ public static class TileHandler
 
         if (UseRtcCenter)
         {
-            i3dm.RtcCenter = new Vector3((float)center.X, (float)center.Y, (float)center.Z.GetValueOrDefault());
+            i3dm.RtcCenter = translate;
         }
 
         if (tags[0] != null)

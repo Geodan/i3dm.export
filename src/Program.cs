@@ -72,7 +72,7 @@ class Program
             var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(zmin, zmax);
 
             var center_wgs84 = bbox_wgs84.GetCenter();
-            var center_spherical = SpatialConverter.GeodeticToEcef((double)center_wgs84.X, (double)center_wgs84.Y, (double)center_wgs84.Z);
+            var translate = SpatialConverter.GeodeticToEcef((double)center_wgs84.X, (double)center_wgs84.Y, (double)center_wgs84.Z);
             var options = new ProgressBarOptions
             {
                 ProgressCharacter = '-',
