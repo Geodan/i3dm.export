@@ -191,6 +191,19 @@ When using large tables create a spatial index on the geometry column:
 psql> CREATE INDEX ON m_table USING gist(geom)
 ```
 
+## GPU Instancing
+
+In 3D Tiles 1.1, GPU instancing is supported. This means that the same model can be used for multiple instances within a glTF (using EXT_mesh_gpu_instancing). 
+Files like I3dm/cmpt are no longer created.
+
+There is an experimental option to create 3D Tiles 1.1 using GPU instancing: --use_gpu_instancing (default false).
+
+This option is currently in development. 
+
+The following features should work: Positioning and scaling of instances.
+
+The following features are not yet supported: Rotation, batch info and composite tiles.
+
 ## Developing
 
 Run from source code:

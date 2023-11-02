@@ -18,7 +18,18 @@ public static class TileHandler
 {
     public static byte[] GetTile(List<Instance> instances, Format format, Vector3 translate, bool UseExternalModel = false, bool UseRtcCenter = false, bool UseScaleNonUniform = false, bool useGpuInstancing = false)
     {
+        if(useGpuInstancing && instances.Select(s => s.Model).Distinct().Count() > 1)
+        {
+            var firstModel = instances.Select(s => s.Model).First();
+            // set all models to the first model
+            foreach (var instance in instances)
+            {
+                instance.Model = firstModel;
+            }
+        }
+
         var uniqueModels = instances.Select(s => s.Model).Distinct();
+
         var tiles = new List<byte[]>();
         
         foreach (var model in uniqueModels)
@@ -29,12 +40,11 @@ public static class TileHandler
             var normalUps = new List<Vector3>();
             var normalRights = new List<Vector3>();
             var tags = new List<JArray>();
-
             var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
-            
+
             if (useGpuInstancing)
             {
-                var bytesGlb = GetGpuGlb(model, instances, translate, UseScaleNonUniform);
+                var bytesGlb = GetGpuGlb(model, modelInstances, translate, UseScaleNonUniform);
                 tiles.Add(bytesGlb);
             }
             else
@@ -89,29 +99,32 @@ public static class TileHandler
         var modelRoot = ModelRoot.Load((string)model);
         var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder();
         var sceneBuilder = new SceneBuilder();
-        var random = new Random();
 
         foreach (var p in positions)
         {
             var point = (Point)p.Position;
 
             var rad = Radian.ToRadius(p.Rotation);
+            var dx = DistanceCalculator.GetDistanceTo(translate.X, translate.Y, (double)point.X, translate.Y);
+            var dy = DistanceCalculator.GetDistanceTo(translate.X, translate.Y, translate.X, (double)point.Y);
 
-            var enu = Transforms.EastNorthUpToFixedFrame(new Vector3((float)point.X, (float)point.Y, (float)point.Z));
-            var quaternion = Transforms.GetQuaterion(enu, rad);
+            dx = (double)point.X - translate.X >0 ? dx : -dx;
+            dy = (double)point.Y - translate.Y >0 ? -dy : dy;
 
-            // here we swap the y and z axis and invert the y axis
-            var p1 = new Point((double)point.X - translate.X, (double)point.Z - translate.Z, ((double)point.Y - translate.Y) * -1);
-
+            var dz = (double)point.Z - translate.Z;
+            var p1 = new Point(dx , dz, dy) ;
             var scale = UseScaleNonUniform ? 
                 new Vector3((float)p.ScaleNonUniform[0], (float)p.ScaleNonUniform[1], (float)p.ScaleNonUniform[2]):
-                new Vector3((float)p.Scale, (float)p.Scale, (float)p.Scale);            
+                new Vector3((float)p.Scale, (float)p.Scale, (float)p.Scale);
 
+            var quaternion = Quaternion.CreateFromYawPitchRoll(0, 0, 0);
             var translation = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
-            sceneBuilder.AddRigidMesh(meshBuilder, new AffineTransform(
+
+            var transformation = new AffineTransform(
                 scale,
                 quaternion,
-                translation));
+                translation);
+            sceneBuilder.AddRigidMesh(meshBuilder, transformation);
         }
 
         var gltf = sceneBuilder.ToGltf2(SceneBuilderSchema2Settings.WithGpuInstancing);
