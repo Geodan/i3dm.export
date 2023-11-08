@@ -37,6 +37,13 @@ class Program
             Console.WriteLine($"Exporting instances from {o.Table}...");
             Console.WriteLine($"Use GPU instancing: {o.UseGpuInstancing}");
 
+            if((bool)o.UseGpuInstancing && (bool)o.UseExternalModel)
+            {
+                Console.WriteLine("Error: GPU instancing and external model cannot be used together.");
+                Console.WriteLine("Use either --use_gpu_instancing or --use_external_model");
+                return;
+            }
+
             var conn = new NpgsqlConnection(o.ConnectionString);
             var epsg = (bool)o.UseGpuInstancing ? 4326: 4978;
 

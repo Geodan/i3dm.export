@@ -24,14 +24,11 @@ public class Options
     [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
     public string Output { get; set; }
 
-    [Option('r', "rtccenter", Required = false, Default = true, HelpText = "Use RTC_CENTER for positions")]
-    public bool? UseRtcCenter { get; set; }
-
     [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
-    public bool UseExternalModel { get; set; }
+    public bool? UseExternalModel { get; set; }
 
     [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
-    public bool UseScaleNonUniform { get; set; }
+    public bool? UseScaleNonUniform { get; set; }
 
     [Option('f', "format", Required = false, Default = Format.Cesium, HelpText = "Output format mapbox/cesium")]
     public Format Format { get; set; }

@@ -164,7 +164,7 @@ public class TileHandlerTests
         instances.Add(instance1);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseRtcCenter: true, translate: new Vector3(5, 5, 0));
+        var tile = TileHandler.GetTile(instances, Format.Mapbox,translate: new Vector3(5, 5, 0));
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 

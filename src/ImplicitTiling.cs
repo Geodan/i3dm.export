@@ -86,8 +86,8 @@ public static class ImplicitTiling
 
     private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int epsg, string where, Vector3 translate, bool useGpuInstancing = false)
     {
-        var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, o.UseScaleNonUniform, useGpuInstancing);
-        var tile = TileHandler.GetTile(instances, o.Format, translate, o.UseExternalModel, (bool)o.UseRtcCenter, o.UseScaleNonUniform,  useGpuInstancing);
+        var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
+        var tile = TileHandler.GetTile(instances, o.Format, translate, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform,  useGpuInstancing);
         return tile;
     }
 }

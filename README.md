@@ -73,8 +73,6 @@ Tool parameters:
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
--r: (optional - Default: true) Use RTC_CENTER for high precision relative positions
-
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
 -f, --format: (optional - default Cesium) Output format mapbox/cesium
@@ -251,7 +249,7 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
-2023-11-08: release 2.6.0: Add support for GPU instancing (experimental)
+2023-11-08: release 2.6.0: Add support for GPU instancing (experimental), removed option -r RTC_CENTER 
 
 2023-10-18: release 2.5.0: Improved root bounding volume calculation, improved batch table handling
 
