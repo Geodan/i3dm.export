@@ -251,6 +251,8 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
+2023-11-08: release 2.6.0: Add support for GPU instancing (experimental)
+
 2023-10-18: release 2.5.0: Improved root bounding volume calculation, improved batch table handling
 
 2023-09-27: release 2.4.5: Get boundingvolume z from input table + option boundingvolume_heights removed
