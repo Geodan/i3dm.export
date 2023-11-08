@@ -217,9 +217,9 @@ The following features are not yet supported when using use_gpu_instancing:
 
 - batch information (EXT_Mesh_Features/EXT_Structural_Metadata)
 
-- composite tiles (formerly known as cmpt).
+- composite tiles (formerly known as cmpt). When there are multiple models in the input table only the first one is used.
 
-Warning: When the input model has transformations, the model will be transformed twice: once in the glTF and once for the instance translations. In some 
+Warning: When the input glTF model has transformations, the model will be transformed twice: once in the glTF and once for the instance translations. In some 
 cases it's better to remove the transformations from the input model. For example tool 'gltf-tansform' - function clearNodeTransform (https://gltf-transform.dev/modules/functions/functions/clearNodeTransform) can be 
 used to clear local transformations.
 
