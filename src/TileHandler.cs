@@ -107,7 +107,6 @@ public static class TileHandler
         {
             var point = (Point)p.Position;
 
-            var rad = Radian.ToRadius(p.Rotation);
             var dx = DistanceCalculator.GetDistanceTo(translate.X, translate.Y, (double)point.X, translate.Y);
             var dy = DistanceCalculator.GetDistanceTo(translate.X, translate.Y, translate.X, (double)point.Y);
 
