@@ -87,7 +87,7 @@ Tool parameters:
 
 --use_gpu_instancing (optional - default false) Use GPU instancing (only for Cesium)
 
---boundingvolume_heights (option - default: 0,10) - Tile boundingVolume heights (min, max) in meters
+--boundingvolume_heights (option - default: 0,10) - Tile boundingVolume heights (min, max) in meters. The heights will be added to the z_min and z_max values of the input geometries.
 ```
 
 ## Sample running
@@ -191,7 +191,8 @@ psql> CREATE INDEX ON m_table USING gist(geom)
 
 ## GPU Instancing
 
-In 3D Tiles 1.1, GPU instancing is supported. This means that the same model can be used for multiple instances within a glTF (using EXT_mesh_gpu_instancing). 
+In 3D Tiles 1.1, GPU instancing is supported. This means that the same model can be used for multiple instances within a glTF (using EXT_mesh_gpu_instancing -
+https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md). 
 Files like I3dm/cmpt are no longer created.
 
 There is an experimental option to create 3D Tiles 1.1 using GPU instancing: --use_gpu_instancing (default false).
