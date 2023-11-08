@@ -73,8 +73,6 @@ Tool parameters:
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
--r: (optional - Default: true) Use RTC_CENTER for high precision relative positions
-
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
 -f, --format: (optional - default Cesium) Output format mapbox/cesium
@@ -87,7 +85,9 @@ Tool parameters:
 
 --geometrycolumn: (optional - default: geom) Geometry column name
 
---boundingvolume_heights (option - default: 0,10) - Tile boundingVolume heights (min, max) in meters
+--use_gpu_instancing (optional - default false) Use GPU instancing (only for Cesium)
+
+--boundingvolume_heights (option - default: 0,10) - Tile boundingVolume heights (min, max) in meters. The heights will be added to the z_min and z_max values of the input geometries.
 ```
 
 ## Sample running
@@ -189,6 +189,41 @@ When using large tables create a spatial index on the geometry column:
 psql> CREATE INDEX ON m_table USING gist(geom)
 ```
 
+## GPU Instancing
+
+In 3D Tiles 1.1, GPU instancing is supported. This means that the same model can be used for multiple instances within a glTF (using EXT_mesh_gpu_instancing -
+https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md). 
+Files like I3dm/cmpt are no longer created.
+
+There is an experimental option to create 3D Tiles 1.1 using GPU instancing: --use_gpu_instancing (default false).
+
+This option is currently in development. 
+
+The following features should work: Positioning, Rotation (roll, pitch, yaw) and Scaling of instances.
+
+To use this option, the input table should contain columns 'roll', 'pitch' and 'yaw' (column 'rotation' is not used).
+
+Sql script to create the columns:
+
+```
+alter table instances add yaw decimal default 0
+alter table instances add pitch decimal default 0
+alter table instances add roll decimal default 0
+alter table instances drop column rotation
+```
+
+The columns should be filled with radian angles (0 - 2PI).
+
+The following features are not yet supported when using use_gpu_instancing: 
+
+- batch information (EXT_Mesh_Features/EXT_Structural_Metadata)
+
+- composite tiles (formerly known as cmpt). When there are multiple models in the input table only the first one is used.
+
+Warning: When the input glTF model has transformations, the model will be transformed twice: once in the glTF and once for the instance translations. In some 
+cases it's better to remove the transformations from the input model. For example tool 'gltf-tansform' - function clearNodeTransform (https://gltf-transform.dev/modules/functions/functions/clearNodeTransform) can be 
+used to clear local transformations.
+
 ## Developing
 
 Run from source code:
@@ -214,6 +249,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2023-11-08: release 2.6.0: Add support for GPU instancing (experimental), removed option -r RTC_CENTER 
 
 2023-10-18: release 2.5.0: Improved root bounding volume calculation, improved batch table handling
 

@@ -3,6 +3,7 @@ using subtree;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using Wkx;
 
 namespace i3dm.export;
@@ -29,7 +30,7 @@ public static class ImplicitTiling
         return subtreebytes;
     }
 
-    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg, Point center)
+    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int epsg, Vector3 translate, bool useGpuInstancing = false)
     {
         var where = (o.Query != string.Empty ? $" and {o.Query}" : String.Empty);
 
@@ -62,15 +63,15 @@ public static class ImplicitTiling
                     var bboxQuad = new BoundingBox(xstart, ystart, xend, yend);
 
                     var new_tile = new Tile(tile.Z + 1, tile.X * 2 + x, tile.Y * 2 + y);
-                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, epsg, center);
+                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, epsg, translate, useGpuInstancing);
                 }
             }
         }
         else
         {
-            var bytes = CreateTile(o, conn, bbox, epsg, where, center);
-
-            var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.cmpt";
+            var bytes = CreateTile(o, conn, bbox, epsg, where, translate, useGpuInstancing);
+            var extension = useGpuInstancing? "glb": "cmpt";
+            var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.{extension}";
             Console.Write($"\rCreating tile: {file}  ");
 
             File.WriteAllBytes(file, bytes);
@@ -83,10 +84,10 @@ public static class ImplicitTiling
         return tiles;
     }
 
-    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int epsg, string where, Point center)
+    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int epsg, string where, Vector3 translate, bool useGpuInstancing = false)
     {
-        var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, o.UseScaleNonUniform);
-        var tile = TileHandler.GetTile(instances, o.Format, o.UseExternalModel, (bool)o.UseRtcCenter, o.UseScaleNonUniform, center);
+        var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
+        var tile = TileHandler.GetTile(instances, o.Format, translate, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform,  useGpuInstancing);
         return tile;
     }
 }

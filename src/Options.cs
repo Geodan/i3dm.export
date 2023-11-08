@@ -24,14 +24,11 @@ public class Options
     [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
     public string Output { get; set; }
 
-    [Option('r', "rtccenter", Required = false, Default = true, HelpText = "Use RTC_CENTER for positions")]
-    public bool? UseRtcCenter { get; set; }
-
     [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
-    public bool UseExternalModel { get; set; }
+    public bool? UseExternalModel { get; set; }
 
     [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
-    public bool UseScaleNonUniform { get; set; }
+    public bool? UseScaleNonUniform { get; set; }
 
     [Option('f', "format", Required = false, Default = Format.Cesium, HelpText = "Output format mapbox/cesium")]
     public Format Format { get; set; }
@@ -41,6 +38,9 @@ public class Options
 
     [Option("max_features_per_tile", Required = false, Default = 1000, HelpText = "Maximum features per tile")]
     public int MaxFeaturesPerTile { get; set; }
+
+    [Option("use_gpu_instancing", Required = false, Default = false, HelpText = "Use EXT_mesh_gpu_instancing instead of I3dm's")]
+    public bool? UseGpuInstancing { get; set; }
 
     [Option("boundingvolume_heights", Required = false, Default = "0,10", HelpText = "Tile boundingVolume heights (min, max) in meters")]
     public string BoundingVolumeHeights { get; set; }

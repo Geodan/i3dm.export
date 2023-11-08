@@ -5,9 +5,9 @@
     <TargetFramework>net6.0</TargetFramework>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
-	<Version>2.5.0</Version>
-	<AssemblyVersion>2.5.0</AssemblyVersion>
-	<FileVersion>2.5.0</FileVersion>
+	<Version>2.6.0</Version>
+	<AssemblyVersion>2.6.0</AssemblyVersion>
+	<FileVersion>2.6.0</FileVersion>
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
@@ -28,6 +28,7 @@
     <PackageReference Include="i3dm.tile" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql" Version="7.0.6" />
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-cesiummetadata3" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
     <PackageReference Include="subtree" Version="1.4.4" />
     <PackageReference Include="Wkx" Version="0.5.1" />

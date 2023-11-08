@@ -12,6 +12,32 @@ namespace i3dm.export.tests;
 public class TileHandlerTests
 {
     [Test]
+    public void GetGpuTileTest()
+    {
+        // arrange
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "box.glb";
+        instances.Add(instance);
+
+        // act
+        var tile = TileHandler.GetTile(instances, Format.Cesium, Vector3.Zero,useGpuInstancing:true);
+
+        var fileName = Path.Combine(TestContext.CurrentContext.WorkDirectory, "ams_building_multiple_colors.glb");
+        File.WriteAllBytes(fileName, tile);
+
+        var model = SharpGLTF.Schema2.ModelRoot.Load(fileName);
+        
+        // assert
+        // todo: can we read the instance positions from the glb?
+        Assert.IsTrue(tile.Length > 0);
+    }
+
+
+
+    [Test]
     public void GetTileTest()
     {
         // arrange
@@ -23,7 +49,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dmBytes = cmpt.Tiles.First();
         var i3dm = I3dmReader.Read(new MemoryStream(i3dmBytes));
@@ -59,7 +85,7 @@ public class TileHandlerTests
         instances.Add(instance3);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero, UseExternalModel: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
 
         // assert
@@ -89,7 +115,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseScaleNonUniform: true);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero, UseScaleNonUniform: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -111,7 +137,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseExternalModel: true);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero, UseExternalModel: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -138,7 +164,7 @@ public class TileHandlerTests
         instances.Add(instance1);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox, UseRtcCenter: true, Center: new Wkx.Point(5, 5));
+        var tile = TileHandler.GetTile(instances, Format.Mapbox,translate: new Vector3(5, 5, 0));
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -163,7 +189,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox);
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, Vector3.Zero);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 

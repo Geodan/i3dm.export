@@ -1,12 +1,13 @@
 ﻿using i3dm.export.Tileset;
 using Newtonsoft.Json;
 using System;
+using System.Numerics;
 
 namespace i3dm.export;
 
 public static class TreeSerializer
 {
-    public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version)
+    public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version, Vector3 translate, bool useGpuInstancing = false, double[] transform=null)
     {
         var tileset = new TileSet
         {
@@ -14,10 +15,16 @@ public static class TreeSerializer
             geometricError = geometricError
         };
         var root = GetRoot(geometricError, box, "ADD");
-        var content = new Content() { uri = "content/{level}_{x}_{y}.cmpt" };
+        var extension = useGpuInstancing ? "glb" : "cmpt";
+
+        var content = new Content() { uri = "content/{level}_{x}_{y}." + extension };
         root.content = content;
         var subtrees = new Subtrees() { uri = "subtrees/{level}_{x}_{y}.subtree" };
         root.implicitTiling = new Implicittiling() { subdivisionScheme = "QUADTREE", availableLevels = availableLevels, subtreeLevels = subtreeLevels, subtrees = subtrees };
+        if (useGpuInstancing)
+        {
+            root.transform = transform;
+        };
         tileset.root = root;
         var json = JsonConvert.SerializeObject(tileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
         return json;
