@@ -2,6 +2,8 @@
 using i3dm.export.Cesium;
 using I3dm.Tile;
 using Newtonsoft.Json.Linq;
+using SharpGLTF.Geometry.VertexTypes;
+using SharpGLTF.Geometry;
 using SharpGLTF.Scenes;
 using SharpGLTF.Schema2;
 using SharpGLTF.Transforms;
@@ -98,6 +100,7 @@ public static class TileHandler
     {
         var modelRoot = ModelRoot.Load((string)model);
         var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder();
+
         var sceneBuilder = new SceneBuilder();
 
         foreach (var p in positions)
@@ -117,7 +120,7 @@ public static class TileHandler
                 new Vector3((float)p.ScaleNonUniform[0], (float)p.ScaleNonUniform[1], (float)p.ScaleNonUniform[2]):
                 new Vector3((float)p.Scale, (float)p.Scale, (float)p.Scale);
 
-            var quaternion = Quaternion.CreateFromYawPitchRoll(0, 0, 0);
+            var quaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
             var translation = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
 
             var transformation = new AffineTransform(

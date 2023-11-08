@@ -200,9 +200,26 @@ There is an experimental option to create 3D Tiles 1.1 using GPU instancing: --u
 
 This option is currently in development. 
 
-The following features should work: Positioning and scaling of instances.
+The following features should work: Positioning, Rotation (roll, pitch, yaw) and Scaling of instances.
 
-The following features are not yet supported: Rotation, batch info and composite tiles.
+To use this option, the input table should contain columns 'roll', 'pitch' and 'yaw' (column 'rotation' is not used).
+
+Sql script to create the columns:
+
+```
+alter table instances add yaw decimal default 0
+alter table instances add pitch decimal default 0
+alter table instances add roll decimal default 0
+alter table instances drop column rotation
+```
+
+The columns should be filled with radian angles (0 - 2PI).
+
+The following features are not yet supported when using use_gpu_instancing: 
+
+- batch information (EXT_Mesh_Features/EXT_Structural_Metadata)
+
+- composite tiles (formerly known as cmpt).
 
 ## Developing
 

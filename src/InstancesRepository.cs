@@ -3,6 +3,7 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net.Http;
 using Wkx;
 
 namespace i3dm.export;
@@ -33,7 +34,7 @@ public static class InstancesRepository
         return $"ST_Intersects({geometryColumn}, ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 4326)) {where}";
     }
 
-    public static List<Instance> GetInstances(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, int epsg, string where = "", bool useScaleNonUniform = false)
+    public static List<Instance> GetInstances(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, int epsg, string where = "", bool useScaleNonUniform = false, bool useGpuInstancing = false)
     {
         var fromX = ToInvariantCulture(bbox.XMin);
         var fromY = ToInvariantCulture(bbox.YMin);
@@ -42,7 +43,18 @@ public static class InstancesRepository
 
         var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
         conn.Open();
-        var sql = FormattableString.Invariant($"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {epsg})) as position, scale, {scaleNonUniform} rotation, model, tags FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY)}");
+        var select = $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {epsg})) as position, scale, {scaleNonUniform} model, tags";
+
+        if (useGpuInstancing)
+        {
+            select += ", yaw, pitch, roll";
+        }
+        else
+        {
+            select += ", rotation";
+        }
+
+        var sql = FormattableString.Invariant($"{select} FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY)}");
         var res = conn.Query<Instance>(sql).AsList();
         conn.Close();
         return res;
