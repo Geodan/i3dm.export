@@ -127,7 +127,9 @@ public static class TileHandler
             sceneBuilder.AddRigidMesh(meshBuilder, transformation);
         }
 
-        var gltf = sceneBuilder.ToGltf2(SceneBuilderSchema2Settings.WithGpuInstancing);
+        var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
+        settings.GpuMeshInstancingMinCount = 0;
+        var gltf = sceneBuilder.ToGltf2(settings);
         var bytes = gltf.WriteGLB().Array;
         return bytes;
     }
