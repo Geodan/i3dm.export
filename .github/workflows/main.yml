@@ -27,7 +27,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build ./src --file Dockerfile --tag geodan/i3dm.export:latest
+      run: docker build . --file Dockerfile --tag geodan/i3dm.export:latest
     - name: Log in to Docker Hub
       uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
       with:
