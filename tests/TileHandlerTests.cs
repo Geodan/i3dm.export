@@ -45,7 +45,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
         instance.Scale = 1;
-        instance.Model = "box.glb";
+        instance.Model = "Box.glb";
         instances.Add(instance);
 
         // act
