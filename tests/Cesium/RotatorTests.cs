@@ -21,7 +21,7 @@ public class RotatorTests
         var rotator = new Vector3(0.19021961f, -0.74156934f, 0.6433439f);
         var actualResult = Rotator.RotateVector(rotatee, rotator, 45);
         var expectedResult = new Vector3(0.7979629f, -0.26495427f, -0.54134506f);
-        Assert.IsTrue(actualResult.Equals(expectedResult));
+        Assert.That(actualResult.Equals(expectedResult));
     }
 
     [Test]
@@ -31,7 +31,7 @@ public class RotatorTests
         var rotator = new Vector3(0.19021961f, -0.74156934f, 0.6433439f);
         var actualResult = Rotator.RotateVector(rotatee, rotator, 45);
         var expectedResult = new Vector3(0.5719022f, 0.6163388f, 0.5413449f);
-        Assert.IsTrue(actualResult.Equals(expectedResult));
+        Assert.That(actualResult.Equals(expectedResult));
     }
 
     [Test]
@@ -41,7 +41,7 @@ public class RotatorTests
         var rotator = new Vector3(0.19021961f, -0.74156934f, 0.6433439f);
         var actualResult = Rotator.RotateVector(rotatee, rotator, 0);
         var expectedResult = new Vector3(-0.15984882f, 0.6231691f, 0.7655773f);
-        Assert.IsTrue(actualResult.Equals(expectedResult));
+        Assert.That(actualResult.Equals(expectedResult));
     }
 
     [Test]
@@ -60,7 +60,7 @@ public class RotatorTests
 
         for (var i = 0; i < 16; i++)
         {
-            Assert.IsTrue(expectedResult[i].Equals(actualResult[i]));
+            Assert.That(expectedResult[i].Equals(actualResult[i]));
         }
     }
 }

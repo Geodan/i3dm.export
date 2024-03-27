@@ -16,6 +16,6 @@ public class DistanceCalculatorTests
         var distance = DistanceCalculator.GetDistanceTo(longitude2, latitude2, longitude1, latitude1);
 
         // assert
-        Assert.IsTrue(distance == 138.6781917667918);
+        Assert.That(distance == 138.6781917667918);
     }
 }

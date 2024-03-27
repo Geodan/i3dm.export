@@ -10,15 +10,15 @@ public class BoundingBoxTests
     public void AreaTest()
     {
         var bb = new BoundingBox(0,0,10,10);
-        Assert.IsTrue(bb.Area() == 100);
+        Assert.That(bb.Area() == 100);
     }
 
     [Test]
     public void CenterTest()
     {
         var bb = new BoundingBox(0, 0, 10, 10);
-        Assert.IsTrue(bb.GetCenter().X == 5);
-        Assert.IsTrue(bb.GetCenter().Y == 5);
+        Assert.That(bb.GetCenter().X == 5);
+        Assert.That(bb.GetCenter().Y == 5);
     }
 
     [Test]
@@ -26,7 +26,7 @@ public class BoundingBoxTests
     {
         var bb = new BoundingBox(0, 0, 10, 10);
         var radians = bb.ToRadians();
-        Assert.IsTrue(radians.XMin == 0);
+        Assert.That(radians.XMin == 0);
     }
 
 }

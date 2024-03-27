@@ -49,7 +49,7 @@ class CesiumTransformerTests
 
         for (var i = 0; i < 16; i++)
         {
-            Assert.IsTrue(globalTransform[i].Equals(expectedTransform[i]));
+            Assert.That(globalTransform[i].Equals(expectedTransform[i]));
         }
     }
 
@@ -62,14 +62,14 @@ class CesiumTransformerTests
         var up = enu.Up;
         var east = enu.East;
 
-        Assert.IsTrue(east.X == 0.159852028f);
-        Assert.IsTrue(east.Y == -0.6231709f);
-        Assert.IsTrue(east.Z == -0.76557523f);
+        Assert.That(east.X == 0.159852028f);
+        Assert.That(east.Y == -0.6231709f);
+        Assert.That(east.Z == -0.76557523f);
 
         // assert
-        Assert.IsTrue(up.X == 0.968639731f);
-        Assert.IsTrue(up.Y == 0.248469591f);
-        Assert.IsTrue(Math.Round(up.Z, 2) == 0);
+        Assert.That(up.X == 0.968639731f);
+        Assert.That(up.Y == 0.248469591f);
+        Assert.That(Math.Round(up.Z, 2) == 0);
     }
 
 
@@ -85,9 +85,9 @@ class CesiumTransformerTests
         var localEU = CesiumTransformer.GetLocalEnuCesium(angle);
 
         // assert
-        Assert.IsTrue(localEU.East.Equals(expectedLocalEast));
-        Assert.IsTrue(localEU.Up.Equals(expectectedLocalUp));
-        Assert.IsTrue(Vector3.Cross(localEU.East, localEU.Up).Equals(localEU.North));
+        Assert.That(localEU.East.Equals(expectedLocalEast));
+        Assert.That(localEU.Up.Equals(expectectedLocalUp));
+        Assert.That(Vector3.Cross(localEU.East, localEU.Up).Equals(localEU.North));
     }
 
     [Test]
@@ -102,8 +102,8 @@ class CesiumTransformerTests
         var localEU = CesiumTransformer.GetLocalEnuCesium(angle);
 
         // assert
-        Assert.IsTrue(localEU.East.Equals(expectedLocalEast));
-        Assert.IsTrue(localEU.Up.Equals(expectedLocalUp));
+        Assert.That(localEU.East.Equals(expectedLocalEast));
+        Assert.That(localEU.Up.Equals(expectedLocalUp));
     }
 
     [Test]
@@ -118,8 +118,8 @@ class CesiumTransformerTests
         var localEU = CesiumTransformer.GetLocalEnuCesium(angle);
 
         // assert
-        Assert.IsTrue(localEU.East.Equals(expectedLocalEast));
-        Assert.IsTrue(localEU.Up.Equals(expectedLocalUp));
+        Assert.That(localEU.East.Equals(expectedLocalEast));
+        Assert.That(localEU.Up.Equals(expectedLocalUp));
     }
 
     [Test]
@@ -135,7 +135,7 @@ class CesiumTransformerTests
         var localEU = CesiumTransformer.GetLocalEnuCesium(angle);
 
         // assert
-        Assert.IsTrue(localEU.East.Equals(expectedLocalEast));
-        Assert.IsTrue(localEU.Up.Equals(expectedLocalUp));
+        Assert.That(localEU.East.Equals(expectedLocalEast));
+        Assert.That(localEU.Up.Equals(expectedLocalUp));
     }
 }

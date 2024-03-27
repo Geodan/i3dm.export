@@ -18,8 +18,8 @@ public class RotationTests
         var localEnu = EnuCalculator.GetLocalEnuMapbox(angle);
 
         // assert
-        Assert.IsTrue(localEnu.East.Equals(expectedEast));
-        Assert.IsTrue(localEnu.North.Equals(expectedNorth));
-        Assert.IsTrue(localEnu.Up.Equals(expectedUp));
+        Assert.That(localEnu.East.Equals(expectedEast));
+        Assert.That(localEnu.North.Equals(expectedNorth));
+        Assert.That(localEnu.Up.Equals(expectedUp));
     }
 }
