@@ -19,7 +19,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2, 0);
         instance.Scale = 1;
-        instance.Model = "box.glb";
+        instance.Model = "Box.glb";
         instances.Add(instance);
 
         // act
@@ -111,7 +111,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
         instance.ScaleNonUniform = scaleNonuniform;
-        instance.Model = "box.glb";
+        instance.Model = "Box.glb";
         instances.Add(instance);
 
         // act
@@ -133,7 +133,7 @@ public class TileHandlerTests
         var instances = new List<Instance>();
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
-        instance.Model = "box.glb";
+        instance.Model = "Box.glb";
         instances.Add(instance);
 
         // act
@@ -144,7 +144,7 @@ public class TileHandlerTests
         // assert
         Assert.That(tile.Length > 0);
         Assert.That(i3dm.Positions.Count == 1);
-        Assert.That(i3dm.GlbUrl.StartsWith("box.glb"));
+        Assert.That(i3dm.GlbUrl.StartsWith("Box.glb"));
         Assert.That(i3dm.GlbData == null);
     }
 
@@ -155,12 +155,12 @@ public class TileHandlerTests
         var instances = new List<Instance>();
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
-        instance.Model = "box.glb";
+        instance.Model = "Box.glb";
         instances.Add(instance);
 
         var instance1 = new Instance();
         instance1.Position = new Wkx.Point(10, 20);
-        instance1.Model = "box.glb";
+        instance1.Model = "Box.glb";
         instances.Add(instance1);
 
         // act
@@ -183,7 +183,7 @@ public class TileHandlerTests
         var instances = new List<Instance>();
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
-        instance.Model = "box.glb";
+        instance.Model = "Box.glb";
         var tags = JArray.Parse("[{'id':123},{'name': 'test'}]");
         instance.Tags = tags;
         instances.Add(instance);
