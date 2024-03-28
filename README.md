@@ -1,11 +1,10 @@
 # i3dm.export
 
-Console tool for exporting Instanced 3D Models (i3dm's), i3dm composites (cmpt) and tileset.json from PostGIS table. 
+Console tool for exporting Instanced 3D Models (i3dm's or glb), i3dm composites (cmpt) and tileset.json from PostGIS table. 
 
 The input table contains instance information like location (epsg:4326), binary glTF model (glb), scale, rotation and instance attributes. 
 
 The 3D tiles created by this tool are tested in Cesium JS.
-
 
 MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles) is NOT supported at the moment.
 
@@ -201,6 +200,10 @@ Files like I3dm/cmpt are no longer created.
 There is an experimental option to create 3D Tiles 1.1 using GPU instancing: --use_gpu_instancing (default false).
 
 This option is currently in development. 
+
+Live demo trees in Grenoble with GPU instancing and metadata:
+
+https://bertt.github.io/cesium_3dtiles_samples/samples/1.1/grenoble_trees/
 
 The following features should work: 
 
