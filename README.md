@@ -205,6 +205,8 @@ Live demo trees in Grenoble with GPU instancing and metadata:
 
 https://bertt.github.io/cesium_3dtiles_samples/samples/1.1/grenoble_trees/
 
+![image](https://github.com/Geodan/i3dm.export/assets/538812/038ee19d-7f52-4102-a60c-4ece0672a6a4)
+
 The following features should work: 
 
 - Attribute information from tags using EXT_structural_metadata, EXT_mesh_gpu_instancing and EXT_instance_features. 
