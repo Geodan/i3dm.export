@@ -1,18 +1,16 @@
 ﻿using Cmpt.Tile;
-using i3dm.export.Cesium;
 using I3dm.Tile;
 using Newtonsoft.Json.Linq;
-using SharpGLTF.Geometry.VertexTypes;
-using SharpGLTF.Geometry;
 using SharpGLTF.Scenes;
 using SharpGLTF.Schema2;
 using SharpGLTF.Transforms;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using Wkx;
+using System.Text.Json.Nodes;
+using SharpGLTF.Schema2.Tiles3D;
 
 namespace i3dm.export;
 
@@ -46,7 +44,12 @@ public static class TileHandler
 
             if (useGpuInstancing)
             {
-                var bytesGlb = GetGpuGlb(model, modelInstances, translate, UseScaleNonUniform);
+                foreach (var instance in instances)
+                {
+                    tags.Add(instance.Tags);
+                }
+
+                var bytesGlb = GetGpuGlb(model, modelInstances, translate, UseScaleNonUniform, tags);
                 tiles.Add(bytesGlb);
             }
             else
@@ -94,12 +97,14 @@ public static class TileHandler
         return vec;
     }
 
-    private static byte[] GetGpuGlb(object model, List<Instance> positions, Vector3 translate, bool UseScaleNonUniform)
+    private static byte[] GetGpuGlb(object model, List<Instance> positions, Vector3 translate, bool UseScaleNonUniform, List<JArray> tags)
     {
         var modelRoot = ModelRoot.Load((string)model);
         var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder();
 
         var sceneBuilder = new SceneBuilder();
+
+        var pointId = 0;
 
         foreach (var p in positions)
         {
@@ -124,12 +129,50 @@ public static class TileHandler
                 scale,
                 quaternion,
                 translation);
-            sceneBuilder.AddRigidMesh(meshBuilder, transformation);
+            var json = "{\"_FEATURE_ID_0\":" + pointId + "}";
+            sceneBuilder.AddRigidMesh(meshBuilder, transformation).WithExtras(JsonNode.Parse(json));
+            pointId++;
         }
 
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
         var gltf = sceneBuilder.ToGltf2(settings);
+
+        var rootMetadata = gltf.UseStructuralMetadata();
+        var schema = rootMetadata.UseEmbeddedSchema("schema");
+        var schemaClass = schema.UseClassMetadata("propertyTable");
+
+        if(tags.Count > 0)
+        {
+            var propertyTable = schemaClass.AddPropertyTable(positions.Count);
+
+            if (tags[0] != null)
+            {
+                var properties = TinyJson.GetProperties(tags[0]);
+                foreach(var property in properties)
+                {
+                    var values = TinyJson.GetValues(tags, property);
+
+                    var nameProperty = schemaClass
+                    .UseProperty(property)
+                    .WithStringType();
+
+                    // todo: use other types than string
+                    var strings = values.Select(s => s.ToString()).ToArray();
+
+                    propertyTable
+                        .UseProperty(nameProperty)
+                        .SetValues(strings);
+                }
+            }
+
+
+            var featureId0 = new FeatureIDBuilder(positions.Count, 0, propertyTable);
+            gltf.LogicalNodes[0].AddInstanceFeatureIds(featureId0);
+
+        }
+
+
         var bytes = gltf.WriteGLB().Array;
         return bytes;
     }

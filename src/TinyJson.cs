@@ -42,7 +42,7 @@ public static class TinyJson
         return resres;
     }
 
-    private static List<object> GetValues(List<JArray> tags, string prop)
+    public static List<object> GetValues(List<JArray> tags, string prop)
     {
         var res = new List<Object>();
         foreach (var tag in tags)

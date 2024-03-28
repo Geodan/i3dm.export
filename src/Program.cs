@@ -3,6 +3,7 @@ using Dapper;
 using i3dm.export.Cesium;
 using i3dm.export.extensions;
 using Npgsql;
+using SharpGLTF.Schema2;
 using ShellProgressBar;
 using subtree;
 using System;
@@ -97,6 +98,7 @@ class Program
             if ((bool)o.UseGpuInstancing)
             {
                 translate = new Vector3((float)center_wgs84.X, (float)center_wgs84.Y, (float)center_wgs84.Z);
+                Tiles3DExtensions.RegisterExtensions();
             }
 
             var options = new ProgressBarOptions
