@@ -2,6 +2,8 @@
 using I3dm.Tile;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using SharpGLTF.Schema2;
+using SharpGLTF.Schema2.Tiles3D;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,28 +16,37 @@ public class TileHandlerTests
     [Test]
     public void GetGpuTileTest()
     {
+        Tiles3DExtensions.RegisterExtensions();
+
         // arrange
         var instances = new List<Instance>();
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2, 0);
         instance.Scale = 1;
         instance.Model = "Box.glb";
+        instance.Tags = JArray.Parse("[{'id':123},{'name': 'test'}]");
         instances.Add(instance);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Cesium, Vector3.Zero,useGpuInstancing:true);
+        var tile = TileHandler.GetTile(instances, Format.Cesium, Vector3.Zero, useGpuInstancing: true);
 
         var fileName = Path.Combine(TestContext.CurrentContext.WorkDirectory, "ams_building_multiple_colors.glb");
         File.WriteAllBytes(fileName, tile);
 
-        var model = SharpGLTF.Schema2.ModelRoot.Load(fileName);
-        
+        var model = ModelRoot.Load(fileName);
+        var extInstanceFeaturesExtension = model.LogicalNodes[0].GetExtension<MeshExtInstanceFeatures>();
+
+        var extStructuralMetadataExtension = model.GetExtension<EXTStructuralMetadataRoot>();
+        Assert.That(extStructuralMetadataExtension != null);
+
+        var fid0 = extInstanceFeaturesExtension.FeatureIds[0];
+        Assert.That(fid0.FeatureCount == 1);
+
+
         // assert
         // todo: can we read the instance positions from the glb?
         Assert.That(tile.Length > 0);
     }
-
-
 
     [Test]
     public void GetTileTest()
@@ -164,7 +175,7 @@ public class TileHandlerTests
         instances.Add(instance1);
 
         // act
-        var tile = TileHandler.GetTile(instances, Format.Mapbox,translate: new Vector3(5, 5, 0));
+        var tile = TileHandler.GetTile(instances, Format.Mapbox, translate: new Vector3(5, 5, 0));
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 

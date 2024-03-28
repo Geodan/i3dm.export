@@ -5,15 +5,15 @@
     <TargetFramework>net6.0</TargetFramework>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
-	<Version>2.6.0</Version>
-	<AssemblyVersion>2.6.0</AssemblyVersion>
-	<FileVersion>2.6.0</FileVersion>
+	<Version>2.7.0</Version>
+	<AssemblyVersion>2.7.0</AssemblyVersion>
+	<FileVersion>2.7.0</FileVersion>
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	<PackageTags>i3dm 3dtiles mapbox</PackageTags>
 	<PackageReleaseNotes>add cesium support</PackageReleaseNotes>
-	<Description>Console tool for exporting instanced 3D Tiles (i3dm's) and tileset.json from PostGIS table.</Description>
+	<Description>Console tool for exporting instanced 3D Tiles (glb or i3dm's) and tileset.json from PostGIS table.</Description>
 	<Company>Geodan</Company>
 	<Authors>Bert Temme</Authors>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>

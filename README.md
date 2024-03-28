@@ -1,11 +1,10 @@
 # i3dm.export
 
-Console tool for exporting Instanced 3D Models (i3dm's), i3dm composites (cmpt) and tileset.json from PostGIS table. 
+Console tool for exporting Instanced 3D Models (i3dm's or glb), i3dm composites (cmpt) and tileset.json from PostGIS table. 
 
 The input table contains instance information like location (epsg:4326), binary glTF model (glb), scale, rotation and instance attributes. 
 
 The 3D tiles created by this tool are tested in Cesium JS.
-
 
 MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles) is NOT supported at the moment.
 
@@ -202,7 +201,15 @@ There is an experimental option to create 3D Tiles 1.1 using GPU instancing: --u
 
 This option is currently in development. 
 
-The following features should work: Positioning, Rotation (roll, pitch, yaw) and Scaling of instances.
+Live demo trees in Grenoble with GPU instancing and metadata:
+
+https://bertt.github.io/cesium_3dtiles_samples/samples/1.1/grenoble_trees/
+
+The following features should work: 
+
+- Attribute information from tags using EXT_structural_metadata, EXT_mesh_gpu_instancing and EXT_instance_features. 
+
+- Positioning, Rotation (roll, pitch, yaw) and Scaling of instances.
 
 To use this option, the input table should contain columns 'roll', 'pitch' and 'yaw' (column 'rotation' is not used).
 
@@ -217,9 +224,9 @@ alter table instances drop column rotation
 
 The columns should be filled with radian angles (0 - 2PI).
 
-The following features are not yet supported when using use_gpu_instancing: 
+Known limits:
 
-- batch information (EXT_Mesh_Features/EXT_Structural_Metadata)
+- When using GPU instancing, the column type 'string' is used (so no support for other types yet). 
 
 - composite tiles (formerly known as cmpt). When there are multiple models in the input table only the first one is used.
 
@@ -252,6 +259,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2023-03-28: release 2.7.0: add support for EXT_structural_metadata
 
 2023-11-08: release 2.6.0: Add support for GPU instancing (experimental), removed option -r RTC_CENTER 
 
