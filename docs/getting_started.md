@@ -110,8 +110,6 @@ An 'output' directory will be created with a tiles subdirectory containing tiles
 
 Put the Cesium client (index.html and from directory samples\traffic_lights\cesium ) and the output folder with tiles on a webserver.
 
-Live demo: todo
-
 Result should look like:
 
 ![screenshot](traffic_cesium.png)
