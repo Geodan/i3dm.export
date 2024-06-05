@@ -8,6 +8,7 @@ using ShellProgressBar;
 using subtree;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -32,6 +33,9 @@ class Program
             SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
+
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
 
             Console.WriteLine("Tool: I3dm.export");
             Console.WriteLine("Version: " + version);
@@ -126,12 +130,14 @@ class Program
             }
 
             Console.WriteLine($"Maximum instances per tile: " + o.MaxFeaturesPerTile);
+            Console.WriteLine("Start generating tiles...");
 
             var tile = new Tile(0, 0, 0);
             var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, translate, (bool)o.UseGpuInstancing);
-            Console.WriteLine("Start generating tiles...");
+
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");
+            Console.WriteLine("Start writing tileset files...");
 
             var subtreeFiles = SubtreeCreator.GenerateSubtreefiles(tiles);
             foreach (var s in subtreeFiles)
@@ -140,19 +146,26 @@ class Program
                 var subtreefile = $"{subtreesDirectory}{Path.AltDirectorySeparatorChar}{t.Z}_{t.X}_{t.Y}.subtree";
                 File.WriteAllBytes(subtreefile, s.Value);
             }
-            Console.WriteLine($"Subtree tiles written: {subtreeFiles.Count}");
 
             var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 2;
             var availableLevels = tiles.Max(t => t.Z) + 1;
 
             var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, translate, (bool)o.UseGpuInstancing, transform);
             var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
+            Console.WriteLine($"Subtree files written: {subtreeFiles.Count}");
             Console.WriteLine("SubtreeLevels: " + subtreeLevels);
             Console.WriteLine("SubdivisionScheme: QUADTREE");
             Console.WriteLine("Refine method: ADD");
             Console.WriteLine($"Geometric error: {o.GeometricError}");
             Console.WriteLine($"Writing {file}...");
             File.WriteAllText(file, tilesetjson);
+
+
+            stopWatch.Stop();
+
+            var timeSpan = stopWatch.Elapsed;
+            Console.WriteLine("Time: {0}h {1}m {2}s {3}ms", Math.Floor(timeSpan.TotalHours), timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
+
             Console.WriteLine("End of process");
         });
     }
