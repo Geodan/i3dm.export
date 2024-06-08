@@ -7,7 +7,7 @@ namespace i3dm.export;
 
 public static class TreeSerializer
 {
-    public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version, Vector3 translate, bool useGpuInstancing = false, double[] transform=null)
+    public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version, Vector3 translate, bool useGpuInstancing = false)
     {
         var tileset = new TileSet
         {
@@ -21,10 +21,6 @@ public static class TreeSerializer
         root.content = content;
         var subtrees = new Subtrees() { uri = "subtrees/{level}_{x}_{y}.subtree" };
         root.implicitTiling = new Implicittiling() { subdivisionScheme = "QUADTREE", availableLevels = availableLevels, subtreeLevels = subtreeLevels, subtrees = subtrees };
-        if (useGpuInstancing)
-        {
-            root.transform = transform;
-        };
         tileset.root = root;
         var json = JsonConvert.SerializeObject(tileset, Formatting.Indented, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
         return json;

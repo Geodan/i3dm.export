@@ -100,7 +100,11 @@ public static class TileHandler
     private static byte[] GetGpuGlb(object model, List<Instance> positions, Vector3 translate, bool UseScaleNonUniform, List<JArray> tags)
     {
         var modelRoot = ModelRoot.Load((string)model);
+
         var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder();
+
+
+        var node = modelRoot.LogicalNodes.First().CreateNode("test").WithLocalTranslation(translate); 
 
         var sceneBuilder = new SceneBuilder();
 
@@ -109,25 +113,37 @@ public static class TileHandler
         foreach (var p in positions)
         {
             var point = (Point)p.Position;
-
-            var dx = DistanceCalculator.GetDistanceTo(translate.X, translate.Y, (double)point.X, translate.Y);
-            var dy = DistanceCalculator.GetDistanceTo(translate.X, translate.Y, translate.X, (double)point.Y);
-
-            dx = (double)point.X - translate.X > 0 ? dx : -dx;
-            dy = (double)point.Y - translate.Y > 0 ? -dy : dy;
-
-            var dz = (double)point.Z - translate.Z;
-            var p1 = new Point(dx, dz, dy);
+            var p1 = new Point((double)point.X, (double)point.Z, (double)point.Y * -1);
             var scale = UseScaleNonUniform ?
                 new Vector3((float)p.ScaleNonUniform[0], (float)p.ScaleNonUniform[1], (float)p.ScaleNonUniform[2]) :
                 new Vector3((float)p.Scale, (float)p.Scale, (float)p.Scale);
 
-            var quaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
+            var enu = EnuCalculator.GetLocalEnu(Format.Cesium, 0, new Vector3((float)point.X, (float)point.Y, (float)point.Z));
+
+            var forward = Vector3.Cross(enu.East, enu.Up);
+            forward = Vector3.Normalize(forward);
+            var m4 = new Matrix4x4();
+            m4.M11 = enu.East.X;
+            m4.M21 = enu.East.Y;
+            m4.M31 = enu.East.Z;
+
+            m4.M12 = enu.Up.X;
+            m4.M22 = enu.Up.Y;
+            m4.M32 = enu.Up.Z;
+
+            m4.M13 = forward.X;
+            m4.M23 = forward.Y;
+            m4.M33 = forward.Z;
+            var res = Quaternion.CreateFromRotationMatrix(m4);
+
             var translation = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
 
+            // todo: make translation relative
+            // todo: use quaternion for yaw/pitch/roll
+            // var quaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
             var transformation = new AffineTransform(
                 scale,
-                quaternion,
+                new Quaternion(-res.X, -res.Z, res.Y, res.W),
                 translation);
             var json = "{\"_FEATURE_ID_0\":" + pointId + "}";
             sceneBuilder.AddRigidMesh(meshBuilder, transformation).WithExtras(JsonNode.Parse(json));
@@ -136,6 +152,7 @@ public static class TileHandler
 
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
+
         var gltf = sceneBuilder.ToGltf2(settings);
 
         var rootMetadata = gltf.UseStructuralMetadata();

@@ -3,7 +3,6 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net.Http;
 using Wkx;
 
 namespace i3dm.export;
