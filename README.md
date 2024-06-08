@@ -262,6 +262,8 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
+2024-06-08: release 2.7.1: fix for disappearing instances 
+
 2023-03-28: release 2.7.0: add support for EXT_structural_metadata
 
 2023-11-08: release 2.6.0: Add support for GPU instancing (experimental), removed option -r RTC_CENTER 
