@@ -16,7 +16,7 @@ namespace i3dm.export;
 
 public static class TileHandler
 {
-    public static byte[] GetTile(List<Instance> instances, Format format, Vector3 translate, bool UseExternalModel = false, bool UseScaleNonUniform = false, bool useGpuInstancing = false)
+    public static byte[] GetTile(List<Instance> instances, Format format, bool UseExternalModel = false, bool UseScaleNonUniform = false, bool useGpuInstancing = false)
     {
         if (useGpuInstancing && instances.Select(s => s.Model).Distinct().Count() > 1)
         {
@@ -49,13 +49,13 @@ public static class TileHandler
                     tags.Add(instance.Tags);
                 }
 
-                var bytesGlb = GetGpuGlb(model, modelInstances, translate, UseScaleNonUniform, tags);
+                var bytesGlb = GetGpuGlb(model, modelInstances, UseScaleNonUniform, tags);
                 tiles.Add(bytesGlb);
             }
             else
             {
-                CalculateArrays(modelInstances, format, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, translate);
-                var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, translate, UseExternalModel, UseScaleNonUniform);
+                CalculateArrays(modelInstances, format, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
+                var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform);
                 var bytesI3dm = I3dmWriter.Write(i3dm);
                 tiles.Add(bytesI3dm);
             }
@@ -66,14 +66,14 @@ public static class TileHandler
         return bytes;
     }
 
-    private static void CalculateArrays(List<Instance> instances, Format format, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Vector3 translate)
+    private static void CalculateArrays(List<Instance> instances, Format format, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags)
     {
         foreach (var instance in instances)
         {
             var pos = (Point)instance.Position;
             var positionVector3 = new Vector3((float)pos.X, (float)pos.Y, (float)pos.Z.GetValueOrDefault());
 
-            var vec = GetPosition((Point)instance.Position, translate);
+            var vec = GetPosition((Point)instance.Position);
             positions.Add(vec);
 
             if (!UseScaleNonUniform)
@@ -91,13 +91,13 @@ public static class TileHandler
         }
     }
 
-    private static Vector3 GetPosition(Point p, Vector3 translate)
+    private static Vector3 GetPosition(Point p)
     {
-        var vec = new Vector3((float)(p.X - translate.X), (float)(p.Y - translate.Y), (float)(p.Z.GetValueOrDefault() - translate.Z));
+        var vec = new Vector3((float)(p.X), (float)(p.Y), (float)(p.Z.GetValueOrDefault()));
         return vec;
     }
 
-    private static byte[] GetGpuGlb(object model, List<Instance> positions, Vector3 translate, bool UseScaleNonUniform, List<JArray> tags)
+    private static byte[] GetGpuGlb(object model, List<Instance> positions, bool UseScaleNonUniform, List<JArray> tags)
     {
         var modelRoot = ModelRoot.Load((string)model);
         var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder();
@@ -110,24 +110,39 @@ public static class TileHandler
         {
             var point = (Point)p.Position;
 
-            var dx = DistanceCalculator.GetDistanceTo(translate.X, translate.Y, (double)point.X, translate.Y);
-            var dy = DistanceCalculator.GetDistanceTo(translate.X, translate.Y, translate.X, (double)point.Y);
+            var p1 = new Point((double)point.X, (double)point.Z, (double)point.Y * -1);
 
-            dx = (double)point.X - translate.X > 0 ? dx : -dx;
-            dy = (double)point.Y - translate.Y > 0 ? -dy : dy;
-
-            var dz = (double)point.Z - translate.Z;
-            var p1 = new Point(dx, dz, dy);
             var scale = UseScaleNonUniform ?
                 new Vector3((float)p.ScaleNonUniform[0], (float)p.ScaleNonUniform[1], (float)p.ScaleNonUniform[2]) :
                 new Vector3((float)p.Scale, (float)p.Scale, (float)p.Scale);
 
-            var quaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
+            var enu = EnuCalculator.GetLocalEnu(Format.Cesium, 0, new Vector3((float)point.X, (float)point.Y, (float)point.Z));
+
+            var forward = Vector3.Cross(enu.East, enu.Up);
+            forward = Vector3.Normalize(forward);
+            var m4 = new Matrix4x4();
+            m4.M11 = enu.East.X;
+            m4.M21 = enu.East.Y;
+            m4.M31 = enu.East.Z;
+
+            m4.M12 = enu.Up.X;
+            m4.M22 = enu.Up.Y;
+            m4.M32 = enu.Up.Z;
+
+            m4.M13 = forward.X;
+            m4.M23 = forward.Y;
+            m4.M33 = forward.Z;
+            var res = Quaternion.CreateFromRotationMatrix(m4);
+
             var translation = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
+
+            // todo: make translation relative? 
+            // todo: use quaternion for yaw/pitch/roll
+            // var quaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
 
             var transformation = new AffineTransform(
                 scale,
-                quaternion,
+                new Quaternion(-res.X, -res.Z, res.Y, res.W),
                 translation);
             var json = "{\"_FEATURE_ID_0\":" + pointId + "}";
             sceneBuilder.AddRigidMesh(meshBuilder, transformation).WithExtras(JsonNode.Parse(json));
@@ -177,7 +192,7 @@ public static class TileHandler
         return bytes;
     }
 
-    private static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, Vector3 translate, bool UseExternalModel = false, bool UseScaleNonUniform = false)
+    private static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false)
     {
         I3dm.Tile.I3dm i3dm = null;
 
@@ -209,7 +224,6 @@ public static class TileHandler
 
         i3dm.NormalUps = normalUps;
         i3dm.NormalRights = normalRights;
-        i3dm.RtcCenter = translate;
 
         if (tags[0] != null)
         {

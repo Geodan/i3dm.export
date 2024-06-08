@@ -1,6 +1,5 @@
 ﻿using CommandLine;
 using Dapper;
-using i3dm.export.Cesium;
 using i3dm.export.extensions;
 using Npgsql;
 using SharpGLTF.Schema2;
@@ -50,11 +49,10 @@ class Program
             }
 
             var conn = new NpgsqlConnection(o.ConnectionString);
-            var epsg = (bool)o.UseGpuInstancing ? 4326: 4978;
+            var epsg = 4978;
 
             var heightsArray = o.BoundingVolumeHeights.Split(',');
             var heights = new double[2] { double.Parse(heightsArray[0]), double.Parse(heightsArray[1]) };
-            Console.WriteLine($"Heights for bounding volume: [{heights[0]} m, {heights[1]} m] ");
             if (o.Query != string.Empty)
             {
                 Console.WriteLine($"Query: {o.Query}");
@@ -85,23 +83,8 @@ class Program
 
             var center_wgs84 = bbox_wgs84.GetCenter();
 
-            Vector3 translate;
-
-            translate = SpatialConverter.GeodeticToEcef((double)center_wgs84.X, (double)center_wgs84.Y, (double)center_wgs84.Z);
-
-            var t1 = Transforms.EastNorthUpToFixedFrame(translate);
-
-            var transform = new Double[] {
-                t1.M11,t1.M21, t1.M31, t1.M41,
-                t1.M12,t1.M22, t1.M32, t1.M42,
-                t1.M13,t1.M23, t1.M33, t1.M43,
-                t1.M14,t1.M24, t1.M34, t1.M44
-            };
-
-
             if ((bool)o.UseGpuInstancing)
             {
-                translate = new Vector3((float)center_wgs84.X, (float)center_wgs84.Y, (float)center_wgs84.Z);
                 Tiles3DExtensions.RegisterExtensions();
             }
 
@@ -133,11 +116,10 @@ class Program
             Console.WriteLine("Start generating tiles...");
 
             var tile = new Tile(0, 0, 0);
-            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, translate, (bool)o.UseGpuInstancing);
+            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, (bool)o.UseGpuInstancing);
 
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");
-            Console.WriteLine("Start writing tileset files...");
 
             var subtreeFiles = SubtreeCreator.GenerateSubtreefiles(tiles);
             foreach (var s in subtreeFiles)
@@ -150,7 +132,7 @@ class Program
             var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 2;
             var availableLevels = tiles.Max(t => t.Z) + 1;
 
-            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, translate, (bool)o.UseGpuInstancing, transform);
+            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, (bool)o.UseGpuInstancing);
             var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
             Console.WriteLine($"Subtree files written: {subtreeFiles.Count}");
             Console.WriteLine("SubtreeLevels: " + subtreeLevels);
