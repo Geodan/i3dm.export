@@ -135,6 +135,8 @@ public static class TileHandler
             m4.M13 = forward.X;
             m4.M23 = forward.Y;
             m4.M33 = forward.Z;
+
+            var instanceQuaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
             var res = Quaternion.CreateFromRotationMatrix(m4);
 
             var position = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
@@ -147,12 +149,9 @@ public static class TileHandler
 
             var position2 = position - translation;
 
-            // todo: use quaternion for yaw/pitch/roll
-            // var quaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
-
             var transformation = new AffineTransform(
                 scale,
-                new Quaternion(-res.X, -res.Z, res.Y, res.W),
+                new Quaternion(-res.X, -res.Z, res.Y, res.W) * instanceQuaternion,
                 position2);
             var json = "{\"_FEATURE_ID_0\":" + pointId + "}";
             sceneBuilder.AddRigidMesh(meshBuilder, transformation).WithExtras(JsonNode.Parse(json));
