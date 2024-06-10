@@ -11,7 +11,7 @@
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
-	<PackageTags>i3dm 3dtiles mapbox</PackageTags>
+	<PackageTags>i3dm 3dtiles cesium</PackageTags>
 	<PackageReleaseNotes>add cesium support</PackageReleaseNotes>
 	<Description>Console tool for exporting instanced 3D Tiles (glb or i3dm's) and tileset.json from PostGIS table.</Description>
 	<Company>Geodan</Company>
