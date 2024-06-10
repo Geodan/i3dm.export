@@ -8,7 +8,6 @@ public static class CesiumTransformer
     public static (Vector3 East, Vector3 Up) GetEastUp(Vector3 position, double rotation = 0)
     {
         var GD_transform = SpatialConverter.EcefToEnu(position);
-        // var eu = LocalSystem.GetLocalEnuMapbox(rotation);
         var eu = GetLocalEnuCesium(rotation);
         var EFeast = ToGlobal(eu.East, GD_transform);
         var EFUp = ToGlobal(eu.Up, GD_transform);

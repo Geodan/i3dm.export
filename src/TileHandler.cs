@@ -16,7 +16,7 @@ namespace i3dm.export;
 
 public static class TileHandler
 {
-    public static byte[] GetTile(List<Instance> instances, Format format, bool UseExternalModel = false, bool UseScaleNonUniform = false, bool useGpuInstancing = false)
+    public static byte[] GetTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false, bool useGpuInstancing = false)
     {
         if (useGpuInstancing && instances.Select(s => s.Model).Distinct().Count() > 1)
         {
@@ -54,7 +54,7 @@ public static class TileHandler
             }
             else
             {
-                CalculateArrays(modelInstances, format, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
+                CalculateArrays(modelInstances, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
                 var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform);
                 var bytesI3dm = I3dmWriter.Write(i3dm);
                 tiles.Add(bytesI3dm);
@@ -66,7 +66,7 @@ public static class TileHandler
         return bytes;
     }
 
-    private static void CalculateArrays(List<Instance> instances, Format format, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags)
+    private static void CalculateArrays(List<Instance> instances, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags)
     {
         foreach (var instance in instances)
         {
@@ -84,7 +84,7 @@ public static class TileHandler
             {
                 scalesNonUniform.Add(new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]));
             }
-            var (East, North, Up) = EnuCalculator.GetLocalEnu(format, instance.Rotation, positionVector3);
+            var (East, North, Up) = EnuCalculator.GetLocalEnu(instance.Rotation, positionVector3);
             normalUps.Add(Up);
             normalRights.Add(East);
             tags.Add(instance.Tags);
@@ -116,7 +116,7 @@ public static class TileHandler
                 new Vector3((float)p.ScaleNonUniform[0], (float)p.ScaleNonUniform[1], (float)p.ScaleNonUniform[2]) :
                 new Vector3((float)p.Scale, (float)p.Scale, (float)p.Scale);
 
-            var enu = EnuCalculator.GetLocalEnu(Format.Cesium, 0, new Vector3((float)point.X, (float)point.Y, (float)point.Z));
+            var enu = EnuCalculator.GetLocalEnu(0, new Vector3((float)point.X, (float)point.Y, (float)point.Z));
 
             var forward = Vector3.Cross(enu.East, enu.Up);
             forward = Vector3.Normalize(forward);

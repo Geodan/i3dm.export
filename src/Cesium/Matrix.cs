@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 
 namespace i3dm.export.Cesium;
-
 public static class Matrix
 {
     public static Matrix4x4 GetMatrix(Vector3 position, Vector3 eastNormalize, Vector3 northNormalized, Vector3 upNormalize)

@@ -6,8 +6,6 @@ The input table contains instance information like location (epsg:4326), binary 
 
 The 3D tiles created by this tool are tested in Cesium JS.
 
-MapBox GL JS (using https://github.com/Geodan/mapbox-3dtiles) is NOT supported at the moment.
-
 Sample of trees in Cesium viewer using instanced 3D Tiles in Lyon:
 
 ![image](https://github.com/Geodan/i3dm.export/assets/538812/f67c6126-64be-42a9-9ee5-8f64c452c4aa)
@@ -73,8 +71,6 @@ Tool parameters:
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
-
--f, --format: (optional - default Cesium) Output format mapbox/cesium
 
 --use_external_model: (optional - default false) Use external model instead of embedded model
 

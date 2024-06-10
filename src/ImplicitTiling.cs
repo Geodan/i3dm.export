@@ -3,7 +3,6 @@ using subtree;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Numerics;
 using Wkx;
 
 namespace i3dm.export;
@@ -87,7 +86,7 @@ public static class ImplicitTiling
     private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int epsg, string where, bool useGpuInstancing = false)
     {
         var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
-        var tile = TileHandler.GetTile(instances, o.Format, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform,  useGpuInstancing);
+        var tile = TileHandler.GetTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform,  useGpuInstancing);
         return tile;
     }
 }

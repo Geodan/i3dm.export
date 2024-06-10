@@ -2,11 +2,6 @@
 
 namespace i3dm.export;
 
-public enum Format {
-    Mapbox,
-    Cesium
-}
-
 public class Options
 {
     [Option('c', "connection", Required = true, HelpText = "database connection string")]
@@ -29,9 +24,6 @@ public class Options
 
     [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
     public bool? UseScaleNonUniform { get; set; }
-
-    [Option('f', "format", Required = false, Default = Format.Cesium, HelpText = "Output format mapbox/cesium")]
-    public Format Format { get; set; }
     
     [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
     public string Query { get; set; }
