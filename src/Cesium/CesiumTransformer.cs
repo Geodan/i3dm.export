@@ -1,20 +1,10 @@
 ﻿using System;
 using System.Numerics;
-using Wkx;
 
 namespace i3dm.export.Cesium;
 
 public static class CesiumTransformer
 {
-    public static double[] GetTransformer(Point p, decimal[] scale, double heading)
-    {
-        var center = SpatialConverter.GeodeticToEcef((double)p.X, (double)p.Y, (double)p.Z);
-        var GD_transform = SpatialConverter.EcefToEnu(center);
-        var transform = Flatten.Flattener(GD_transform, scale);
-        transform = Rotator.TransformRotateAroundZ(transform, heading);
-        return transform;
-    }
-
     public static (Vector3 East, Vector3 Up) GetEastUp(Vector3 position, double rotation = 0)
     {
         var GD_transform = SpatialConverter.EcefToEnu(position);
