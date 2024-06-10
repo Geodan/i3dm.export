@@ -106,6 +106,9 @@ public static class TileHandler
 
         var pointId = 0;
 
+        Vector3 translation = Vector3.One;
+        bool first = true;
+
         foreach (var p in positions)
         {
             var point = (Point)p.Position;
@@ -134,16 +137,23 @@ public static class TileHandler
             m4.M33 = forward.Z;
             var res = Quaternion.CreateFromRotationMatrix(m4);
 
-            var translation = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
+            var position = new Vector3((float)p1.X, (float)p1.Y, (float)p1.Z);
 
-            // todo: make translation relative? 
+            if (first)
+            {
+                translation = position;
+                first = false;
+            }
+
+            var position2 = position - translation;
+
             // todo: use quaternion for yaw/pitch/roll
             // var quaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
 
             var transformation = new AffineTransform(
                 scale,
                 new Quaternion(-res.X, -res.Z, res.Y, res.W),
-                translation);
+                position2);
             var json = "{\"_FEATURE_ID_0\":" + pointId + "}";
             sceneBuilder.AddRigidMesh(meshBuilder, transformation).WithExtras(JsonNode.Parse(json));
             pointId++;
@@ -184,9 +194,10 @@ public static class TileHandler
 
             var featureId0 = new FeatureIDBuilder(positions.Count, 0, propertyTable);
             gltf.LogicalNodes[0].AddInstanceFeatureIds(featureId0);
-
         }
-
+        
+        // todo: use exisiting transformation...
+        gltf.LogicalNodes[0].LocalTransform = Matrix4x4.CreateTranslation(translation);
 
         var bytes = gltf.WriteGLB().Array;
         return bytes;
