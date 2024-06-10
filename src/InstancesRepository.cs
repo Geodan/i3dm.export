@@ -86,6 +86,11 @@ public static class InstancesRepository
         xmax = xmax + (xmax - xmin) * 0.1;
         ymax = ymax + (ymax - ymin) * 0.1;
 
+        xmin = xmin < -180 ? -180 : xmin;
+        xmax = xmax > 180 ? 180 : xmax;
+        ymin = ymin < -90 ? -90 : ymin;
+        ymax = ymax > 90 ? 90 : ymax;
+
         var bbox = new BoundingBox(xmin, ymin, xmax, ymax);
         return (bbox, zmin, zmax);
     }
