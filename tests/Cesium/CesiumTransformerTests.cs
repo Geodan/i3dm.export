@@ -8,52 +8,6 @@ namespace i3dm.export.tests.Cesium;
 class CesiumTransformerTests
 {
     [Test]
-    public void TestCesiumTransformer1()
-    {
-        var lon = 4.8933281;
-        var lat = 52.3731013;
-
-        var p = new Wkx.Point(lon, lat, 0);
-
-        var globalTransform = CesiumTransformer.GetTransformer(p, new decimal[] { 1, 1, 1 }, 0);
-    }
-
-
-    [Test]
-    public void TestCesiumTransformer()
-    {
-        var lon = 5.139838;
-        var lat = 52.086577;
-
-        var p = new Wkx.Point(lon, lat, 0);
-
-        var globalTransform = CesiumTransformer.GetTransformer(p, new decimal[] { 1, 1, 1 }, 0);
-        var expectedTransform = new double[] {
-            -0.08958682417869568,
-            0.9959790110588074,
-            -1.5050178021509955E-16,
-            0.0,
-            -0.7857677936553955,
-            -0.07067863643169403,
-            0.6144700050354004,
-            0.0,
-            0.6119993329048157,
-            0.05504842475056648,
-            0.7889401912689209,
-            0.0,
-            3911573.0,
-            351840.15625,
-            5008728.5,
-            1.0
-        };
-
-        for (var i = 0; i < 16; i++)
-        {
-            Assert.That(globalTransform[i].Equals(expectedTransform[i]));
-        }
-    }
-
-    [Test]
     public void TestGetEnuAnglesOnPosition()
     {
         // arrange

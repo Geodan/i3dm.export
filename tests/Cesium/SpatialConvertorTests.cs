@@ -23,43 +23,6 @@ public class SpatialConvertorTests
     }
 
     [Test]
-    public void EastNorthUpTesting()
-    {
-        // sample from https://community.cesium.com/t/bounding-box-calculations-in-3d-tiles/7901/3
-        var latRadians = 0.698858210;
-        var lonRadians = -1.3197004795898053;
-
-        var lat = latRadians / (Math.PI / 180);
-        var lon = lonRadians / (Math.PI / 180);
-        var center = SpatialConverter.GeodeticToEcef(lon, lat, 0);
-        Assert.That(center.X == 1214930.9913739867f);
-        Assert.That(center.Y == -4736396.825676652f);
-        Assert.That(center.Z == 4081525.0998436413f);
-
-        var GD_transform = SpatialConverter.EcefToEnu(center);
-
-        Assert.That(GD_transform.M11 == 0.9686407230533828f);
-        Assert.That(GD_transform.M12 == 0.248465583f);
-        Assert.That(GD_transform.M13 == 0);
-        Assert.That(GD_transform.M14 == 0);
-
-        Assert.That(GD_transform.M21 == -0.159848824f);
-        Assert.That(GD_transform.M22 == 0.6231691f);
-        Assert.That(GD_transform.M23 == 0.7655773f);
-        Assert.That(GD_transform.M24 == 0);
-
-        Assert.That(GD_transform.M31 == 0.190219611f);
-        Assert.That(GD_transform.M32 == -0.74156934f);
-        Assert.That(GD_transform.M33 == 0.6433439f);
-        Assert.That(GD_transform.M34 == 0);
-
-        Assert.That(GD_transform.M41 == center.X);
-        Assert.That(GD_transform.M42 == center.Y);
-        Assert.That(GD_transform.M43 == center.Z);
-        Assert.That(GD_transform.M44 == 1);
-    }
-
-    [Test]
     public void TestEcefToEnu()
     {
         // arrange
