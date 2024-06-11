@@ -161,40 +161,40 @@ public static class TileHandler
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
         var gltf = sceneBuilder.ToGltf2(settings);
+        PropertyTable propertyTable = null;
 
-        var rootMetadata = gltf.UseStructuralMetadata();
-        var schema = rootMetadata.UseEmbeddedSchema("schema");
-        var schemaClass = schema.UseClassMetadata("propertyTable");
-
-        if(tags.Count > 0)
+        if (tags.Count > 0 && tags[0] != null)
         {
-            var propertyTable = schemaClass.AddPropertyTable(positions.Count);
+            var rootMetadata = gltf.UseStructuralMetadata();
+            var schema = rootMetadata.UseEmbeddedSchema("schema");
+            var schemaClass = schema.UseClassMetadata("propertyTable");
 
-            if (tags[0] != null)
+            propertyTable = schemaClass.AddPropertyTable(positions.Count);
+
+            var properties = TinyJson.GetProperties(tags[0]);
+            foreach (var property in properties)
             {
-                var properties = TinyJson.GetProperties(tags[0]);
-                foreach(var property in properties)
-                {
-                    var values = TinyJson.GetValues(tags, property);
+                var values = TinyJson.GetValues(tags, property);
 
-                    var nameProperty = schemaClass
-                    .UseProperty(property)
-                    .WithStringType();
+                var nameProperty = schemaClass
+                .UseProperty(property)
+                .WithStringType();
 
-                    // todo: use other types than string
-                    var strings = values.Select(s => s.ToString()).ToArray();
+                // todo: use other types than string
+                var strings = values.Select(s => s.ToString()).ToArray();
 
-                    propertyTable
-                        .UseProperty(nameProperty)
-                        .SetValues(strings);
-                }
+                propertyTable
+                    .UseProperty(nameProperty)
+                    .SetValues(strings);
             }
-
-
-            var featureId0 = new FeatureIDBuilder(positions.Count, 0, propertyTable);
-            gltf.LogicalNodes[0].AddInstanceFeatureIds(featureId0);
         }
-        
+
+        var featureId0 = propertyTable!= null? 
+            new FeatureIDBuilder(positions.Count, 0, propertyTable):
+            new FeatureIDBuilder(positions.Count, 0);
+
+        gltf.LogicalNodes[0].AddInstanceFeatureIds(featureId0);
+
         // todo: use exisiting transformation...
         gltf.LogicalNodes[0].LocalTransform = Matrix4x4.CreateTranslation(translation);
 
