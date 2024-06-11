@@ -248,7 +248,9 @@ The columns should be filled with radian angles (0 - 2PI).
 
 Known limits:
 
-- When using GPU instancing, the column type 'string' is used (so no support for other types yet). 
+- When using GPU instancing, for the attributes the 'string' is used (so no support for other types yet);
+
+- No support for multiple meshes/nodes in the input model;
 
 - composite tiles (formerly known as cmpt). When there are multiple models in the input table only the first one is used.
 
