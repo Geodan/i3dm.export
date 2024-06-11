@@ -110,6 +110,20 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 
 For getting started with i3dm.export tool see [getting started](docs/getting_started.md).
 
+## Benchmarking
+
+1] Benchmark on Daily Digital Obstacles files
+
+Source: https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dailydof/
+
+588094 instances worldwide 
+
+| Number of intances | 588094  |
+| Content tiles generated | 2345 |
+| Subtree files generated | 372  |
+| Time generating I3dm (--use_gpu_instancing false) |  0h 0m 43s 799ms |
+| Time generating GLB (--use_gpu_instancing true) | 0h 0m 47s 879ms |
+
 ## Model
 
 By default, the instance model will be stored in the i3dm payload. In the i3dm header the value 'gltfFormat' is set to 1. 
