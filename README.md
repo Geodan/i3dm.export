@@ -178,7 +178,9 @@ The root bounding volume in Tileset.json is calculated from the input table in 3
 
 - The values for the boundingbox (xmin, ymin, xmax, ymax) are increased by 10%;
     
-- The height values (zmin, zmax) are increased by the value of setting 'boundingvolume_heights' (default 0,10).  
+- The height values (zmin, zmax) are increased by the value of setting 'boundingvolume_heights' (default 0,10).
+
+Note: Positions outside xmin, ymin, xmax, ymax -180, -90, 180, 90 in wgs84 are not supported.  
 
 ## Scale non uniform
 
@@ -248,7 +250,7 @@ The columns should be filled with radian angles (0 - 2PI).
 
 Known limits:
 
-- When using GPU instancing, for the attributes the 'string' is used (so no support for other types yet);
+- When using GPU instancing, for the attributes the 'string' type is used (so no support for other types yet);
 
 - No support for multiple meshes/nodes in the input model;
 
