@@ -88,11 +88,11 @@ Tool parameters:
 
 See https://hub.docker.com/r/geodan/i3dm.export
 
-To run in Docker mount two drives:
+To run in Docker mount drives:
 
 - /app/output: mount for the result tileset.json, subtree files and content files;
 
-- /glb: mount for the input glb's (remember to add the /glb path to the model in the database, for example  '/glb/my_model.glb'.
+- /glb: mount when using file based input glb's - remember to add the /glb path to the model in the database. For example  '/glb/my_model.glb'.
 
  Example:
 
