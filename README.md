@@ -118,11 +118,13 @@ Source: https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dai
 
 588094 instances worldwide 
 
+|--------------------|---------|
 | Number of intances | 588094  |
 | Content tiles generated | 2345 |
 | Subtree files generated | 372  |
 | Time generating I3dm (--use_gpu_instancing false) |  0h 0m 43s 799ms |
 | Time generating GLB (--use_gpu_instancing true) | 0h 0m 47s 879ms |
+|--------------------|---------|
 
 ## Model
 
