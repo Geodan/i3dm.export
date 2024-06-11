@@ -196,7 +196,7 @@ public static class TileHandler
         gltf.LogicalNodes[0].AddInstanceFeatureIds(featureId0);
 
         // todo: use exisiting transformation...
-        gltf.LogicalNodes[0].LocalTransform = Matrix4x4.CreateTranslation(translation);
+        gltf.LogicalNodes[0].LocalTransform *= Matrix4x4.CreateTranslation(translation);
 
         var bytes = gltf.WriteGLB().Array;
         return bytes;
