@@ -1,6 +1,6 @@
 # i3dm.export
 
-Console tool for exporting Instanced 3D Models (i3dm's or glb's with EXT_mesh_gpu_instancing), i3dm composites (cmpt) and tileset.json from PostGIS table. 
+Console tool for exporting Instanced 3D Models (i3dm's or glb's with EXT_mesh_gpu_instancing), i3dm composites (cmpt), subtree files and tileset.json from PostGIS table. 
 
 The input table contains instance information like location (epsg:4326), binary glTF model (glb), scale, rotation and instance attributes. 
 
