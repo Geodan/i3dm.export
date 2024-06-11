@@ -258,6 +258,8 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
+2024-06-10: release 2.7.2: fix gpu instancing yaw, pitch, roll, remove mapbox code (parameter -f --format)
+
 2024-06-08: release 2.7.1: fix for disappearing instances 
 
 2023-03-28: release 2.7.0: add support for EXT_structural_metadata
