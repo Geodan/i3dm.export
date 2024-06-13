@@ -43,7 +43,7 @@ https://geodan.github.io/i3dm.export/samples/traffic_lights/cesium/
 
 Input database table contains following columns: 
 
-. geom - geometry with Point or PointZ (epsg:4326) for i3dm positions;
+. geom - geometry with Point or PointZ (for example epsg:4326) for i3dm positions;
 
 . scale - double with instance scale (all directions);
 
@@ -285,6 +285,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2024-06-13: release 2.7.3: add support for other input source EPSG codes than 4326
 
 2024-06-10: release 2.7.2: fix gpu instancing yaw, pitch, roll, remove mapbox code (parameter -f --format)
 
