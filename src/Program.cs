@@ -6,6 +6,7 @@ using SharpGLTF.Schema2;
 using ShellProgressBar;
 using subtree;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -48,7 +49,6 @@ class Program
             }
 
             var conn = new NpgsqlConnection(o.ConnectionString);
-            var epsg = 4978;
 
             var heightsArray = o.BoundingVolumeHeights.Split(',');
             var heights = new double[2] { double.Parse(heightsArray[0]), double.Parse(heightsArray[1]) };
@@ -77,6 +77,9 @@ class Program
 
             Console.WriteLine($"Bounding box for table (WGS84): {Math.Round(bbox_wgs84.XMin, 4)}, {Math.Round(bbox_wgs84.YMin, 4)}, {Math.Round(bbox_wgs84.XMax, 4)}, {Math.Round(bbox_wgs84.YMax, 4)}");
             Console.WriteLine($"Vertical for table (meters): {zmin}, {zmax}");
+
+            var source_epsg = SpatialReferenceRepository.GetSpatialReference(conn, o.Table, geom_column, o.Query);
+            Console.WriteLine($"Spatial reference of {o.Table}.{o.GeometryColumn}: {source_epsg}");
 
             var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(zmin, zmax);
 
@@ -115,7 +118,7 @@ class Program
             Console.WriteLine("Start generating tiles...");
 
             var tile = new Tile(0, 0, 0);
-            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, epsg, (bool)o.UseGpuInstancing);
+            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, source_epsg, (bool)o.UseGpuInstancing);
 
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");

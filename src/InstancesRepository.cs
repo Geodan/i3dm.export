@@ -9,14 +9,14 @@ namespace i3dm.export;
 
 public static class InstancesRepository
 {
-    internal static int CountFeaturesInBox(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, string where)
+    internal static int CountFeaturesInBox(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, string where, int source_epsg)
     {
         var fromX = bbox.XMin.ToString(CultureInfo.InvariantCulture);
         var fromY = bbox.YMin.ToString(CultureInfo.InvariantCulture);
         var toX = bbox.XMax.ToString(CultureInfo.InvariantCulture);
         var toY = bbox.YMax.ToString(CultureInfo.InvariantCulture);
 
-        string whereStatement = GetWhere(geometryColumn, where, fromX, fromY, toX, toY);
+        string whereStatement = GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg);
 
         var sql = $"select count({geometryColumn}) from {geometryTable} where {whereStatement}";
         conn.Open();
@@ -28,13 +28,14 @@ public static class InstancesRepository
         return count;
     }
 
-    private static string GetWhere(string geometryColumn, string where, string fromX, string fromY, string toX, string toY)
+    private static string GetWhere(string geometryColumn, string where, string fromX, string fromY, string toX, string toY, int source_epsg)
     {
-        return $"ST_Intersects({geometryColumn}, ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 4326)) {where}";
+        return $"ST_Intersects({geometryColumn}, ST_Transform(ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 4326), {source_epsg})) {where}";
     }
 
-    public static List<Instance> GetInstances(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, int epsg, string where = "", bool useScaleNonUniform = false, bool useGpuInstancing = false)
+    public static List<Instance> GetInstances(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, int source_epsg, string where = "", bool useScaleNonUniform = false, bool useGpuInstancing = false)
     {
+        var target_epsg = 4978;
         var fromX = ToInvariantCulture(bbox.XMin);
         var fromY = ToInvariantCulture(bbox.YMin);
         var toX = ToInvariantCulture(bbox.XMax);
@@ -42,7 +43,7 @@ public static class InstancesRepository
 
         var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
         conn.Open();
-        var select = $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {epsg})) as position, scale, {scaleNonUniform} model, tags";
+        var select = $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {target_epsg})) as position, scale, {scaleNonUniform} model, tags";
 
         if (useGpuInstancing)
         {
@@ -53,7 +54,7 @@ public static class InstancesRepository
             select += ", rotation";
         }
 
-        var sql = FormattableString.Invariant($"{select} FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY)}");
+        var sql = FormattableString.Invariant($"{select} FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg)}");
         var res = conn.Query<Instance>(sql).AsList();
         conn.Close();
         return res;
