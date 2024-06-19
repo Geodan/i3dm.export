@@ -23,15 +23,29 @@ internal static class GPUTileHandler
 
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
-        var finalModel = sceneBuilder.ToGltf2(settings);
+        var model = sceneBuilder.ToGltf2(settings);
 
-        // todo: add metadata
-        foreach (var node in finalModel.LogicalNodes)
+        var schema = AddMetadataSchema(model);
+
+        var distinctModels = instances.Select(s => s.Model).Distinct();
+
+        var i = 0;
+
+        foreach (var distinctModel in distinctModels)
+        {
+            var modelInstances = instances.Where(s => s.Model.Equals(distinctModel)).ToList();
+            var featureIdBuilder = GetFeatureIdBuilder(schema, modelInstances);
+            var node = model.LogicalNodes[i]; 
+            node.AddInstanceFeatureIds(featureIdBuilder);
+            i++;
+        }
+
+        foreach (var node in model.LogicalNodes)
         {
             node.LocalTransform *= Matrix4x4.CreateTranslation(translation);
         }
 
-        var bytes = finalModel.WriteGLB().Array;
+        var bytes = model.WriteGLB().Array;
         return bytes;
     }
 
@@ -78,8 +92,8 @@ internal static class GPUTileHandler
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
         var gltf = sceneBuilder.ToGltf2(settings);
-
-        var featureIdBuilder = GetFeatureIdBuilder(gltf, positions);
+        var schema = AddMetadataSchema(gltf);
+        var featureIdBuilder = GetFeatureIdBuilder(schema, positions);
 
         var node = gltf.LogicalNodes[0]; // todo: what if there are multiple nodes?
         node.AddInstanceFeatureIds(featureIdBuilder);
@@ -90,9 +104,9 @@ internal static class GPUTileHandler
         return bytes;
     }
 
-    private static FeatureIDBuilder GetFeatureIdBuilder(ModelRoot gltf, List<Instance> positions)
+    private static FeatureIDBuilder GetFeatureIdBuilder(StructuralMetadataClass schemaClass, List<Instance> positions)
     {
-        var propertyTable = GetPropertyTable(positions, gltf);
+        var propertyTable = GetPropertyTable(schemaClass, positions);
 
         var featureId0 = propertyTable != null ?
             new FeatureIDBuilder(positions.Count, 0, propertyTable) :
@@ -100,11 +114,20 @@ internal static class GPUTileHandler
         return featureId0;
     }
 
+    private static StructuralMetadataClass AddMetadataSchema(ModelRoot gltf)
+    {
+        var rootMetadata = gltf.UseStructuralMetadata();
+        var schema = rootMetadata.UseEmbeddedSchema("schema");
+        var schemaClass = schema.UseClassMetadata("propertyTable");
+        return schemaClass;
+    }
+
     private static SceneBuilder AddModels(IEnumerable<Instance> instances, Vector3 translation, bool UseScaleNonUniform)
     {
         var sceneBuilder = new SceneBuilder();
 
         var distinctModels = instances.Select(s => s.Model).Distinct();
+        
 
         foreach (var model in distinctModels)
         {
@@ -116,10 +139,10 @@ internal static class GPUTileHandler
 
     private static void AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Vector3 translation, string model)
     {
-        var pointId = 0;
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
         var modelRoot = ModelRoot.Load(model);
         var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder(); // todo: what if there are multiple meshes?
+        var pointId = 0;
 
         foreach (var instance in modelInstances)
         {
@@ -166,7 +189,7 @@ internal static class GPUTileHandler
     }
 
 
-    private static PropertyTable GetPropertyTable(List<Instance> positions, ModelRoot gltf)
+    private static PropertyTable GetPropertyTable(StructuralMetadataClass schemaClass, List<Instance> positions)
     {
         var tags = new List<JArray>();
 
@@ -178,9 +201,6 @@ internal static class GPUTileHandler
         if (tags.Count > 0 && tags[0] != null)
         {
             PropertyTable propertyTable;
-            var rootMetadata = gltf.UseStructuralMetadata();
-            var schema = rootMetadata.UseEmbeddedSchema("schema");
-            var schemaClass = schema.UseClassMetadata("propertyTable");
 
             propertyTable = schemaClass.AddPropertyTable(positions.Count);
 

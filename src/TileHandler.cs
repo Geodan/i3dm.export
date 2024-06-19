@@ -13,7 +13,7 @@ public static class TileHandler
     {
         if (useGpuInstancing)
         {
-           // return GPUTileHandler.GetGPUTile(instances, UseScaleNonUniform);
+           return GPUTileHandler.GetGPUTile(instances, UseScaleNonUniform);
         };
         if (useGpuInstancing && instances.Select(s => s.Model).Distinct().Count() > 1)
         {
