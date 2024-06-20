@@ -49,60 +49,6 @@ internal static class GPUTileHandler
         return bytes;
     }
 
-    public static byte[] GetGpuGlbClassicMethod(object model, List<Instance> positions, bool UseScaleNonUniform)
-    {
-        var modelRoot = ModelRoot.Load((string)model);
-        var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder();
-
-        var sceneBuilder = new SceneBuilder();
-
-        var pointId = 0;
-
-        var firstPosition = (Point)positions[0].Position;
-        var translation = ToYUp(firstPosition);
-
-        foreach (var p in positions)
-        {
-            var point = (Point)p.Position;
-            var position = ToYUp(point);
-
-            var enu = EnuCalculator.GetLocalEnu(0, new Vector3((float)point.X, (float)point.Y, (float)point.Z));
-            var forward = Vector3.Cross(enu.East, enu.Up);
-            forward = Vector3.Normalize(forward);
-            var m4 = GetTransformationMatrix(enu, forward);
-
-            var instanceQuaternion = Quaternion.CreateFromYawPitchRoll((float)p.Yaw, (float)p.Pitch, (float)p.Roll);
-            var res = Quaternion.CreateFromRotationMatrix(m4);
-
-            var position2 = position - translation;
-
-            var scale = UseScaleNonUniform ?
-                new Vector3((float)p.ScaleNonUniform[0], (float)p.ScaleNonUniform[1], (float)p.ScaleNonUniform[2]) :
-                new Vector3((float)p.Scale, (float)p.Scale, (float)p.Scale);
-
-            var transformation = new AffineTransform(
-                scale,
-                new Quaternion(-res.X, -res.Z, res.Y, res.W) * instanceQuaternion,
-                position2);
-            var json = "{\"_FEATURE_ID_0\":" + pointId + "}";
-            sceneBuilder.AddRigidMesh(meshBuilder, transformation).WithExtras(JsonNode.Parse(json));
-            pointId++;
-        }
-
-        var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
-        settings.GpuMeshInstancingMinCount = 0;
-        var gltf = sceneBuilder.ToGltf2(settings);
-        var schema = AddMetadataSchema(gltf);
-        var featureIdBuilder = GetFeatureIdBuilder(schema, positions);
-
-        var node = gltf.LogicalNodes[0]; // todo: what if there are multiple nodes?
-        node.AddInstanceFeatureIds(featureIdBuilder);
-        // todo: use exisiting transformation...
-        node.LocalTransform *= Matrix4x4.CreateTranslation(translation);
-
-        var bytes = gltf.WriteGLB().Array;
-        return bytes;
-    }
 
     private static FeatureIDBuilder GetFeatureIdBuilder(StructuralMetadataClass schemaClass, List<Instance> positions)
     {
@@ -187,7 +133,6 @@ internal static class GPUTileHandler
             position2);
         return transformation;
     }
-
 
     private static PropertyTable GetPropertyTable(StructuralMetadataClass schemaClass, List<Instance> positions)
     {
