@@ -219,6 +219,12 @@ In 3D Tiles 1.1, GPU instancing is supported. This means that the same model can
 https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md). 
 Files like I3dm/cmpt are no longer created.
 
+Attribute information can be added to the instances using glTF 2.0 extensions 
+
+- EXT_instance_features - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_instance_features
+
+- EXT_structural_metadata - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata
+
 There is an experimental option to create 3D Tiles 1.1 using GPU instancing: --use_gpu_instancing (default false).
 
 This option is currently in development. 
@@ -231,7 +237,7 @@ https://bertt.github.io/cesium_3dtiles_samples/samples/1.1/grenoble_trees/
 
 The following features should work: 
 
-- Attribute information from tags using EXT_structural_metadata, EXT_mesh_gpu_instancing and EXT_instance_features. 
+- Attribute information from tags; 
 
 - Positioning, Rotation (roll, pitch, yaw) and Scaling of instances.
 
@@ -254,7 +260,7 @@ Known limits:
 
 - No support for multiple meshes/nodes in the input model;
 
-- composite tiles (formerly known as cmpt). When there are multiple models in the input table only the first one is used.
+- composite tiles (formerly known as cmpt). Support is added for multiple models in a tile (like multiple models in a composite cmpt file). There is a known issue with showing the attribute information in Cesium.
 
 Warning: When the input glTF model has transformations, the model will be transformed twice: once in the glTF and once for the instance translations. In some 
 cases it's better to remove the transformations from the input model. For example tool 'gltf-tansform' - function clearNodeTransform (https://gltf-transform.dev/modules/functions/functions/clearNodeTransform) can be 
@@ -285,6 +291,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2024-06-20: release 2.7.4: fix for composite tiles when using GPU instancing
 
 2024-06-13: release 2.7.3: add support for other input source EPSG codes than 4326
 
