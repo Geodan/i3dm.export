@@ -12,7 +12,7 @@ using System.Text.Json.Nodes;
 using Wkx;
 
 namespace i3dm.export;
-internal static class GPUTileHandler
+public static class GPUTileHandler
 {
     public static byte[] GetGPUTile(List<Instance> instances, bool UseScaleNonUniform)
     {
