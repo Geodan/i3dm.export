@@ -260,7 +260,7 @@ Known limits:
 
 - No support for multiple meshes/nodes in the input model;
 
-- composite tiles (formerly known as cmpt). Support is added for multiple models in a tile (like multiple models in a composite cmpt file). There is a known issue with showing the attribute information in Cesium.
+- composite tiles (formerly known as cmpt). Support is added for multiple models in a tile (like multiple models in a composite cmpt file). There is a known issue with showing the attribute information in Cesium. See https://github.com/CesiumGS/cesium/issues/11683
 
 Warning: When the input glTF model has transformations, the model will be transformed twice: once in the glTF and once for the instance translations. In some 
 cases it's better to remove the transformations from the input model. For example tool 'gltf-tansform' - function clearNodeTransform (https://gltf-transform.dev/modules/functions/functions/clearNodeTransform) can be 
