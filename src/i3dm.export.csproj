@@ -5,9 +5,9 @@
     <TargetFramework>net8.0</TargetFramework>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
-	<Version>2.7.4</Version>
-	<AssemblyVersion>2.7.4</AssemblyVersion>
-	<FileVersion>2.7.4</FileVersion>
+	<Version>2.8.0</Version>
+	<AssemblyVersion>2.8.0</AssemblyVersion>
+	<FileVersion>2.8.0</FileVersion>
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
@@ -28,8 +28,8 @@
     <PackageReference Include="i3dm.tile" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql" Version="8.0.3" />
-    <PackageReference Include="SharpGLTF.Ext.3DTiles" Version="1.0.0" />
-    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0" />
+    <PackageReference Include="SharpGLTF.Ext.3DTiles" Version="1.0.1" />
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.1" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
     <PackageReference Include="subtree" Version="1.4.7" />
     <PackageReference Include="Wkx" Version="0.5.1" />

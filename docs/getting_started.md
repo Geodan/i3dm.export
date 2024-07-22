@@ -15,9 +15,11 @@ Some open source tooling is used in this tutorial:
 
 - psql https://www.postgresql.org/docs/9.2/app-psql.html
 
-- .NET 6.0 https://dotnet.microsoft.com/download/dotnet/6.0
-
 - Python 3 https://www.python.org/
+
+## Install i3dm.export
+
+See releases for executables for Windows, Linux and MacOS
 
 ## Download data
 
@@ -81,17 +83,6 @@ postgres=# CREATE TABLE traffic_signs_instances as (
 postgres=# CREATE INDEX geom_idx ON traffic_signs_instances USING GIST (geom);
 postgres=# delete from traffic_signs_instances where st_x(geom) < 4.5 or st_x(geom)>5.0;
 postgres=# exit;
-```
-## Install i3dm.export
-
-```
-$ dotnet tool install -g i3dm.export
-```
-
-To visualize in MapBox GL JS use a 2.X version (because 3D Tiles 1.1 - implicit tiling is not supported yet):
-
-```
-$ dotnet tool install --global i3dm.export --version 1.9.0
 ```
 
 Download Box.glb from https://raw.githubusercontent.com/Geodan/i3dm.export/main/docs/Box.glb
