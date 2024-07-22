@@ -292,6 +292,8 @@ To Visualize in CesiumJS, add references to:
 
 ## History
 
+2024-07-22: release 2.8.1: fix release
+
 2024-07-22: release 2.8.0: to .NET 8.0
 
 2024-06-20: release 2.7.4: fix for composite tiles when using GPU instancing
