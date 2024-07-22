@@ -21,7 +21,7 @@ For composite tile (cmpt) specs see https://github.com/CesiumGS/3d-tiles/blob/ma
 ## Installation
 
 
-Prerequisite: .NET 6.0 SDK is installed https://dotnet.microsoft.com/download/dotnet/6.0
+Prerequisite: .NET 8.0 SDK is installed https://dotnet.microsoft.com/download/dotnet/8.0
 
 ```
 $ dotnet tool install -g i3dm.export
