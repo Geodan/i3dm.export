@@ -20,6 +20,11 @@ For composite tile (cmpt) specs see https://github.com/CesiumGS/3d-tiles/blob/ma
 
 ## Installation
 
+Options:
+
+1] Use pre-built binaries from release
+
+2] Use .NET Tool
 
 Prerequisite: .NET 8.0 SDK is installed https://dotnet.microsoft.com/download/dotnet/8.0
 
@@ -31,6 +36,12 @@ Or update
 
 ```
 $ dotnet tool update -g i3dm.export
+```
+
+3] Use Docker
+
+```
+$  docker run geodan/i3dm.export
 ```
 
 ## Live demo 3D instanced tiles
