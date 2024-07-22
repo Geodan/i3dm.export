@@ -21,7 +21,7 @@ For composite tile (cmpt) specs see https://github.com/CesiumGS/3d-tiles/blob/ma
 ## Installation
 
 
-Prerequisite: .NET 6.0 SDK is installed https://dotnet.microsoft.com/download/dotnet/6.0
+Prerequisite: .NET 8.0 SDK is installed https://dotnet.microsoft.com/download/dotnet/8.0
 
 ```
 $ dotnet tool install -g i3dm.export
@@ -291,6 +291,8 @@ To Visualize in CesiumJS, add references to:
 - https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
 
 ## History
+
+2024-07-22: release 2.8.0: to .NET 8.0
 
 2024-06-20: release 2.7.4: fix for composite tiles when using GPU instancing
 
