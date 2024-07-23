@@ -161,9 +161,13 @@ public static class GPUTileHandler
                 // todo: use other types than string
                 var strings = values.Select(s => s.ToString()).ToArray();
 
-                propertyTable
-                    .UseProperty(nameProperty)
-                    .SetValues(strings);
+                // if all values are empty strings, then do not add the property
+                if (!strings.All(s => string.IsNullOrEmpty(s)))
+                {
+                    propertyTable
+                        .UseProperty(nameProperty)
+                        .SetValues(strings);
+                }
             }
 
             return propertyTable;
