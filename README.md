@@ -295,12 +295,6 @@ To develop in Visual Studio Code, open .vscode/launch.json and adjust the 'args'
 
 Press F5 to start debugging.
 
-To Visualize in CesiumJS, add references to:
-
-- https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Cesium.js"
-
-- https://cdnjs.cloudflare.com/ajax/libs/cesium/1.96.0/Widgets/widgets.min.css
-
 ## History
 
 2024-07-22: release 2.8.1: fix release
