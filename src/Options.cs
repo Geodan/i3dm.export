@@ -34,6 +34,9 @@ public class Options
     [Option("use_gpu_instancing", Required = false, Default = false, HelpText = "Use EXT_mesh_gpu_instancing instead of I3dm's")]
     public bool? UseGpuInstancing { get; set; }
 
+    [Option("use_i3dm", Required = false, Default = false, HelpText = "Use i3dm instead of cmpt's")]
+    public bool? UseI3dm { get; set; }
+
     [Option("boundingvolume_heights", Required = false, Default = "0,10", HelpText = "Tile boundingVolume heights (min, max) in meters")]
     public string BoundingVolumeHeights { get; set; }
 }

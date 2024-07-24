@@ -3,6 +3,7 @@ using subtree;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Wkx;
 
 namespace i3dm.export;
@@ -29,7 +30,7 @@ public static class ImplicitTiling
         return subtreebytes;
     }
 
-    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int source_epsg, bool useGpuInstancing = false)
+    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int source_epsg, bool useGpuInstancing = false, bool useI3dm = false)
     {
         var where = (o.Query != string.Empty ? $" and {o.Query}" : String.Empty);
 
@@ -62,14 +63,18 @@ public static class ImplicitTiling
                     var bboxQuad = new BoundingBox(xstart, ystart, xend, yend);
 
                     var new_tile = new Tile(tile.Z + 1, tile.X * 2 + x, tile.Y * 2 + y);
-                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, source_epsg, useGpuInstancing);
+                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, source_epsg, useGpuInstancing, useI3dm);
                 }
             }
         }
         else
         {
-            var bytes = CreateTile(o, conn, bbox, source_epsg, where, useGpuInstancing);
+            var bytes = CreateTile(o, conn, bbox, source_epsg, where, useGpuInstancing, useI3dm);
             var extension = useGpuInstancing? "glb": "cmpt";
+            if (useI3dm)
+            {
+                extension = "i3dm";
+            }
             var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.{extension}";
             Console.Write($"\rCreating tile: {file}  ");
 
@@ -83,12 +88,27 @@ public static class ImplicitTiling
         return tiles;
     }
 
-    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int source_epsg, string where, bool useGpuInstancing = false)
+    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int source_epsg, string where, bool useGpuInstancing = false, bool useI3dm = false)
     {
         var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
-        var tile = useGpuInstancing?
-            GPUTileHandler.GetGPUTile(instances, (bool)o.UseScaleNonUniform):
-            I3dmTileHandler.GetTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform);
+        byte[] tile;
+
+        if (useGpuInstancing)
+        {
+
+           tile = GPUTileHandler.GetGPUTile(instances, (bool)o.UseScaleNonUniform);
+        }
+        else if(!useI3dm)
+        {
+            // create cmpt
+            tile = TileHandler.GetCmptTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform);
+        }
+        else
+        {
+            // take the first model for i3dm
+            tile = TileHandler.GetI3dmTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, instances.First().Model);
+        }
+
         return tile;
     }
 }
