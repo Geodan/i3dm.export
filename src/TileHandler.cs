@@ -9,9 +9,9 @@ using Wkx;
 
 namespace i3dm.export;
 
-public static class I3dmTileHandler
+public static class TileHandler
 {
-    public static byte[] GetTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false)
+    public static byte[] GetCmptTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false)
     {
         var uniqueModels = instances.Select(s => s.Model).Distinct();
 
@@ -19,22 +19,28 @@ public static class I3dmTileHandler
 
         foreach (var model in uniqueModels)
         {
-            var positions = new List<Vector3>();
-            var scales = new List<float>();
-            var scalesNonUniform = new List<Vector3>();
-            var normalUps = new List<Vector3>();
-            var normalRights = new List<Vector3>();
-            var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
-
-            var tags = new List<JArray>();
-            CalculateArrays(modelInstances, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
-            var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform);
-            var bytesI3dm = I3dmWriter.Write(i3dm);
+            var bytesI3dm = GetI3dmTile(instances, UseExternalModel, UseScaleNonUniform, model);
             tiles.Add(bytesI3dm);
         }
 
         var bytes = CmptWriter.Write(tiles);
         return bytes;
+    }
+
+    public static byte[] GetI3dmTile(List<Instance> instances, bool UseExternalModel, bool UseScaleNonUniform, object model)
+    {
+        var positions = new List<Vector3>();
+        var scales = new List<float>();
+        var scalesNonUniform = new List<Vector3>();
+        var normalUps = new List<Vector3>();
+        var normalRights = new List<Vector3>();
+        var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
+
+        var tags = new List<JArray>();
+        CalculateArrays(modelInstances, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
+        var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform);
+        var bytesI3dm = I3dmWriter.Write(i3dm);
+        return bytesI3dm;
     }
 
     internal static void CalculateArrays(List<Instance> instances, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags)

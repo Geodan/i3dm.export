@@ -60,7 +60,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = I3dmTileHandler.GetTile(instances);
+        var tile = TileHandler.GetCmptTile(instances);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dmBytes = cmpt.Tiles.First();
         var i3dm = I3dmReader.Read(new MemoryStream(i3dmBytes));
@@ -96,7 +96,7 @@ public class TileHandlerTests
         instances.Add(instance3);
 
         // act
-        var tile = I3dmTileHandler.GetTile(instances, UseExternalModel: true);
+        var tile = TileHandler.GetCmptTile(instances, UseExternalModel: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
 
         // assert
@@ -126,7 +126,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = I3dmTileHandler.GetTile(instances, UseScaleNonUniform: true);
+        var tile = TileHandler.GetCmptTile(instances, UseScaleNonUniform: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -148,7 +148,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = I3dmTileHandler.GetTile(instances, UseExternalModel: true);
+        var tile = TileHandler.GetCmptTile(instances, UseExternalModel: true);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -175,7 +175,7 @@ public class TileHandlerTests
         instances.Add(instance1);
 
         // act
-        var tile = I3dmTileHandler.GetTile(instances);
+        var tile = TileHandler.GetCmptTile(instances);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 
@@ -199,7 +199,7 @@ public class TileHandlerTests
         instances.Add(instance);
 
         // act
-        var tile = I3dmTileHandler.GetTile(instances);
+        var tile = TileHandler.GetCmptTile(instances);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 

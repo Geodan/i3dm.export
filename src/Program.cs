@@ -6,7 +6,6 @@ using SharpGLTF.Schema2;
 using ShellProgressBar;
 using subtree;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -118,7 +117,7 @@ class Program
             Console.WriteLine("Start generating tiles...");
 
             var tile = new Tile(0, 0, 0);
-            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, source_epsg, (bool)o.UseGpuInstancing);
+            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, source_epsg, (bool)o.UseGpuInstancing, (bool)o.UseI3dm);
 
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");
@@ -134,7 +133,7 @@ class Program
             var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 2;
             var availableLevels = tiles.Max(t => t.Z) + 1;
 
-            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, (bool)o.UseGpuInstancing);
+            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, (bool)o.UseGpuInstancing, (bool)o.UseI3dm);
             var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
             Console.WriteLine($"Subtree files written: {subtreeFiles.Count}");
             Console.WriteLine("SubtreeLevels: " + subtreeLevels);
