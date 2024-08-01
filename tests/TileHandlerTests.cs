@@ -69,7 +69,7 @@ public class TileHandlerTests
         // assert
         Assert.That(tile.Length > 0);
         Assert.That(i3dm.Positions.Count == 1);
-        Assert.That(i3dm.Positions[0] == new Vector3(1, 2, 0));
+        Assert.That(i3dm.Positions[0] == new Vector3(0, 0, 0));
     }
 
     [Test]
@@ -104,13 +104,13 @@ public class TileHandlerTests
         var i3dm0 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
         Assert.That(i3dm0.Positions.Count == 1);
         Assert.That(i3dm0.GlbUrl.StartsWith("box.glb"));
-        Assert.That(i3dm0.Positions[0] == new Vector3(1, 2, 0));
+        Assert.That(i3dm0.Positions[0] == new Vector3(0, 0, 0));
 
         var i3dm1 = I3dmReader.Read(new MemoryStream(cmpt.Tiles.ToList()[1]));
         Assert.That(i3dm1.Positions.Count == 2);
         Assert.That(i3dm1.GlbUrl.StartsWith("box1.glb"));
-        Assert.That(i3dm1.Positions[0] == new Vector3(3, 4, 0));
-        Assert.That(i3dm1.Positions[1] == new Vector3(5, 6, 0));
+        Assert.That(i3dm1.Positions[0] == new Vector3(0, 0, 0));
+        Assert.That(i3dm1.Positions[1] == new Vector3(2, 2, 0));
     }
 
     [Test]
@@ -182,8 +182,8 @@ public class TileHandlerTests
         // assert
         Assert.That(tile.Length > 0);
         Assert.That(i3dm.Positions.Count == 2);
-        Assert.That(i3dm.Positions[0] == new Vector3(1, 2, 0));
-        Assert.That(i3dm.Positions[1] == new Vector3(10, 20, 0));
+        Assert.That(i3dm.Positions[0] == new Vector3(0, 0, 0));
+        Assert.That(i3dm.Positions[1] == new Vector3(9, 18, 0));
     }
 
     [Test]

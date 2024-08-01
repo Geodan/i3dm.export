@@ -1,6 +1,6 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 as build
-WORKDIR /src
 COPY . .
+WORKDIR src
 RUN dotnet build "i3dm.export.csproj" -c Release
 RUN dotnet publish "i3dm.export.csproj" -c Release -o /app
 
