@@ -299,6 +299,8 @@ Press F5 to start debugging.
 
 ## History
 
+2024-08-01: release 2.8.2: fix for I3dm using rtc_center for high precision positions
+
 2024-07-22: release 2.8.1: fix release
 
 2024-07-22: release 2.8.0: to .NET 8.0

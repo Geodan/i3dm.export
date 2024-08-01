@@ -37,20 +37,25 @@ public static class TileHandler
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
 
         var tags = new List<JArray>();
+        var firstPosition = (Point)modelInstances[0].Position;
+
         CalculateArrays(modelInstances, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
-        var i3dm = GetI3dm(model, positions, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform);
+
+        var i3dm = GetI3dm(model, positions, firstPosition, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform);
         var bytesI3dm = I3dmWriter.Write(i3dm);
         return bytesI3dm;
     }
 
     internal static void CalculateArrays(List<Instance> instances, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags)
     {
+        var firstPosition = (Point)instances[0].Position;
+
         foreach (var instance in instances)
         {
             var pos = (Point)instance.Position;
             var positionVector3 = new Vector3((float)pos.X, (float)pos.Y, (float)pos.Z.GetValueOrDefault());
 
-            var vec = GetPosition((Point)instance.Position);
+            var vec = GetRelativePosition((Point)instance.Position, firstPosition);
             positions.Add(vec);
 
             if (!UseScaleNonUniform)
@@ -68,7 +73,7 @@ public static class TileHandler
         }
     }
 
-    internal static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false)
+    internal static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, Point rtcCenter, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false)
     {
         I3dm.Tile.I3dm i3dm = null;
 
@@ -100,7 +105,7 @@ public static class TileHandler
 
         i3dm.NormalUps = normalUps;
         i3dm.NormalRights = normalRights;
-
+        i3dm.RtcCenter = new Vector3((float)rtcCenter.X, (float)rtcCenter.Y, (float)rtcCenter.Z.GetValueOrDefault());
         if (tags[0] != null)
         {
             var properties = TinyJson.GetProperties(tags[0]);
@@ -110,9 +115,13 @@ public static class TileHandler
         return i3dm;
     }
 
-    private static Vector3 GetPosition(Point p)
+    private static Vector3 GetRelativePosition(Point p, Point p_0)
     {
-        var vec = new Vector3((float)(p.X), (float)(p.Y), (float)(p.Z.GetValueOrDefault()));
+        var dx = p.X - p_0.X;
+        var dy = p.Y - p_0.Y;
+        var dz = p.Z.GetValueOrDefault() - p_0.Z.GetValueOrDefault();
+
+        var vec = new Vector3((float)dx, (float)dy, (float)dz);
         return vec;
     }
 }
