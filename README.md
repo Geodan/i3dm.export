@@ -306,6 +306,8 @@ Press F5 to start debugging.
 
 ## History
 
+2024-10-15: release 2.9.0: add tileset version option
+
 2024-08-01: release 2.8.3: fix release
 
 2024-08-01: release 2.8.2: fix for I3dm using rtc_center for high precision positions
