@@ -39,6 +39,10 @@ public class Options
 
     [Option("boundingvolume_heights", Required = false, Default = "0,10", HelpText = "Tile boundingVolume heights (min, max) in meters")]
     public string BoundingVolumeHeights { get; set; }
+
+    [Option("tileset_version", Required = false, Default = "", HelpText = "Tileset version")]
+    public string TilesetVersion { get; set; }
+
 }
 
 
