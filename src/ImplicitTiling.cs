@@ -2,6 +2,7 @@
 using subtree;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wkx;
@@ -95,8 +96,7 @@ public static class ImplicitTiling
 
         if (useGpuInstancing)
         {
-
-           tile = GPUTileHandler.GetGPUTile(instances, (bool)o.UseScaleNonUniform);
+            tile = GPUTileHandler.GetGPUTile(instances, (bool)o.UseScaleNonUniform);
         }
         else if(!useI3dm)
         {
