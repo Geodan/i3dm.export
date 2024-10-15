@@ -5,9 +5,9 @@ namespace i3dm.export.Tileset;
 
 public class TileSet
 {
+    public Asset asset { get; set; }
     public double geometricError { get; set; }
     public Root root { get; set; }
-    public Asset asset { get; set; }
 }
 
 public class Child : ICloneable
@@ -76,4 +76,6 @@ public class Asset
     public string generator { get; set; }
 
     public string version { get; set; }
+
+    public string tilesetVersion { get; set; }
 }
