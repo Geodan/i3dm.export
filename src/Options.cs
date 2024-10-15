@@ -19,12 +19,9 @@ public class Options
     [Option('o', "output", Required = false, Default = "./output", HelpText = "Output path")]
     public string Output { get; set; }
 
-    [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
-    public bool? UseExternalModel { get; set; }
+    [Option("boundingvolume_heights", Required = false, Default = "0,10", HelpText = "Tile boundingVolume heights (min, max) in meters")]
+    public string BoundingVolumeHeights { get; set; }
 
-    [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
-    public bool? UseScaleNonUniform { get; set; }
-    
     [Option('q', "query", Required = false, Default = "", HelpText = "Query parameter")]
     public string Query { get; set; }
 
@@ -34,11 +31,17 @@ public class Options
     [Option("use_gpu_instancing", Required = false, Default = false, HelpText = "Use EXT_mesh_gpu_instancing instead of I3dm's")]
     public bool? UseGpuInstancing { get; set; }
 
+    [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
+    public bool? UseScaleNonUniform { get; set; }
+
+    // I3dm specific options
+
     [Option("use_i3dm", Required = false, Default = false, HelpText = "Use i3dm instead of cmpt's")]
     public bool? UseI3dm { get; set; }
 
-    [Option("boundingvolume_heights", Required = false, Default = "0,10", HelpText = "Tile boundingVolume heights (min, max) in meters")]
-    public string BoundingVolumeHeights { get; set; }
+    [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
+    public bool? UseExternalModel { get; set; }
+
 }
 
 

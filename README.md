@@ -83,8 +83,6 @@ Tool parameters:
 
 -q: (optional - Default: "") Query to add to the where clauses (for example: -q "id<5460019"). Be sure to check indexes when using this option.
 
---use_external_model: (optional - default false) Use external model instead of embedded model
-
 --use_scale_non_uniform: (optional - default false) Use column scale_non_uniform for scaling instances
 
 --max_features_per_tile (optional - default 1000). Maximum number of features/instances of tile
@@ -93,9 +91,11 @@ Tool parameters:
 
 --use_gpu_instancing (optional - default false) Use GPU instancing (only for Cesium)
 
---use_i3dm (optional - default false) Use I3dm format  - only first model will be processed (false creates Cmpt)
-
 --boundingvolume_heights (option - default: 0,10) - Tile boundingVolume heights (min, max) in meters. The heights will be added to the z_min and z_max values of the input geometries.
+
+--use_i3dm (optional - default false) Use I3dm format  - only first model will be processed (false creates Cmpt - Only when creating I3dm's)
+
+--use_external_model: (optional - default false) Use external model instead of embedded model (Only when creating I3dm's)
 ```
 # Docker
 
