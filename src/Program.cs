@@ -52,6 +52,12 @@ class Program
                 return;
             }
 
+            if ((bool)o.UseGpuInstancing && (bool)o.UseI3dm) {
+                Console.WriteLine("Error: GPU instancing and option --use_i3dm cannot be used together.");
+                Console.WriteLine("Use either --use_gpu_instancing or --use_i3dm");
+                return;
+            }
+
             var conn = new NpgsqlConnection(o.ConnectionString);
 
             var heightsArray = o.BoundingVolumeHeights.Split(',');
