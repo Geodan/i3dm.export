@@ -24,13 +24,13 @@
     <PackageReference Include="cmpt-tile" Version="0.2.4" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="Dapper" Version="2.1.35" />
-	  <PackageReference Include="i3dm.tile" Version="1.1.2" />
+	  <PackageReference Include="i3dm.tile" Version="1.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql" Version="8.0.3" />
-    <PackageReference Include="SharpGLTF.Ext.3DTiles" Version="1.0.1" />
-    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.1" />
+    <PackageReference Include="Npgsql" Version="8.0.5" />
+    <PackageReference Include="SharpGLTF.Ext.3DTiles" Version="1.0.3" />
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.3" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
-    <PackageReference Include="subtree" Version="1.4.7" />
+    <PackageReference Include="subtree" Version="1.5.0" />
     <PackageReference Include="Wkx" Version="0.5.1" />
   </ItemGroup>
 
