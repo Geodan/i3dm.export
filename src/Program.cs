@@ -31,12 +31,17 @@ class Program
             SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
+            var tilesetVersion = o.TilesetVersion;
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
             Console.WriteLine("Tool: I3dm.export");
             Console.WriteLine("Version: " + version);
+            if (!tilesetVersion.Equals(string.Empty))
+            {
+                Console.WriteLine($"Tileset version: {tilesetVersion}");
+            }
             Console.WriteLine($"Exporting instances from {o.Table}...");
             Console.WriteLine($"Use GPU instancing: {o.UseGpuInstancing}");
 
@@ -139,7 +144,7 @@ class Program
             var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 2;
             var availableLevels = tiles.Max(t => t.Z) + 1;
 
-            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, (bool)o.UseGpuInstancing, (bool)o.UseI3dm);
+            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, (bool)o.UseGpuInstancing, (bool)o.UseI3dm, tilesetVersion);
             var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
             Console.WriteLine($"Subtree files written: {subtreeFiles.Count}");
             Console.WriteLine("SubtreeLevels: " + subtreeLevels);

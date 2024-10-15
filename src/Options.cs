@@ -34,6 +34,12 @@ public class Options
     [Option("use_scale_non_uniform", Required = false, Default = false, HelpText = "Use scale_non_uniform")]
     public bool? UseScaleNonUniform { get; set; }
 
+    [Option("tileset_version", Required = false, Default = "", HelpText = "Tileset version")]
+    public string TilesetVersion { get; set; }
+  
+    [Option("boundingvolume_heights", Required = false, Default = "0,10", HelpText = "Tile boundingVolume heights (min, max) in meters")]
+    public string BoundingVolumeHeights { get; set; }
+
     // I3dm specific options
 
     [Option("use_i3dm", Required = false, Default = false, HelpText = "Use i3dm instead of cmpt's")]
@@ -41,7 +47,6 @@ public class Options
 
     [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
     public bool? UseExternalModel { get; set; }
-
 }
 
 

@@ -93,10 +93,14 @@ Tool parameters:
 
 --boundingvolume_heights (option - default: 0,10) - Tile boundingVolume heights (min, max) in meters. The heights will be added to the z_min and z_max values of the input geometries.
 
+--tileset_version (optional - default "") - Tileset version
+
 --use_i3dm (optional - default false) Use I3dm format  - only first model will be processed (false creates Cmpt - Only when creating I3dm's)
 
 --use_external_model: (optional - default false) Use external model instead of embedded model (Only when creating I3dm's)
+
 ```
+
 # Docker
 
 See https://hub.docker.com/r/geodan/i3dm.export
