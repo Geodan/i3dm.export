@@ -283,6 +283,9 @@ Warning: When the input glTF model has transformations, the model will be transf
 cases it's better to remove the transformations from the input model. For example tool 'gltf-tansform' - function clearNodeTransform (https://gltf-transform.dev/modules/functions/functions/clearNodeTransform) can be 
 used to clear local transformations.
 
+- Known issue: Getting attributes in Cesium does not work when there are multiple input models
+https://community.cesium.com/t/upgrade-3d-tileset-with-composite-cmpt-tile-to-1-1-attribute-data-missing/33177/2
+
 ## Developing
 
 Run from source code:
