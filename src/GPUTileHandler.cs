@@ -25,19 +25,24 @@ public static class GPUTileHandler
         settings.GpuMeshInstancingMinCount = 0;
         var model = sceneBuilder.ToGltf2(settings);
 
-        var schema = AddMetadataSchema(model);
-
-        var distinctModels = instances.Select(s => s.Model).Distinct();
-
-        var i = 0;
-
-        foreach (var distinctModel in distinctModels)
+        if (instances.Any(s => s.Tags != null))
         {
-            var modelInstances = instances.Where(s => s.Model.Equals(distinctModel)).ToList();
-            var featureIdBuilder = GetFeatureIdBuilder(schema, modelInstances);
-            var node = model.LogicalNodes[i]; 
-            node.AddInstanceFeatureIds(featureIdBuilder);
-            i++;
+
+            var schema = AddMetadataSchema(model);
+
+            var distinctModels = instances.Select(s => s.Model).Distinct();
+
+
+            var i = 0;
+
+            foreach (var distinctModel in distinctModels)
+            {
+                var modelInstances = instances.Where(s => s.Model.Equals(distinctModel)).ToList();
+                var featureIdBuilder = GetFeatureIdBuilder(schema, modelInstances);
+                var node = model.LogicalNodes[i];
+                node.AddInstanceFeatureIds(featureIdBuilder);
+                i++;
+            }
         }
 
         foreach (var node in model.LogicalNodes)
