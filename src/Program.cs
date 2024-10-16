@@ -66,7 +66,6 @@ class Program
             {
                 Console.WriteLine($"Query: {o.Query}");
             }
-
             var bbox = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, heights, o.Query);
 
             var bbox_wgs84 = bbox.bbox;
