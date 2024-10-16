@@ -84,21 +84,28 @@ public static class GPUTileHandler
         return sceneBuilder;
     }
 
+
     private static void AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Vector3 translation, string model)
     {
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
         var modelRoot = ModelRoot.Load(model);
-
         var pointId = 0;
+
+        var meshbuilders = new List<IMeshBuilder<MaterialBuilder>>();
+        foreach (var mesh in modelRoot.LogicalMeshes)
+        {
+            var meshBuilder = mesh.ToMeshBuilder();
+            meshbuilders.Add(meshBuilder);
+        }
 
         foreach (var instance in modelInstances)
         {
-            foreach(var mesh in modelRoot.LogicalMeshes)
+            foreach (var meshBuilder in meshbuilders)
             {
-                var meshBuilder = mesh.ToMeshBuilder(); // todo: what if there are multiple meshes?
                 var sceneBuilderModel = GetSceneBuilder(meshBuilder, instance, UseScaleNonUniform, translation, pointId);
                 sceneBuilder.AddScene(sceneBuilderModel, Matrix4x4.Identity);
             }
+
             pointId++;
         }
     }
