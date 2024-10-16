@@ -14,6 +14,35 @@ namespace i3dm.export.tests;
 public class TileHandlerTests
 {
     [Test]
+    public void GetGpuTileWithoutTagsTest()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        // arrange
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "Box.glb";
+        instances.Add(instance);
+
+        // act
+        var tile = GPUTileHandler.GetGPUTile(instances, UseScaleNonUniform: false);
+
+        var fileName = Path.Combine(TestContext.CurrentContext.WorkDirectory, "instancing_tile_without_tags.glb");
+        File.WriteAllBytes(fileName, tile);
+
+        var model = ModelRoot.Load(fileName);
+
+        // assert
+        // Model only contains the EXT_mesh_gpu_instancing extension, no other extensions
+        Assert.That(model.ExtensionsUsed.Count() == 1);
+        Assert.That(model.ExtensionsUsed.First() == "EXT_mesh_gpu_instancing");
+
+        Assert.That(tile.Length > 0);
+    }
+
+    [Test]
     public void GetGpuTileTest()
     {
         Tiles3DExtensions.RegisterExtensions();
@@ -34,6 +63,8 @@ public class TileHandlerTests
         File.WriteAllBytes(fileName, tile);
 
         var model = ModelRoot.Load(fileName);
+        Assert.That(model.ExtensionsUsed.Count() == 3);
+
         var extInstanceFeaturesExtension = model.LogicalNodes[0].GetExtension<MeshExtInstanceFeatures>();
 
         var extStructuralMetadataExtension = model.GetExtension<EXTStructuralMetadataRoot>();
