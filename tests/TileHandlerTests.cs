@@ -23,7 +23,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2, 0);
         instance.Scale = 1;
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instances.Add(instance);
 
         // act
@@ -52,7 +52,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2, 0);
         instance.Scale = 1;
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instance.Tags = JArray.Parse("[{'id':123},{'name': 'test'}]");
         instances.Add(instance);
 
@@ -87,7 +87,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
         instance.Scale = 1;
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instances.Add(instance);
 
         // act
@@ -106,6 +106,7 @@ public class TileHandlerTests
     [Test]
     public void GetCompositeTileTest()
     {
+
         // arrange
         var instances = new List<Instance>();
         var instance = new Instance();
@@ -153,7 +154,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
         instance.ScaleNonUniform = scaleNonuniform;
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instances.Add(instance);
 
         // act
@@ -197,12 +198,12 @@ public class TileHandlerTests
         var instances = new List<Instance>();
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instances.Add(instance);
 
         var instance1 = new Instance();
         instance1.Position = new Wkx.Point(10, 20);
-        instance1.Model = "Box.glb";
+        instance1.Model = "./testfixtures/Box.glb";
         instances.Add(instance1);
 
         // act
@@ -224,7 +225,7 @@ public class TileHandlerTests
         var instances = new List<Instance>();
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         var tags = JArray.Parse("[{'id':123},{'name': 'test'}]");
         instance.Tags = tags;
         instances.Add(instance);
