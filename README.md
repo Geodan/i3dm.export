@@ -288,7 +288,7 @@ used to clear local transformations.
 
 Known issues GPU Instancing:
 
-- #81: Trees rotation/ z placement wrong 
+- https://github.com/Geodan/i3dm.export/issues/81: Trees rotation/ z placement wrong 
 
 - Getting attributes in Cesium does not work when there are multiple input models
 https://community.cesium.com/t/upgrade-3d-tileset-with-composite-cmpt-tile-to-1-1-attribute-data-missing/33177/2
