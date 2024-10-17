@@ -148,11 +148,14 @@ Only the i3m files should be copied to a production server.
 When parameter 'use_external_model' is set to true, only the model name will be stored in the i3dm payload. 
 In the i3dm header the value 'gltfFormat' is set to 0. In this case, the model should be a valid absolute or relative url to 
 the binary glTF. The client is responsible for retrieving the binary glTF's. Both the i3dm's and binary glTF's should be copied to a production server.
+Option 'use_external_model' is only available when '--use_gpu_instancing' is false. 
 
 ## Composites
 
 Starting release 2.0, for every tile there will be a composiste tile (cmpt) - even if there is only 1 model available in the tile.  
-Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm.
+Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . 
+The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm.
+When option --use_i3dm  is set to true, only I3dm's are created. When there are multiple models in a tile only the first one is used.
 
 ## Implicit tiling
 
