@@ -5,6 +5,7 @@ using SharpGLTF.Scenes;
 using SharpGLTF.Schema2;
 using SharpGLTF.Schema2.Tiles3D;
 using SharpGLTF.Transforms;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -93,13 +94,23 @@ public static class GPUTileHandler
     {
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
         var modelRoot = ModelRoot.Load(model);
-        var meshBuilder = modelRoot.LogicalMeshes.First().ToMeshBuilder(); // todo: what if there are multiple meshes?
         var pointId = 0;
+
+        var meshbuilders = new List<IMeshBuilder<MaterialBuilder>>();
+        foreach (var mesh in modelRoot.LogicalMeshes)
+        {
+            var meshBuilder = mesh.ToMeshBuilder();
+            meshbuilders.Add(meshBuilder);
+        }
 
         foreach (var instance in modelInstances)
         {
-            var sceneBuilderModel = GetSceneBuilder(meshBuilder, instance, UseScaleNonUniform, translation, pointId);
-            sceneBuilder.AddScene(sceneBuilderModel, Matrix4x4.Identity);
+            foreach (var meshBuilder in meshbuilders)
+            {
+                var sceneBuilderModel = GetSceneBuilder(meshBuilder, instance, UseScaleNonUniform, translation, pointId);
+                sceneBuilder.AddScene(sceneBuilderModel, Matrix4x4.Identity);
+            }
+
             pointId++;
         }
     }
