@@ -148,11 +148,14 @@ Only the i3m files should be copied to a production server.
 When parameter 'use_external_model' is set to true, only the model name will be stored in the i3dm payload. 
 In the i3dm header the value 'gltfFormat' is set to 0. In this case, the model should be a valid absolute or relative url to 
 the binary glTF. The client is responsible for retrieving the binary glTF's. Both the i3dm's and binary glTF's should be copied to a production server.
+Option 'use_external_model' is only available when '--use_gpu_instancing' is false. 
 
 ## Composites
 
 Starting release 2.0, for every tile there will be a composiste tile (cmpt) - even if there is only 1 model available in the tile.  
-Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm.
+Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . 
+The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm.
+When option --use_i3dm  is set to true, only I3dm's are created. When there are multiple models in a tile only the first one is used.
 
 ## Implicit tiling
 
@@ -283,7 +286,11 @@ Warning: When the input glTF model has transformations, the model will be transf
 cases it's better to remove the transformations from the input model. For example tool 'gltf-tansform' - function clearNodeTransform (https://gltf-transform.dev/modules/functions/functions/clearNodeTransform) can be 
 used to clear local transformations.
 
-- Known issue: Getting attributes in Cesium does not work when there are multiple input models
+Known issues GPU Instancing:
+
+- https://github.com/Geodan/i3dm.export/issues/81: Trees rotation/ z placement wrong 
+
+- Getting attributes in Cesium does not work when there are multiple input models
 https://community.cesium.com/t/upgrade-3d-tileset-with-composite-cmpt-tile-to-1-1-attribute-data-missing/33177/2
 
 ## Developing
@@ -305,6 +312,8 @@ To develop in Visual Studio Code, open .vscode/launch.json and adjust the 'args'
 Press F5 to start debugging.
 
 ## History
+
+2024-10-15: release 2.9.0: add tileset version option
 
 2024-08-01: release 2.8.3: fix release
 

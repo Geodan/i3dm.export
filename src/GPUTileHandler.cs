@@ -26,24 +26,30 @@ public static class GPUTileHandler
         settings.GpuMeshInstancingMinCount = 0;
         var model = sceneBuilder.ToGltf2(settings);
 
-        var schema = AddMetadataSchema(model);
-
-        var distinctModels = instances.Select(s => s.Model).Distinct();
-
-        var i = 0;
-
-        foreach (var distinctModel in distinctModels)
+        if (instances.Any(s => s.Tags != null))
         {
-            var modelInstances = instances.Where(s => s.Model.Equals(distinctModel)).ToList();
-            var featureIdBuilder = GetFeatureIdBuilder(schema, modelInstances);
-            var node = model.LogicalNodes[i]; 
-            node.AddInstanceFeatureIds(featureIdBuilder);
-            i++;
+
+            var schema = AddMetadataSchema(model);
+
+            var distinctModels = instances.Select(s => s.Model).Distinct();
+
+
+            var i = 0;
+
+            foreach (var distinctModel in distinctModels)
+            {
+                var modelInstances = instances.Where(s => s.Model.Equals(distinctModel)).ToList();
+                var featureIdBuilder = GetFeatureIdBuilder(schema, modelInstances);
+                var node = model.LogicalNodes[i];
+                node.AddInstanceFeatureIds(featureIdBuilder);
+                i++;
+            }
         }
 
         foreach (var node in model.LogicalNodes)
         {
-            node.LocalTransform *= Matrix4x4.CreateTranslation(translation);
+            var tra = new Vector3((float)translation.X, (float)translation.Y, (float)translation.Z);
+            node.LocalTransform *= Matrix4x4.CreateTranslation(tra);
         }
 
         var bytes = model.WriteGLB().Array;
@@ -69,7 +75,7 @@ public static class GPUTileHandler
         return schemaClass;
     }
 
-    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Vector3 translation, bool UseScaleNonUniform)
+    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform)
     {
         var sceneBuilder = new SceneBuilder();
 
@@ -84,8 +90,7 @@ public static class GPUTileHandler
         return sceneBuilder;
     }
 
-
-    private static void AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Vector3 translation, string model)
+    private static void AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model)
     {
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
         var modelRoot = ModelRoot.Load(model);
@@ -110,7 +115,7 @@ public static class GPUTileHandler
         }
     }
 
-    private static SceneBuilder GetSceneBuilder(IMeshBuilder<MaterialBuilder> meshBuilder, Instance instance, bool UseScaleNonUniform, Vector3 translation, int pointId)
+    private static SceneBuilder GetSceneBuilder(IMeshBuilder<MaterialBuilder> meshBuilder, Instance instance, bool UseScaleNonUniform, Point translation, int pointId)
     {
         var transformation = GetInstanceTransform(instance, UseScaleNonUniform, translation);
         var json = "{\"_FEATURE_ID_0\":" + pointId + "}";
@@ -119,7 +124,7 @@ public static class GPUTileHandler
         return sceneBuilder;
     }
 
-    private static AffineTransform GetInstanceTransform(Instance instance, bool UseScaleNonUniform, Vector3 translation)
+    private static AffineTransform GetInstanceTransform(Instance instance, bool UseScaleNonUniform, Point translation)
     {
         var point = (Point)instance.Position;
 
@@ -133,7 +138,7 @@ public static class GPUTileHandler
         var instanceQuaternion = Quaternion.CreateFromYawPitchRoll((float)instance.Yaw, (float)instance.Pitch, (float)instance.Roll);
         var res = Quaternion.CreateFromRotationMatrix(m4);
 
-        var position2 = position - translation;
+        var position2 = new Vector3((float)(position.X - translation.X), (float)(position.Y - translation.Y), (float)(position.Z - translation.Z));
 
         var scale = UseScaleNonUniform ?
             new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]) :
@@ -206,8 +211,8 @@ public static class GPUTileHandler
         m4.M33 = forward.Z;
         return m4;
     }
-    private static Vector3 ToYUp(Point position)
+    private static Point ToYUp(Point position)
     {
-        return new Vector3((float)position.X, (float)position.Z, (float)position.Y * -1);
+        return new Point((double)position.X, (double)position.Z, (double)position.Y * -1);
     }
 }

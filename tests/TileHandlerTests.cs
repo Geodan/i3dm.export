@@ -14,6 +14,35 @@ namespace i3dm.export.tests;
 public class TileHandlerTests
 {
     [Test]
+    public void GetGpuTileWithoutTagsTest()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        // arrange
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "./testfixtures/Box.glb";
+        instances.Add(instance);
+
+        // act
+        var tile = GPUTileHandler.GetGPUTile(instances, UseScaleNonUniform: false);
+
+        var fileName = Path.Combine(TestContext.CurrentContext.WorkDirectory, "instancing_tile_without_tags.glb");
+        File.WriteAllBytes(fileName, tile);
+
+        var model = ModelRoot.Load(fileName);
+
+        // assert
+        // Model only contains the EXT_mesh_gpu_instancing extension, no other extensions
+        Assert.That(model.ExtensionsUsed.Count() == 1);
+        Assert.That(model.ExtensionsUsed.First() == "EXT_mesh_gpu_instancing");
+
+        Assert.That(tile.Length > 0);
+    }
+
+    [Test]
     public void GetGpuTileTest()
     {
         Tiles3DExtensions.RegisterExtensions();
@@ -23,7 +52,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2, 0);
         instance.Scale = 1;
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instance.Tags = JArray.Parse("[{'id':123},{'name': 'test'}]");
         instances.Add(instance);
 
@@ -34,6 +63,8 @@ public class TileHandlerTests
         File.WriteAllBytes(fileName, tile);
 
         var model = ModelRoot.Load(fileName);
+        Assert.That(model.ExtensionsUsed.Count() == 3);
+
         var extInstanceFeaturesExtension = model.LogicalNodes[0].GetExtension<MeshExtInstanceFeatures>();
 
         var extStructuralMetadataExtension = model.GetExtension<EXTStructuralMetadataRoot>();
@@ -56,7 +87,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
         instance.Scale = 1;
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instances.Add(instance);
 
         // act
@@ -75,6 +106,7 @@ public class TileHandlerTests
     [Test]
     public void GetCompositeTileTest()
     {
+
         // arrange
         var instances = new List<Instance>();
         var instance = new Instance();
@@ -122,7 +154,7 @@ public class TileHandlerTests
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
         instance.ScaleNonUniform = scaleNonuniform;
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instances.Add(instance);
 
         // act
@@ -166,12 +198,12 @@ public class TileHandlerTests
         var instances = new List<Instance>();
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         instances.Add(instance);
 
         var instance1 = new Instance();
         instance1.Position = new Wkx.Point(10, 20);
-        instance1.Model = "Box.glb";
+        instance1.Model = "./testfixtures/Box.glb";
         instances.Add(instance1);
 
         // act
@@ -193,7 +225,7 @@ public class TileHandlerTests
         var instances = new List<Instance>();
         var instance = new Instance();
         instance.Position = new Wkx.Point(1, 2);
-        instance.Model = "Box.glb";
+        instance.Model = "./testfixtures/Box.glb";
         var tags = JArray.Parse("[{'id':123},{'name': 'test'}]");
         instance.Tags = tags;
         instances.Add(instance);

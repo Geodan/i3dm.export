@@ -5,6 +5,10 @@ namespace i3dm.export;
 
 public class Instance
 {
+    public Instance()
+    {
+        Scale = 1;
+    }
     public Geometry Position { get; set; }
 
     public double Scale { get; set; }
