@@ -14,6 +14,22 @@ namespace i3dm.export.tests;
 public class TileHandlerTests
 {
     [Test]
+    public void GetGpuInstancesWithMultipleScenes()
+    {
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "./testfixtures/MultipleScenes.gltf";
+        instances.Add(instance);
+
+        var tile = GPUTileHandler.GetGPUTile(instances, UseScaleNonUniform: false);
+
+        ModelRoot rootObject = ModelRoot.ParseGLB(tile);
+        Assert.That(rootObject.LogicalMeshes.Count == 2);
+    }
+
+    [Test]
     public void GetGpuTileWithoutTagsTest()
     {
         Tiles3DExtensions.RegisterExtensions();
