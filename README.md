@@ -313,6 +313,8 @@ Press F5 to start debugging.
 
 ## History
 
+2024-10-31: release 2.10.0: add multiple mesh support in input model + gpu instancing tags null checking + vertical precision
+
 2024-10-15: release 2.9.0: add tileset version option
 
 2024-08-01: release 2.8.3: fix release
