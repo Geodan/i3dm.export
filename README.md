@@ -77,7 +77,7 @@ Tool parameters:
 
 -t: (required) table with instance positions
 
--g: (optional - Default: 5000) Geometric error
+-g: (optional - Default: 1000) Geometric error
 
 -o: (optional - Default: ./tiles) Output directory, will be created if not exists
 
