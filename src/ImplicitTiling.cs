@@ -45,7 +45,23 @@ public static class ImplicitTiling
         }
         else if (numberOfFeatures > o.MaxFeaturesPerTile)
         {
-            tile.Available = false;
+            if ((bool)o.UseClustering)
+            {
+                tile.Available = true;
+                string tileName = $"{tile.Z}_{tile.X}_{tile.Y}";
+                string message = $"Getting {numberOfFeatures} instances to create tile {tileName}";
+                Console.Write($"\r{new string(' ', Console.WindowWidth - 1)}\r{message}");
+                var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
+                message = $"Clustering tile {tileName} with {numberOfFeatures} instances";
+                Console.Write($"\r{new string(' ', Console.WindowWidth - 1)}\r{message}");
+                instances = TileClustering.Cluster(instances, o.MaxFeaturesPerTile);
+                var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
+                SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
+            }
+            else
+            {
+                tile.Available = false;
+            }
             tiles.Add(tile);
 
             // split in quadtree
@@ -71,15 +87,7 @@ public static class ImplicitTiling
         else
         {
             var bytes = CreateTile(o, conn, bbox, source_epsg, where, useGpuInstancing, useI3dm);
-            var extension = useGpuInstancing? "glb": "cmpt";
-            if (useI3dm)
-            {
-                extension = "i3dm";
-            }
-            var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.{extension}";
-            Console.Write($"\rCreating tile: {file}  ");
-
-            File.WriteAllBytes(file, bytes);
+            SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
 
             var t1 = new Tile(tile.Z, tile.X, tile.Y);
             t1.Available = true;
@@ -89,9 +97,27 @@ public static class ImplicitTiling
         return tiles;
     }
 
+    private static void SaveTile(string contentDirectory, Tile tile, byte[] bytes, bool useGpuInstancing, bool useI3dm)
+    {
+        var extension = useGpuInstancing? "glb": "cmpt";
+        if (useI3dm)
+        {
+            extension = "i3dm";
+        }
+        var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.{extension}";
+        Console.Write($"\rCreating tile: {file}  ");
+
+        File.WriteAllBytes(file, bytes);
+    }
+
     private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int source_epsg, string where, bool useGpuInstancing = false, bool useI3dm = false)
     {
         var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
+        return CreateTile(o, instances, useGpuInstancing, useI3dm);
+    }
+
+    private static byte[] CreateTile(Options o, List<Instance> instances, bool useGpuInstancing, bool useI3dm)
+    {
         byte[] tile;
 
         if (useGpuInstancing)

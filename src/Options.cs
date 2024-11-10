@@ -44,6 +44,10 @@ public class Options
 
     [Option("use_external_model", Required = false, Default = false, HelpText = "Use external model")]
     public bool? UseExternalModel { get; set; }
+
+    [Option("use_clustering", Required = false, Default = false, HelpText = "Use clustering")]
+    public bool? UseClustering { get; set; }
+    
 }
 
 
