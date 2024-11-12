@@ -31,6 +31,7 @@
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.3" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
     <PackageReference Include="subtree" Version="1.5.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="Wkx" Version="0.5.1" />
   </ItemGroup>
 
