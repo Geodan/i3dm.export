@@ -99,6 +99,8 @@ Tool parameters:
 
 --use_external_model: (optional - default false) Use external model instead of embedded model (Only when creating I3dm's)
 
+--use_clustering: (optional - default false) If tile contains more than max_features_per_tile instances, its number of instances will be reduced to max_features_per_tile by clustering
+
 ```
 
 # Docker
@@ -292,6 +294,24 @@ Known issues GPU Instancing:
 
 - Getting attributes in Cesium does not work when there are multiple input models
 https://community.cesium.com/t/upgrade-3d-tileset-with-composite-cmpt-tile-to-1-1-attribute-data-missing/33177/2
+
+## Clustering
+
+There is an experimental option to create 3D Tiles using clustering: --use_clustering (default false).
+
+When this option is off, dense tiles with number of instances exceeding `max_features_per_tile` aren't rendered. With this option such tiles are rendered with number of instances that is exactly equal to `max_features_per_tile`. Number of instances is reduced in the following way:
+
+- tile instances are clustered with MiniBatchKMeans algorithm with number of clusters equal to `max_features_per_tile`;
+- from each cluster single instance is picked randomly.
+
+### Performance benchmark
+number of instances: 2500<br>
+max_features_per_tile: 100<br>
+
+tileset generation time:
+- without clustering : 0h 0m 0s 539ms
+- with clustering: 0h 0m 1s 238ms
+
 
 ## Developing
 
