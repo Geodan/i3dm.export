@@ -333,6 +333,8 @@ Press F5 to start debugging.
 
 ## History
 
+2024-12-20: release 2.11.0: add clustering + change ellipsoid 
+
 2024-10-31: release 2.10.0: add multiple mesh support in input model + gpu instancing tags null checking + vertical precision
 
 2024-10-15: release 2.9.0: add tileset version option
