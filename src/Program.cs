@@ -27,6 +27,7 @@ class Program
         parser.ParseArguments<Options>(args).WithParsed(o =>
         {
             string geom_column = o.GeometryColumn;
+            var keepProjection = (bool) o.KeepProjection;
             SqlMapper.AddTypeHandler(new GeometryTypeHandler());
             SqlMapper.AddTypeHandler(new JArrayTypeHandler());
 
@@ -66,33 +67,39 @@ class Program
             {
                 Console.WriteLine($"Query: {o.Query}");
             }
-            var bbox = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, heights, o.Query);
-
-            var bbox_wgs84 = bbox.bbox;
-
-            if (Math.Abs(bbox_wgs84.Area()) < 0.0001)
-            {
-                // all features are on a point, make it 100 meter larger
-                // todo: make configurable
-                var delta = 0.001; // about 111 meter
-                bbox_wgs84 = new Wkx.BoundingBox(
-                    bbox_wgs84.XMin - delta / 2,
-                    bbox_wgs84.YMin - delta / 2,
-                    bbox_wgs84.XMax + delta / 2,
-                    bbox_wgs84.YMax + delta / 2);
-            }
-            var zmin = bbox.zmin;
-            var zmax = bbox.zmax;
-
-            Console.WriteLine($"Bounding box for table (WGS84): {Math.Round(bbox_wgs84.XMin, 4)}, {Math.Round(bbox_wgs84.YMin, 4)}, {Math.Round(bbox_wgs84.XMax, 4)}, {Math.Round(bbox_wgs84.YMax, 4)}");
-            Console.WriteLine($"Vertical for table (meters): {zmin}, {zmax}");
 
             var source_epsg = SpatialReferenceRepository.GetSpatialReference(conn, o.Table, geom_column, o.Query);
             Console.WriteLine($"Spatial reference of {o.Table}.{o.GeometryColumn}: {source_epsg}");
 
-            var rootBoundingVolumeRegion = bbox_wgs84.ToRadians().ToRegion(zmin, zmax);
+            var proj = keepProjection ? $"EPSG:{source_epsg}" : $"EPSG:4326 (WGS84)";
 
-            var center_wgs84 = bbox_wgs84.GetCenter();
+            var bbox1 = InstancesRepository.GetBoundingBoxForTable(conn, o.Table, geom_column, heights, keepProjection, o.Query);
+
+            var bbox = bbox1.bbox;
+
+            if (Math.Abs(bbox.Area()) < 0.0001)
+            {
+                // all features are on a point, make it 100 meter larger
+                // todo: make configurable
+                var delta = 0.001; // about 111 meter
+                bbox = new Wkx.BoundingBox(
+                    bbox.XMin - delta / 2,
+                    bbox.YMin - delta / 2,
+                    bbox.XMax + delta / 2,
+                    bbox.YMax + delta / 2);
+            }
+            var zmin = bbox1.zmin;
+            var zmax = bbox1.zmax;
+
+            Console.WriteLine($"Bounding box for table (WGS84): {Math.Round(bbox.XMin, 4)}, {Math.Round(bbox.YMin, 4)}, {Math.Round(bbox.XMax, 4)}, {Math.Round(bbox.YMax, 4)}");
+            Console.WriteLine($"Vertical for table (meters): {zmin}, {zmax}");
+
+            var rootBoundingVolumeRegion =
+                keepProjection ?
+                    bbox.ToRegion(zmin, zmax) :
+                    bbox.ToRadians().ToRegion(zmin, zmax);
+
+            var center = bbox.GetCenter();
 
             if ((bool)o.UseGpuInstancing)
             {
@@ -127,7 +134,7 @@ class Program
             Console.WriteLine("Start generating tiles...");
 
             var tile = new Tile(0, 0, 0);
-            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox_wgs84, tile, new List<Tile>(), contentDirectory, source_epsg, (bool)o.UseGpuInstancing, (bool)o.UseI3dm);
+            var tiles = ImplicitTiling.GenerateTiles(o, conn, bbox, tile, new List<Tile>(), contentDirectory, source_epsg, (bool)o.UseGpuInstancing, (bool)o.UseI3dm, keepProjection);
 
             Console.WriteLine();
             Console.WriteLine($"Tiles written: {tiles.Count}");
@@ -143,7 +150,7 @@ class Program
             var subtreeLevels = subtreeFiles.Count > 1 ? ((Tile)subtreeFiles.ElementAt(1).Key).Z : 2;
             var availableLevels = tiles.Max(t => t.Z) + 1;
 
-            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, (bool)o.UseGpuInstancing, (bool)o.UseI3dm, tilesetVersion);
+            var tilesetjson = TreeSerializer.ToImplicitTileset(rootBoundingVolumeRegion, o.GeometricError, availableLevels, subtreeLevels, version, (bool)o.UseGpuInstancing, (bool)o.UseI3dm, tilesetVersion, keepProjection);
             var file = $"{o.Output}{Path.AltDirectorySeparatorChar}tileset.json";
             Console.WriteLine($"Subtree files written: {subtreeFiles.Count}");
             Console.WriteLine("SubtreeLevels: " + subtreeLevels);
