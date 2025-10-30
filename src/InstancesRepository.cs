@@ -65,7 +65,7 @@ public static class InstancesRepository
         conn.Open();
         var q = string.IsNullOrEmpty(query) ? "" : $"where {query}";
 
-        var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmin(box), ST_Zmax(box) FROM (select st_3dextent({geometry_column}) AS box from {geometry_table} {q}) as total";
+        var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmin(box), ST_Zmax(box) FROM (select st_transform(st_3dextent({geometry_column}),4979) AS box from {geometry_table} {q}) as total";
 
         var cmd = new NpgsqlCommand(sql, conn);
 
