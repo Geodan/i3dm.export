@@ -45,6 +45,7 @@ class Program
             }
             Console.WriteLine($"Exporting instances from {o.Table}...");
             Console.WriteLine($"Use GPU instancing: {o.UseGpuInstancing}");
+            Console.WriteLine($"Keep projection: {keepProjection}");
 
             if((bool)o.UseGpuInstancing && (bool)o.UseExternalModel)
             {
