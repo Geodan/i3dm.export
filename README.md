@@ -54,7 +54,7 @@ https://geodan.github.io/i3dm.export/samples/traffic_lights/cesium/
 
 Input database table contains following columns: 
 
-. geom - geometry with Point or PointZ (for example epsg:4326) for i3dm positions;
+. geom - geometry with Point or PointZ for instance positions;
 
 . scale - double with instance scale (all directions);
 
@@ -103,7 +103,23 @@ Tool parameters:
 
 ```
 
-# Docker
+## Projection support
+
+The input table can defined in
+
+1] Global coordinates 
+
+-  WGS84 longitude, latitude in degrees + height in meters with ellipsoid as reference (EPSG:4979)
+
+2] Local coordinates
+
+- Any projected coordinate system height in meters with geoid as reference
+
+For example in the Netherlands use EPSG:7415 (Amersfoort / RD New + NAP height in meters).
+
+On runtime the tool will reproject the instance positions to EPSG:4978 (ECEF coordinates) for creating the 3D tiles.
+
+## Docker
 
 See https://hub.docker.com/r/geodan/i3dm.export
 
