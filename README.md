@@ -109,11 +109,11 @@ The input table can defined in
 
 1] Global coordinates 
 
--  WGS84 longitude, latitude in degrees + height in meters with ellipsoid as reference (EPSG:4979)
+WGS84 longitude, latitude in degrees + height in meters with ellipsoid as reference (EPSG:4979)
 
-2] Local coordinates
+2] Local coordinates (for release 2.12.0 and higher)
 
-- Any projected coordinate system height in meters with geoid as reference
+Any projected coordinate system height in meters with geoid as reference
 
 For example in the Netherlands use composite EPSG:7415 (Amersfoort / RD New (EPSG:28992) + NAP height in meters (EPSG:5709)).
 
