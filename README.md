@@ -115,7 +115,7 @@ The input table can defined in
 
 - Any projected coordinate system height in meters with geoid as reference
 
-For example in the Netherlands use EPSG:7415 (Amersfoort / RD New + NAP height in meters).
+For example in the Netherlands use composite EPSG:7415 (Amersfoort / RD New (EPSG:28992) + NAP height in meters (EPSG:5709)).
 
 On runtime the tool will reproject the instance positions to EPSG:4978 (ECEF coordinates) for creating the 3D tiles.
 
