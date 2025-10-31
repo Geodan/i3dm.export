@@ -69,4 +69,6 @@ public class Asset
     public string version { get; set; }
 
     public string tilesetVersion { get; set; }
+
+    public string crs { get; set; }
 }

@@ -1,13 +1,12 @@
 ﻿using i3dm.export.Tileset;
 using Newtonsoft.Json;
 using System;
-using System.Transactions;
 
 namespace i3dm.export;
 
 public static class TreeSerializer
 {
-    public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version, bool useGpuInstancing = false, bool useI3dm = false, string tilesetVersion = "", bool keepProjection = false)
+    public static string ToImplicitTileset(double[] box, double geometricError, int availableLevels, int subtreeLevels, Version version, bool useGpuInstancing = false, bool useI3dm = false, string tilesetVersion = "", bool keepProjection = false, string crs = "")
     {
         var tileset = new TileSet
         {
@@ -18,6 +17,11 @@ public static class TreeSerializer
         {
             tileset.asset.tilesetVersion = tilesetVersion;
         }
+        if (!string.IsNullOrEmpty(crs))
+        {
+            tileset.asset.crs = crs;
+        }
+
         var root = GetRoot(geometricError, box, "ADD", keepProjection);
         var extension = useGpuInstancing ? "glb" : "cmpt";
         if(useI3dm)
