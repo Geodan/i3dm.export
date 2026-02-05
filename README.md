@@ -349,6 +349,8 @@ Press F5 to start debugging.
 
 ## History
 
+2026-02-05: release 2.13.0: fix clustering status messages
+
 2024-10-30: release 2.12.0: add support for cartesian projected input coordinates 
 
 2024-12-20: release 2.11.0: add clustering + change ellipsoid 
