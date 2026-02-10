@@ -159,14 +159,11 @@ Time generating GLB --use_gpu_instancing true: 0h 0m 47s 879ms
 
 ## Model
 
-By default, the instance model will be stored in the i3dm payload. In the i3dm header the value 'gltfFormat' is set to 1. 
-In this case, the model should be a valid file path to the binary glTF. 
-Only the i3m files should be copied to a production server.
+By default, the instance model is embedded directly in the i3dm payload. In the i3dm header, the value gltfFormat is set to 1. In this case, the model must be provided as a valid file path to a binary glTF (.glb) file. Only the i3dm files need to be copied to the production server.
 
-When parameter 'use_external_model' is set to true, only the model name will be stored in the i3dm payload. 
-In the i3dm header the value 'gltfFormat' is set to 0. In this case, the model should be a valid absolute or relative url to 
-the binary glTF. The client is responsible for retrieving the binary glTF's. Both the i3dm's and binary glTF's should be copied to a production server.
-Option 'use_external_model' is only available when '--use_gpu_instancing' is false. 
+When the parameter use_external_model is set to true, the i3dm payload contains only the model name instead of the embedded binary glTF. In the i3dm header, the value gltfFormat is set to 0. In this case, the model must be specified as a valid absolute or relative URL pointing to a binary glTF (.glb) file. The client application is responsible for downloading the binary glTF files. Both the i3dm files and the referenced binary glTF files must be copied to the production server.
+
+The use_external_model option is only available when --use_gpu_instancing is set to false.
 
 ## Composites
 
