@@ -49,10 +49,10 @@ public static class ImplicitTiling
                 tile.Available = true;
                 string tileName = $"{tile.Z}_{tile.X}_{tile.Y}";
                 string message = $"Getting {numberOfFeatures} instances to create tile {tileName}";
-                Console.Write($"\r{new string(' ', Console.WindowWidth - 1)}\r{message}");
+                Console.Write($"\r{message}   ");
                 var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
                 message = $"Clustering tile {tileName} with {numberOfFeatures} instances";
-                Console.Write($"\r{new string(' ', Console.WindowWidth - 1)}\r{message}");
+                Console.Write($"\r{message}   ");
                 instances = TileClustering.Cluster(instances, o.MaxFeaturesPerTile);
                 var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
                 SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);

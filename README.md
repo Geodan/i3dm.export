@@ -159,21 +159,24 @@ Time generating GLB --use_gpu_instancing true: 0h 0m 47s 879ms
 
 ## Model
 
-By default, the instance model will be stored in the i3dm payload. In the i3dm header the value 'gltfFormat' is set to 1. 
-In this case, the model should be a valid file path to the binary glTF. 
-Only the i3m files should be copied to a production server.
+By default, the instance model is embedded directly in the i3dm payload. In the i3dm header, the value gltfFormat is set to 1. In this case, the model must be provided as a valid file path to a binary glTF (.glb) file. Only the i3dm files need to be copied to the production server.
 
-When parameter 'use_external_model' is set to true, only the model name will be stored in the i3dm payload. 
-In the i3dm header the value 'gltfFormat' is set to 0. In this case, the model should be a valid absolute or relative url to 
-the binary glTF. The client is responsible for retrieving the binary glTF's. Both the i3dm's and binary glTF's should be copied to a production server.
-Option 'use_external_model' is only available when '--use_gpu_instancing' is false. 
+When the parameter use_external_model is set to true, the i3dm payload contains only the model name instead of the embedded binary glTF. In the i3dm header, the value gltfFormat is set to 0. In this case, the model must be specified as a valid absolute or relative URL pointing to a binary glTF (.glb) file. The client application is responsible for downloading the binary glTF files. Both the i3dm files and the referenced binary glTF files must be copied to the production server.
+
+The use_external_model option is only available when --use_gpu_instancing is set to false.
 
 ## Composites
 
-Starting release 2.0, for every tile there will be a composiste tile (cmpt) - even if there is only 1 model available in the tile.  
-Specs see https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249 . 
-The composite tile contains a collection of instanced 3d tiles (i3dm), for each model there is 1 i3dm.
-When option --use_i3dm  is set to true, only I3dm's are created. When there are multiple models in a tile only the first one is used.
+Starting with release 2.0, every tile is generated as a composite tile (.cmpt), even if the tile contains only one model.
+
+According to the OGC 3D Tiles specification (https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#249
+), a composite tile (cmpt) can contain multiple tile formats. In this implementation, each composite tile contains a collection of instanced 3D model tiles (i3dm).
+
+For each unique model in a tile, one i3dm file is created. The resulting .cmpt file bundles all i3dm tiles for that tile. Even if there is only a single model, it is still wrapped inside a .cmpt file.
+
+Multiple models are supported. You can specify different models in the model column (for example, a deciduous tree model and a conifer tree model). For each unique model, a separate i3dm tile is generated. If multiple models are present in the same tile, the composite tile (.cmpt) will contain multiple i3dm files, one for each unique model.
+
+If the option --use_i3dm=true is set, only i3dm tiles are created and no composite (.cmpt) tile is generated. When multiple models are present in a tile and --use_i3dm=true is used, only the first model is processed.
 
 ## Implicit tiling
 
@@ -348,6 +351,8 @@ To develop in Visual Studio Code, open .vscode/launch.json and adjust the 'args'
 Press F5 to start debugging.
 
 ## History
+
+2026-02-05: release 2.13.0: fix clustering status messages
 
 2024-10-30: release 2.12.0: add support for cartesian projected input coordinates 
 
