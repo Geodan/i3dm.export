@@ -15,8 +15,6 @@ Some open source tooling is used in this tutorial:
 
 - psql https://www.postgresql.org/docs/9.2/app-psql.html
 
-- Python 3 https://www.python.org/
-
 ## Install i3dm.export
 
 See releases for executables for Windows, Linux and MacOS
@@ -41,9 +39,13 @@ $ docker run -d -e POSTGRES_PASSWORD=postgres -p 5432:5432 mdillon/postgis
 $ ogr2ogr -f "PostgreSQL" PG:"host=localhost user=postgres password=postgres dbname=postgres" current_traffic_signs.geojson -nlt POINT -nln traffic_signs
 ```
 
-## PSQL into PostGIS
+The data contains some outliers, delete them:
 
-PSQL into PostGIS and do a count on the traffic signs:
+```
+postgres=# delete from traffic_signs where st_x(st_transform(wkb_geometry,4326)) < 4.5 or st_x(st_transform(wkb_geometry,4326))>5.0;
+```
+
+Do a count on the traffic signs:
 
 ```
 $ psql -U postgres -h localhost
@@ -51,15 +53,15 @@ $ psql -U postgres -h localhost
 postgres=# select count(*) from traffic_signs;
  count
 -------
- 58999
+ 57809
 (1 row)
 ```
 
 ## Create instances table
 
-We create a new table, with 
+We create a new view, with 
 
-- trees in epsg:4326;
+- trees point geometry in Dutch projection (EPSG:28992);
 
 - Box.glb as model;
 
@@ -69,20 +71,18 @@ We create a new table, with
 
 - for tags use fields 'id' and 'bevestiging' . 
 
+Create the view:
+
 ```
-postgres=# CREATE TABLE traffic_signs_instances as (
+postgres=# CREATE view traffic_signs_instances as (
 	SELECT ogc_fid as id, 
-	st_transform(wkb_geometry, 4326) as geom,
+	wkb_geometry as geom,
 	1 +  random() as scale,
 	random()*360 as rotation,
 	'Box.glb' as model,
 	json_build_array(json_build_object('id',ogc_fid), json_build_object('bevestiging',bevestiging)) as tags
 	from traffic_signs
 );
-
-postgres=# CREATE INDEX geom_idx ON traffic_signs_instances USING GIST (geom);
-postgres=# delete from traffic_signs_instances where st_x(geom) < 4.5 or st_x(geom)>5.0;
-postgres=# exit;
 ```
 
 Download Box.glb from https://raw.githubusercontent.com/Geodan/i3dm.export/main/docs/Box.glb
@@ -90,9 +90,8 @@ Download Box.glb from https://raw.githubusercontent.com/Geodan/i3dm.export/main/
 ## Run i3dm.export on instance table
 
 ```
-$ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" -t  traffic_signs_instances -f cesium
+$ i3dm.export -c "Host=localhost;Username=postgres;password=postgres;Port=5432" -t  traffic_signs_instances
 ```
-
 Here we visualize the traffic lights all instances as a simple red box (box.glb), but any glTF model can be used instead.
 
 An 'output' directory will be created with a tiles subdirectory containing tileset.json and i3dm tiles.
@@ -100,6 +99,8 @@ An 'output' directory will be created with a tiles subdirectory containing tiles
 ## Visualize in Cesium
 
 Put the Cesium client (index.html and from directory samples\traffic_lights\cesium ) and the output folder with tiles on a webserver.
+
+In the Cesium client do not use the terrain because in the input data there is no altitude.
 
 Result should look like:
 
