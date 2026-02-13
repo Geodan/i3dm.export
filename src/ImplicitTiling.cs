@@ -60,7 +60,7 @@ public static class ImplicitTiling
                 }
                 else
                 {
-                    var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
+                    var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm, keepProjection);
                     SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
                 }
             }
@@ -134,10 +134,10 @@ public static class ImplicitTiling
     private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int source_epsg, string where, bool useGpuInstancing = false, bool useI3dm = false, bool keepProjection = false)
     {
         var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
-        return CreateTile(o, instances, useGpuInstancing, useI3dm);
+        return CreateTile(o, instances, useGpuInstancing, useI3dm, keepProjection);
     }
 
-    private static byte[] CreateTile(Options o, List<Instance> instances, bool useGpuInstancing, bool useI3dm)
+    private static byte[] CreateTile(Options o, List<Instance> instances, bool useGpuInstancing, bool useI3dm, bool keepProjection = false)
     {
         byte[] tile;
 
@@ -148,12 +148,12 @@ public static class ImplicitTiling
         else if(!useI3dm)
         {
             // create cmpt
-            tile = TileHandler.GetCmptTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform);
+            tile = TileHandler.GetCmptTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, keepProjection);
         }
         else
         {
             // take the first model for i3dm
-            tile = TileHandler.GetI3dmTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, instances.First().Model);
+            tile = TileHandler.GetI3dmTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, instances.First().Model, keepProjection);
         }
 
         return tile;

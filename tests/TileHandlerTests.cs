@@ -191,6 +191,34 @@ public class TileHandlerTests
     }
 
     [Test]
+    public void GetI3dmTile_KeepProjection_RotatesEmbeddedModelX90()
+    {
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "./testfixtures/Box.glb";
+        instances.Add(instance);
+
+        var tile = TileHandler.GetI3dmTile(instances, UseExternalModel: false, UseScaleNonUniform: false, model: instance.Model, true);
+        var i3dm = I3dmReader.Read(new MemoryStream(tile));
+
+        var originalModel = ModelRoot.Load("./testfixtures/Box.glb");
+        var originalRoot = originalModel.LogicalScenes[0].VisualChildren.First().LocalMatrix;
+
+        var rotatedModel = ModelRoot.ParseGLB(i3dm.GlbData);
+        var rotatedRoot = rotatedModel.LogicalScenes[0].VisualChildren.First().LocalMatrix;
+
+        Matrix4x4.Invert(originalRoot, out var invOriginal);
+        var delta = invOriginal * rotatedRoot;
+
+        Matrix4x4.Decompose(delta, out _, out var deltaRot, out _);
+        var expectedDelta = Quaternion.CreateFromAxisAngle(Vector3.UnitX, (float)(-Math.PI / 2.0));
+
+        Assert.That(Math.Abs(Quaternion.Dot(deltaRot, expectedDelta)), Is.GreaterThan(0.999));
+    }
+
+    [Test]
     public void GetCompositeTileTest()
     {
 

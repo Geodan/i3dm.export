@@ -1,6 +1,8 @@
 ﻿using Cmpt.Tile;
 using I3dm.Tile;
 using Newtonsoft.Json.Linq;
+using SharpGLTF.Schema2;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +13,7 @@ namespace i3dm.export;
 
 public static class TileHandler
 {
-    public static byte[] GetCmptTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false)
+    public static byte[] GetCmptTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false, bool keepProjection = false)
     {
         var uniqueModels = instances.Select(s => s.Model).Distinct();
 
@@ -19,7 +21,7 @@ public static class TileHandler
 
         foreach (var model in uniqueModels)
         {
-            var bytesI3dm = GetI3dmTile(instances, UseExternalModel, UseScaleNonUniform, model);
+            var bytesI3dm = GetI3dmTile(instances, UseExternalModel, UseScaleNonUniform, model, keepProjection);
             tiles.Add(bytesI3dm);
         }
 
@@ -27,7 +29,7 @@ public static class TileHandler
         return bytes;
     }
 
-    public static byte[] GetI3dmTile(List<Instance> instances, bool UseExternalModel, bool UseScaleNonUniform, object model)
+    public static byte[] GetI3dmTile(List<Instance> instances, bool UseExternalModel, bool UseScaleNonUniform, object model, bool keepProjection = false)
     {
         var positions = new List<Vector3>();
         var scales = new List<float>();
@@ -41,7 +43,7 @@ public static class TileHandler
 
         CalculateArrays(modelInstances, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
 
-        var i3dm = GetI3dm(model, positions, firstPosition, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform);
+        var i3dm = GetI3dm(model, positions, firstPosition, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform, keepProjection);
         var bytesI3dm = I3dmWriter.Write(i3dm);
         return bytesI3dm;
     }
@@ -73,7 +75,7 @@ public static class TileHandler
         }
     }
 
-    internal static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, Point rtcCenter, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false)
+    internal static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, Point rtcCenter, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false, bool keepProjection = false)
     {
         I3dm.Tile.I3dm i3dm = null;
 
@@ -82,6 +84,7 @@ public static class TileHandler
             if (!UseExternalModel)
             {
                 var glbBytes = File.ReadAllBytes((string)model);
+                if (keepProjection) glbBytes = RotateModelX90(glbBytes);
                 i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
             }
             else
@@ -91,7 +94,9 @@ public static class TileHandler
         }
         if (model is byte[])
         {
-            i3dm = new I3dm.Tile.I3dm(positions, (byte[])model);
+            var glbBytes = (byte[])model;
+            if (keepProjection) glbBytes = RotateModelX90(glbBytes);
+            i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
         }
 
         if (!UseScaleNonUniform)
@@ -123,5 +128,22 @@ public static class TileHandler
 
         var vec = new Vector3((float)dx, (float)dy, (float)dz);
         return vec;
+    }
+
+    private static byte[] RotateModelX90(byte[] glbBytes)
+    {
+        var model = ModelRoot.ParseGLB(glbBytes);
+        // Note: SharpGLTF uses glTF's coordinate conventions; CreateRotationX(-π/2) matches a +90° glTF X-rotation.
+        var rot = Matrix4x4.CreateRotationX((float)(-Math.PI / 2.0));
+
+        foreach (var scene in model.LogicalScenes)
+        {
+            foreach (var node in scene.VisualChildren)
+            {
+                node.LocalMatrix = node.LocalMatrix * rot;
+            }
+        }
+
+        return model.WriteGLB().Array;
     }
 }
