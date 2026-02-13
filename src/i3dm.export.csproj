@@ -5,9 +5,9 @@
     <TargetFramework>net8.0</TargetFramework>
 	<ToolCommandName>i3dm.export</ToolCommandName>
 	<PackageOutputPath>./nupkg</PackageOutputPath>
-	<Version>2.13.0</Version>
-	<AssemblyVersion>2.13.0</AssemblyVersion>
-	<FileVersion>2.13.0</FileVersion>
+	<Version>2.14.0</Version>
+	<AssemblyVersion>2.14.0</AssemblyVersion>
+	<FileVersion>2.14.0</FileVersion>
 	<PackageProjectUrl>https://github.com/geodan/i3dm.export</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/geodan/i3dm.export</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
