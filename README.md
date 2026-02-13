@@ -101,6 +101,7 @@ Tool parameters:
 
 --use_clustering: (optional - default false) If tile contains more than max_features_per_tile instances, its number of instances will be reduced to max_features_per_tile by clustering
 
+--keep_projection: (optional - default false) Keep the original projection of the input table. 
 ```
 
 ## Projection support
@@ -346,6 +347,12 @@ tileset generation time:
 - without clustering : 0h 0m 0s 539ms
 - with clustering: 0h 0m 1s 238ms
 
+## keep_projection
+
+By default, the input table is reprojected to EPSG:4978 (ECEF) for creating the Instanced 3D Tiles. When option keep_projection is set to 
+true, the original projection of the input table is preserved and used for creating the 3D tiles. Note that when using 
+this option, the client application must support the original projection of the input table for correctly 
+displaying the Instanced 3D Tiles, like Giro3D/ITowns/QWC 3.0. 
 
 ## Developing
 

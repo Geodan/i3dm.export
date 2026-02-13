@@ -36,7 +36,10 @@ public class Options
 
     [Option("tileset_version", Required = false, Default = "", HelpText = "Tileset version")]
     public string TilesetVersion { get; set; }
-  
+
+    [Option("keep_projection", Required = false, Default = false, HelpText = "Keep projection")]
+    public bool? KeepProjection { get; set; }
+
     // I3dm specific options
 
     [Option("use_i3dm", Required = false, Default = false, HelpText = "Use i3dm instead of cmpt's")]
@@ -47,6 +50,7 @@ public class Options
 
     [Option("use_clustering", Required = false, Default = false, HelpText = "Use clustering")]
     public bool? UseClustering { get; set; }
+
     
 }
 

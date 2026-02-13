@@ -2,7 +2,6 @@
 using subtree;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wkx;
@@ -31,11 +30,11 @@ public static class ImplicitTiling
         return subtreebytes;
     }
 
-    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int source_epsg, bool useGpuInstancing = false, bool useI3dm = false)
+    public static List<Tile> GenerateTiles(Options o, NpgsqlConnection conn, BoundingBox bbox, Tile tile, List<Tile> tiles, string contentDirectory, int source_epsg, bool useGpuInstancing = false, bool useI3dm = false, bool keepProjection = false)
     {
         var where = (o.Query != string.Empty ? $" and {o.Query}" : String.Empty);
 
-        var numberOfFeatures = InstancesRepository.CountFeaturesInBox(conn, o.Table, o.GeometryColumn, bbox, where, source_epsg);
+        var numberOfFeatures = InstancesRepository.CountFeaturesInBox(conn, o.Table, o.GeometryColumn, bbox, where, source_epsg, keepProjection);
 
         if (numberOfFeatures == 0)
         {
@@ -51,7 +50,7 @@ public static class ImplicitTiling
                 string tileName = $"{tile.Z}_{tile.X}_{tile.Y}";
                 string message = $"Getting {numberOfFeatures} instances to create tile {tileName}";
                 Console.Write($"\r{message}   ");
-                var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
+                var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
                 message = $"Clustering tile {tileName} with {numberOfFeatures} instances";
                 Console.Write($"\r{message}   ");
                 instances = TileClustering.Cluster(instances, o.MaxFeaturesPerTile);
@@ -87,7 +86,7 @@ public static class ImplicitTiling
                     var bboxQuad = new BoundingBox(xstart, ystart, xend, yend);
 
                     var new_tile = new Tile(tile.Z + 1, tile.X * 2 + x, tile.Y * 2 + y);
-                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, source_epsg, useGpuInstancing, useI3dm);
+                    GenerateTiles(o, conn, bboxQuad, new_tile, tiles, contentDirectory, source_epsg, useGpuInstancing, useI3dm, keepProjection);
                 }
             }
         }
@@ -132,9 +131,9 @@ public static class ImplicitTiling
         File.WriteAllBytes(file, bytes);
     }
 
-    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int source_epsg, string where, bool useGpuInstancing = false, bool useI3dm = false)
+    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int source_epsg, string where, bool useGpuInstancing = false, bool useI3dm = false, bool keepProjection = false)
     {
-        var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
+        var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
         return CreateTile(o, instances, useGpuInstancing, useI3dm);
     }
 
