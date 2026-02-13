@@ -4,10 +4,12 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SharpGLTF.Schema2;
 using SharpGLTF.Schema2.Tiles3D;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace i3dm.export.tests;
 
@@ -27,6 +29,75 @@ public class TileHandlerTests
 
         ModelRoot rootObject = ModelRoot.ParseGLB(tile);
         Assert.That(rootObject.LogicalMeshes.Count == 2);
+    }
+
+    [Test]
+    public void GetGpuTileWithEmbeddedTextures_KeepsTexturesEmbedded()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "./testfixtures/tree.glb";
+        instances.Add(instance);
+
+        var contentDir = Path.Combine(TestContext.CurrentContext.WorkDirectory, "content_embedded_textures");
+        Directory.CreateDirectory(contentDir);
+
+        var glbPath = Path.Combine(contentDir, "0_0_0.glb");
+        GPUTileHandler.SaveGPUTile(glbPath, instances, UseScaleNonUniform: false);
+
+        var json = ReadGlbJson(glbPath);
+        Assert.That(json.Contains("\"uri\":\"textures/"), Is.False);
+    }
+
+    [Test]
+    public void GetGpuTileWithExternalTextures_WritesExternalImageUrisAndCopiesFiles()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "./testfixtures/external_textures/Lov_asp_1_cr.glb";
+        instances.Add(instance);
+
+        var contentDir = Path.Combine(TestContext.CurrentContext.WorkDirectory, "content_external_textures");
+        Directory.CreateDirectory(contentDir);
+
+        var glbPath = Path.Combine(contentDir, "0_0_0.glb");
+        GPUTileHandler.SaveGPUTile(glbPath, instances, UseScaleNonUniform: false);
+
+        var texturePath = Path.Combine(contentDir, "textures", "Lov_asp_1_cr", "Lov_asp_1_cr.png");
+        Assert.That(File.Exists(texturePath), Is.True);
+
+        var json = ReadGlbJson(glbPath);
+        Assert.That(json.Contains("\"uri\":\"textures/Lov_asp_1_cr/Lov_asp_1_cr.png\""), Is.True);
+    }
+
+    [Test]
+    public void GetGpuTileWithExternalTextures_DoesNotCreateDuplicateTextureCopies()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "./testfixtures/external_textures/Lov_asp_1_cr.glb";
+        instances.Add(instance);
+
+        var contentDir = Path.Combine(TestContext.CurrentContext.WorkDirectory, "content_external_textures_dedup");
+        Directory.CreateDirectory(contentDir);
+
+        GPUTileHandler.SaveGPUTile(Path.Combine(contentDir, "0_0_0.glb"), instances, UseScaleNonUniform: false);
+        GPUTileHandler.SaveGPUTile(Path.Combine(contentDir, "0_0_1.glb"), instances, UseScaleNonUniform: false);
+
+        var textureDir = Path.Combine(contentDir, "textures", "Lov_asp_1_cr");
+        Assert.That(Directory.GetFiles(textureDir, "*.png").Length, Is.EqualTo(1));
     }
 
     [Test]
@@ -232,6 +303,13 @@ public class TileHandlerTests
         Assert.That(i3dm.Positions.Count == 2);
         Assert.That(i3dm.Positions[0] == new Vector3(0, 0, 0));
         Assert.That(i3dm.Positions[1] == new Vector3(9, 18, 0));
+    }
+
+    private static string ReadGlbJson(string path)
+    {
+        var bytes = File.ReadAllBytes(path);
+        var jsonChunkLength = BitConverter.ToInt32(bytes, 12);
+        return Encoding.UTF8.GetString(bytes, 20, jsonChunkLength);
     }
 
     [Test]
