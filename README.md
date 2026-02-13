@@ -370,6 +370,8 @@ Press F5 to start debugging.
 
 ## History
 
+2026-020-13: release 2.14.1: fix for keep_projection option
+
 2026-02-13: release 2.14.0: add support for keep_projection and add support for external textures when using GPU instancing
 
 2026-02-05: release 2.13.0: fix clustering status messages

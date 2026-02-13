@@ -99,7 +99,7 @@ public static class ImplicitTiling
             }
             else
             {
-                var bytes = CreateTile(o, conn, bbox, source_epsg, where, useGpuInstancing, useI3dm);
+                var bytes = CreateTile(o, conn, bbox, source_epsg, where, useGpuInstancing, useI3dm, keepProjection);
                 SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
             }
 
