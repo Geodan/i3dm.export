@@ -295,7 +295,22 @@ alter table instances drop column rotation
 
 The columns should be filled with radian angles (0 - 2PI).
 
-Known limits:
+### External textures
+When the input model (GLB/GLTF) references external image textures (for example `*.png`), GPU instancing tiles are written as GLB files that reference those textures externally instead of embedding them in every tile.
+
+On export, textures are written once to:
+
+- `output\\content\\textures\\<modelName>\\<textureFile>`
+
+and each generated tile GLB references them via a relative URI:
+
+- `textures/<modelName>/<textureFile>`
+
+This significantly reduces dataset size when many tiles share the same model + textures.
+
+If the input model has embedded images, they remain embedded in each exported tile GLB.
+
+### Known limits
 
 - When using GPU instancing, for the attributes the 'string' type is used (so no support for other types yet);
 
@@ -307,7 +322,7 @@ Warning: When the input glTF model has transformations, the model will be transf
 cases it's better to remove the transformations from the input model. For example tool 'gltf-tansform' - function clearNodeTransform (https://gltf-transform.dev/modules/functions/functions/clearNodeTransform) can be 
 used to clear local transformations.
 
-Known issues GPU Instancing:
+### Known issues GPU Instancing
 
 - https://github.com/Geodan/i3dm.export/issues/81: Trees rotation/ z placement wrong 
 

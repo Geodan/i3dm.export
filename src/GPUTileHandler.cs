@@ -7,6 +7,7 @@ using SharpGLTF.Schema2.Tiles3D;
 using SharpGLTF.Transforms;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text.Json.Nodes;
@@ -15,12 +16,67 @@ using Wkx;
 namespace i3dm.export;
 public static class GPUTileHandler
 {
+    public static void SaveGPUTile(string filePath, List<Instance> instances, bool UseScaleNonUniform)
+    {
+        var externalTextures = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        var model = BuildGpuModel(instances, UseScaleNonUniform, externalTextures);
+
+        // If textures are embedded in the input model, keep them embedded in the output GLB.
+        var hasEmbeddedImages = model.LogicalImages.Any(i => !i.Content.IsEmpty && string.IsNullOrWhiteSpace(i.Content.SourcePath));
+        if (externalTextures.Count == 0 || hasEmbeddedImages)
+        {
+            model.SaveGLB(filePath, new WriteSettings());
+            return;
+        }
+
+        var relativeUrisUsed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var image in model.LogicalImages)
+        {
+            if (image.Content.IsEmpty) continue;
+
+            var sourcePath = image.Content.SourcePath;
+            if (string.IsNullOrWhiteSpace(sourcePath)) continue; // embedded images stay embedded
+
+            var fileName = Path.GetFileName(sourcePath);
+
+            var matches = externalTextures
+                .Where(kvp => Path.GetFileName(kvp.Key).Equals(fileName, StringComparison.OrdinalIgnoreCase))
+                .Select(kvp => kvp.Value)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var relativeUri = matches.Count == 1 ? matches[0] : $"textures/_shared/{fileName}";
+
+            image.AlternateWriteFileName = relativeUri;
+            relativeUrisUsed.Add(relativeUri);
+        }
+
+        var outputDirectory = Path.GetDirectoryName(filePath) ?? string.Empty;
+        foreach (var rel in relativeUrisUsed)
+        {
+            var fsRel = rel.Replace('/', Path.DirectorySeparatorChar);
+            var dir = Path.GetDirectoryName(Path.Combine(outputDirectory, fsRel));
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+        }
+
+        var writeSettings = new WriteSettings { ImageWriting = ResourceWriteMode.SatelliteFile };
+        model.SaveGLB(filePath, writeSettings);
+    }
+
     public static byte[] GetGPUTile(List<Instance> instances, bool UseScaleNonUniform)
+    {
+        var model = BuildGpuModel(instances, UseScaleNonUniform);
+        return model.WriteGLB().Array;
+    }
+
+    private static ModelRoot BuildGpuModel(List<Instance> instances, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null)
     {
         var firstPosition = (Point)instances[0].Position;
         var translation = ToYUp(firstPosition);
 
-        var sceneBuilder = AddModels(instances, translation, UseScaleNonUniform);
+        var sceneBuilder = AddModels(instances, translation, UseScaleNonUniform, externalTextures);
 
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
@@ -28,14 +84,10 @@ public static class GPUTileHandler
 
         if (instances.Any(s => s.Tags != null))
         {
-
             var schema = AddMetadataSchema(model);
-
             var distinctModels = instances.Select(s => s.Model).Distinct();
 
-
             var i = 0;
-
             foreach (var distinctModel in distinctModels)
             {
                 var modelInstances = instances.Where(s => s.Model.Equals(distinctModel)).ToList();
@@ -52,8 +104,7 @@ public static class GPUTileHandler
             node.LocalTransform *= Matrix4x4.CreateTranslation(tra);
         }
 
-        var bytes = model.WriteGLB().Array;
-        return bytes;
+        return model;
     }
 
 
@@ -75,25 +126,28 @@ public static class GPUTileHandler
         return schemaClass;
     }
 
-    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform)
+    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null)
     {
         var sceneBuilder = new SceneBuilder();
 
         var distinctModels = instances.Select(s => s.Model).Distinct();
-        
 
         foreach (var model in distinctModels)
         {
-            AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, (string)model);
+            var modelPath = (string)model;
+            var modelRoot = ModelRoot.Load(modelPath);
+
+            CollectExternalTextures(externalTextures, modelPath, modelRoot);
+
+            AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot);
         }
 
         return sceneBuilder;
     }
 
-    private static void AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model)
+    private static void AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model, ModelRoot modelRoot)
     {
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
-        var modelRoot = ModelRoot.Load(model);
         var pointId = 0;
 
         var meshbuilders = new List<IMeshBuilder<MaterialBuilder>>();
@@ -122,6 +176,38 @@ public static class GPUTileHandler
         var sceneBuilder = new SceneBuilder();
         sceneBuilder.AddRigidMesh(meshBuilder, transformation).WithExtras(JsonNode.Parse(json));
         return sceneBuilder;
+    }
+
+    private static void CollectExternalTextures(Dictionary<string, string> externalTextures, string modelPath, ModelRoot modelRoot)
+    {
+        if (externalTextures == null) return;
+
+        var modelName = Path.GetFileNameWithoutExtension(modelPath);
+        var modelDirectory = Path.GetDirectoryName(modelPath) ?? string.Empty;
+
+        foreach (var image in modelRoot.LogicalImages)
+        {
+            if (image.Content.IsEmpty) continue;
+            var sourcePath = image.Content.SourcePath;
+            if (string.IsNullOrWhiteSpace(sourcePath)) continue;
+
+            var absoluteSourcePath = GetAbsoluteTexturePath(sourcePath, modelDirectory);
+            var fileName = Path.GetFileName(absoluteSourcePath);
+
+            externalTextures[absoluteSourcePath] = $"textures/{modelName}/{fileName}";
+        }
+    }
+
+
+    private static string GetAbsoluteTexturePath(string sourcePath, string modelDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(sourcePath)) return sourcePath;
+
+        if (Path.IsPathRooted(sourcePath)) return Path.GetFullPath(sourcePath);
+
+        if (string.IsNullOrEmpty(modelDirectory)) return Path.GetFullPath(sourcePath);
+
+        return Path.GetFullPath(Path.Combine(modelDirectory, sourcePath));
     }
 
     private static AffineTransform GetInstanceTransform(Instance instance, bool UseScaleNonUniform, Point translation)

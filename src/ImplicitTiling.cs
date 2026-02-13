@@ -55,8 +55,15 @@ public static class ImplicitTiling
                 message = $"Clustering tile {tileName} with {numberOfFeatures} instances";
                 Console.Write($"\r{message}   ");
                 instances = TileClustering.Cluster(instances, o.MaxFeaturesPerTile);
-                var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
-                SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
+                if (useGpuInstancing)
+                {
+                    SaveGpuTile(contentDirectory, tile, instances, (bool)o.UseScaleNonUniform);
+                }
+                else
+                {
+                    var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
+                    SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
+                }
             }
             else
             {
@@ -86,8 +93,16 @@ public static class ImplicitTiling
         }
         else
         {
-            var bytes = CreateTile(o, conn, bbox, source_epsg, where, useGpuInstancing, useI3dm);
-            SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
+            if (useGpuInstancing)
+            {
+                var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
+                SaveGpuTile(contentDirectory, tile, instances, (bool)o.UseScaleNonUniform);
+            }
+            else
+            {
+                var bytes = CreateTile(o, conn, bbox, source_epsg, where, useGpuInstancing, useI3dm);
+                SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
+            }
 
             var t1 = new Tile(tile.Z, tile.X, tile.Y);
             t1.Available = true;
@@ -97,9 +112,16 @@ public static class ImplicitTiling
         return tiles;
     }
 
+    private static void SaveGpuTile(string contentDirectory, Tile tile, List<Instance> instances, bool useScaleNonUniform)
+    {
+        var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.glb";
+        Console.Write($"\rCreating tile: {file}  ");
+        GPUTileHandler.SaveGPUTile(file, instances, useScaleNonUniform);
+    }
+
     private static void SaveTile(string contentDirectory, Tile tile, byte[] bytes, bool useGpuInstancing, bool useI3dm)
     {
-        var extension = useGpuInstancing? "glb": "cmpt";
+        var extension = useGpuInstancing ? "glb" : "cmpt";
         if (useI3dm)
         {
             extension = "i3dm";
