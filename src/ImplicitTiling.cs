@@ -94,7 +94,7 @@ public static class ImplicitTiling
         {
             if (useGpuInstancing)
             {
-                var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing);
+                var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
                 SaveGpuTile(contentDirectory, tile, instances, (bool)o.UseScaleNonUniform);
             }
             else
