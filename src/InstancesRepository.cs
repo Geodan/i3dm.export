@@ -9,14 +9,14 @@ namespace i3dm.export;
 
 public static class InstancesRepository
 {
-    internal static int CountFeaturesInBox(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, string where, int source_epsg)
+    internal static int CountFeaturesInBox(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, string where, int source_epsg, bool keepProjection= false)
     {
         var fromX = bbox.XMin.ToString(CultureInfo.InvariantCulture);
         var fromY = bbox.YMin.ToString(CultureInfo.InvariantCulture);
         var toX = bbox.XMax.ToString(CultureInfo.InvariantCulture);
         var toY = bbox.YMax.ToString(CultureInfo.InvariantCulture);
 
-        string whereStatement = GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg);
+        string whereStatement = GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg, keepProjection);
 
         var sql = $"select count({geometryColumn}) from {geometryTable} where {whereStatement}";
         conn.Open();
@@ -28,12 +28,15 @@ public static class InstancesRepository
         return count;
     }
 
-    private static string GetWhere(string geometryColumn, string where, string fromX, string fromY, string toX, string toY, int source_epsg)
+    private static string GetWhere(string geometryColumn, string where, string fromX, string fromY, string toX, string toY, int source_epsg, bool keepProjection = false)
     {
-        return $"ST_Intersects({geometryColumn}, ST_Transform(ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 4326), {source_epsg})) {where}";
+        var result = keepProjection?
+            $"ST_Intersects({geometryColumn}, ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, {source_epsg})) {where}":
+            $"ST_Intersects({geometryColumn}, ST_Transform(ST_MakeEnvelope({fromX}, {fromY}, {toX}, {toY}, 4326), {source_epsg})) {where}";
+        return result;
     }
 
-    public static List<Instance> GetInstances(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, int source_epsg, string where = "", bool useScaleNonUniform = false, bool useGpuInstancing = false)
+    public static List<Instance> GetInstances(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, int source_epsg, string where = "", bool useScaleNonUniform = false, bool useGpuInstancing = false, bool keepProjection = false)
     {
         var target_epsg = 4978;
         var fromX = ToInvariantCulture(bbox.XMin);
@@ -43,7 +46,9 @@ public static class InstancesRepository
 
         var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
         conn.Open();
-        var select = $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {target_epsg})) as position, scale, {scaleNonUniform} model, tags";
+        var select = keepProjection?
+            $"SELECT ST_ASBinary(st_force3d({geometryColumn})) as position, scale, {scaleNonUniform} model, tags":
+            $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {target_epsg})) as position, scale, {scaleNonUniform} model, tags";
 
         if (useGpuInstancing)
         {
@@ -54,18 +59,23 @@ public static class InstancesRepository
             select += ", rotation";
         }
 
-        var sql = FormattableString.Invariant($"{select} FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg)}");
+        var sql = FormattableString.Invariant($"{select} FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg, keepProjection)}");
         var res = conn.Query<Instance>(sql).AsList();
         conn.Close();
         return res;
     }
 
-    public static (BoundingBox bbox, double zmin, double zmax) GetBoundingBoxForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, double[] heights, string query = "")
+    public static (BoundingBox bbox, double zmin, double zmax) GetBoundingBoxForTable(NpgsqlConnection conn, string geometry_table, string geometry_column, double[] heights, bool keepProjection = false, string query = "")
     {
         conn.Open();
         var q = string.IsNullOrEmpty(query) ? "" : $"where {query}";
 
-        var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmin(box), ST_Zmax(box) FROM (select st_transform(st_3dextent({geometry_column}),4979) AS box from {geometry_table} {q}) as total";
+        var geom = keepProjection ?
+            $"(select ST_3DExtent({geometry_column})" :
+            $"(select st_transform(ST_3DExtent({geometry_column}), 4979)";
+
+        var sql = $"SELECT st_xmin(box), ST_Ymin(box), ST_Xmax(box), ST_Ymax(box), ST_Zmin(box), ST_Zmax(box) FROM " +
+            $"{geom} AS box from {geometry_table} {q}) as total";
 
         var cmd = new NpgsqlCommand(sql, conn);
 
@@ -87,10 +97,13 @@ public static class InstancesRepository
         xmax = xmax + (xmax - xmin) * 0.1;
         ymax = ymax + (ymax - ymin) * 0.1;
 
-        xmin = xmin < -180 ? -180 : xmin;
-        xmax = xmax > 180 ? 180 : xmax;
-        ymin = ymin < -90 ? -90 : ymin;
-        ymax = ymax > 90 ? 90 : ymax;
+        if(!keepProjection)
+        {
+            xmin = xmin < -180 ? -180 : xmin;
+            xmax = xmax > 180 ? 180 : xmax;
+            ymin = ymin < -90 ? -90 : ymin;
+            ymax = ymax > 90 ? 90 : ymax;
+        }
 
         var bbox = new BoundingBox(xmin, ymin, xmax, ymax);
         return (bbox, zmin, zmax);

@@ -48,18 +48,9 @@ public class Root : Child
 
 public class Boundingvolume
 {
-    private double[] _region;
-    public double[] region
-    {
-        get
-        {
-            return _region;
-        }
-        set
-        {
-            _region = value;
-        }
-    }
+    public double[] region { get; set; }
+
+    public double[] box { get; set; }
 }
 public class Content : ICloneable
 {
@@ -78,4 +69,6 @@ public class Asset
     public string version { get; set; }
 
     public string tilesetVersion { get; set; }
+
+    public string crs { get; set; }
 }
