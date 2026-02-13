@@ -120,6 +120,10 @@ For example in the Netherlands use composite EPSG:7415 (Amersfoort / RD New (EPS
 
 On runtime the tool will reproject the instance positions to EPSG:4978 (ECEF coordinates) for creating the 3D tiles.
 
+When option keep_projection is set to true, the original projection of the input table is preserved and used for creating the 3D tiles. Note that when using 
+this option, the client application must support the original projection of the input table for correctly 
+displaying the Instanced 3D Tiles, like 3DTilesRenderer/Giro3D/ITowns/QGIS Web Client (QWC). 
+
 ## Docker
 
 See https://hub.docker.com/r/geodan/i3dm.export
@@ -346,14 +350,6 @@ max_features_per_tile: 100<br>
 tileset generation time:
 - without clustering : 0h 0m 0s 539ms
 - with clustering: 0h 0m 1s 238ms
-
-## keep_projection
-
-By default, the input table is reprojected to EPSG:4978 (ECEF) for creating the Instanced 3D Tiles. When option keep_projection is set to 
-true, the original projection of the input table is preserved and used for creating the 3D tiles. Note that when using 
-this option, the client application must support the original projection of the input table for correctly 
-displaying the Instanced 3D Tiles, like Giro3D/ITowns/QWC 3.0. 
-
 ## Developing
 
 Run from source code:
