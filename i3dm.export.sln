@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.4.33403.182
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11506.43 insiders
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{68333F7F-D9B8-4215-AE46-6B3AFF14FFBB}"
 	ProjectSection(SolutionItems) = preProject
@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{68333F7F-D9B
 		docs\getting_started.md = docs\getting_started.md
 		README.md = README.md
 		docs\screenshot.png = docs\screenshot.png
+		docs\technical-transforms.md = docs\technical-transforms.md
 		docs\trees.png = docs\trees.png
 	EndProjectSection
 EndProject

@@ -58,7 +58,10 @@ Input database table contains following columns:
 
 . scale - double with instance scale (all directions);
 
-. rotation - double with horizontal rotation angle (0 - 360 degrees);
+. rotation - double with horizontal rotation angle (0 - 360 degrees) (legacy, used in i3dm / non-GPU mode);
+. yaw - double with yaw/heading in degrees (clockwise-positive);
+. pitch - double with pitch in degrees;
+. roll - double with roll in degrees;
 
 . tags - json with instance attribute information;
 
@@ -149,6 +152,12 @@ $ i3dm.export -c "Host=localhost;Username=postgres;Password=postgres;Database=t
 ## Getting started
 
 For getting started with i3dm.export tool see [getting started](docs/getting_started.md).
+
+## Technical documentation (transforms)
+
+For a detailed explanation of how instance transforms are computed (ECEF/ENU to glTF Y-up, handedness, matrix conventions, and GPU instancing TRS composition), see:
+
+- [Technical notes: coordinate systems & transforms](docs/technical-transforms.md)
 
 ## Benchmarking
 
