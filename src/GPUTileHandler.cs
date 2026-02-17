@@ -237,13 +237,32 @@ public static class GPUTileHandler
 
         var position = ToYUp(point);
 
-        var enu = EnuCalculator.GetLocalEnu(0, new Vector3((float)point.X, (float)point.Y, (float)point.Z));
-        var forward = Vector3.Cross(enu.East, enu.Up);
-        forward = Vector3.Normalize(forward);
-        var m4 = GetTransformationMatrix(enu, forward);
+        // Use the same angle convention as non-GPU instancing (I3DM): degrees, clockwise-positive.
+        // yaw   : rotation around local Up axis ("heading")
+        // pitch : rotation around local East/Right axis
+        // roll  : rotation around local Forward axis
+        var positionVector3 = new Vector3((float)point.X, (float)point.Y, (float)point.Z);
 
-        // Match Cesium/I3DM heading convention: positive angles rotate clockwise when viewed from above.
-        var instanceQuaternion = Quaternion.CreateFromYawPitchRoll((float)-instance.Yaw, (float)instance.Pitch, (float)instance.Roll);
+        var enu = EnuCalculator.GetLocalEnu(instance.Yaw, positionVector3);
+        var east = Vector3.Normalize(enu.East);
+        var up = Vector3.Normalize(enu.Up);
+        var forward = Vector3.Normalize(Vector3.Cross(east, up));
+
+        if (instance.Pitch != 0)
+        {
+            forward = Vector3.Normalize(Cesium.Rotator.RotateVector(forward, east, instance.Pitch));
+            up = Vector3.Normalize(Cesium.Rotator.RotateVector(up, east, instance.Pitch));
+        }
+
+        if (instance.Roll != 0)
+        {
+            east = Vector3.Normalize(Cesium.Rotator.RotateVector(east, forward, instance.Roll));
+            up = Vector3.Normalize(Cesium.Rotator.RotateVector(up, forward, instance.Roll));
+        }
+
+        forward = Vector3.Normalize(Vector3.Cross(east, up));
+
+        var m4 = GetTransformationMatrix((east, new Vector3(0, 0, 0), up), forward);
         var res = Quaternion.CreateFromRotationMatrix(m4);
 
         var position2 = new Vector3((float)(position.X - translation.X), (float)(position.Y - translation.Y), (float)(position.Z - translation.Z));
@@ -254,7 +273,7 @@ public static class GPUTileHandler
 
         var transformation = new AffineTransform(
             scale,
-            new Quaternion(-res.X, -res.Z, res.Y, res.W) * instanceQuaternion,
+            new Quaternion(-res.X, -res.Z, res.Y, res.W),
             position2);
         return transformation;
     }

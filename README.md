@@ -298,7 +298,18 @@ alter table instances add roll decimal default 0
 alter table instances drop column rotation
 ```
 
-The columns should be filled with radian angles (0 - 2PI).
+### Angle convention (rotation / yaw / pitch / roll)
+All angles are interpreted as **degrees**.
+
+- This project uses a **right-handed** coordinate system (glTF is right-handed, Y-up).
+- However, the *angle sign convention* follows **Cesium heading**: a **positive** angle rotates **clockwise** when looking along the **positive rotation axis**.
+  - Example: `rotation = 90` (or `yaw = 90` with GPU instancing) rotates an object horizontally **clockwise** when viewed from above.
+
+For GPU instancing, the angles are applied in this order:
+
+1. `yaw` (heading) around local **Up** axis
+2. `pitch` around local **East/Right** axis
+3. `roll` around local **Forward** axis
 
 ### External textures
 When the input model (GLB/GLTF) references external image textures (for example `*.png`), GPU instancing tiles are written as GLB files that reference those textures externally instead of embedding them in every tile.

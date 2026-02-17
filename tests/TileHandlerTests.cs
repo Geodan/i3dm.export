@@ -72,6 +72,78 @@ public class TileHandlerTests
     }
 
     [Test]
+    public void GetGpuInstanceTransform_WithPitch_AffectsRotation()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        var baseInstance = new Instance
+        {
+            Position = new Wkx.Point(1, 2, 0),
+            Scale = 1,
+            Model = "./testfixtures/Box.glb",
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var pitchInstance = new Instance
+        {
+            Position = baseInstance.Position,
+            Scale = baseInstance.Scale,
+            Model = baseInstance.Model,
+            Yaw = 0,
+            Pitch = 10,
+            Roll = 0
+        };
+
+        var q0 = GetFirstGpuInstanceRotation(baseInstance);
+        var qPitch = GetFirstGpuInstanceRotation(pitchInstance);
+
+        Assert.That(Quaternion.Dot(q0, qPitch), Is.LessThan(0.999f));
+    }
+
+    [Test]
+    public void GetGpuInstanceTransform_WithRoll_AffectsRotation()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        var baseInstance = new Instance
+        {
+            Position = new Wkx.Point(1, 2, 0),
+            Scale = 1,
+            Model = "./testfixtures/Box.glb",
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var rollInstance = new Instance
+        {
+            Position = baseInstance.Position,
+            Scale = baseInstance.Scale,
+            Model = baseInstance.Model,
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 10
+        };
+
+        var q0 = GetFirstGpuInstanceRotation(baseInstance);
+        var qRoll = GetFirstGpuInstanceRotation(rollInstance);
+
+        Assert.That(Quaternion.Dot(q0, qRoll), Is.LessThan(0.999f));
+    }
+
+    private static Quaternion GetFirstGpuInstanceRotation(Instance instance)
+    {
+        var tile = GPUTileHandler.GetGPUTile(new List<Instance> { instance }, UseScaleNonUniform: false);
+        var outputModel = ModelRoot.ParseGLB(tile);
+
+        var nodeWithMesh = outputModel.LogicalNodes.First(n => n.Mesh != null);
+        var gpu = nodeWithMesh.GetExtension<MeshGpuInstancing>();
+        return gpu.GetLocalTransform(0).Rotation;
+    }
+
+    [Test]
     public void GetGpuTileWithEmbeddedTextures_KeepsTexturesEmbedded()
     {
         Tiles3DExtensions.RegisterExtensions();
