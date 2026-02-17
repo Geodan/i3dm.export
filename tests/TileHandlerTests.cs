@@ -4,6 +4,8 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SharpGLTF.Schema2;
 using SharpGLTF.Schema2.Tiles3D;
+using SharpGLTF.Scenes;
+using SharpGLTF.Transforms;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,6 +31,44 @@ public class TileHandlerTests
 
         ModelRoot rootObject = ModelRoot.ParseGLB(tile);
         Assert.That(rootObject.LogicalMeshes.Count == 2);
+    }
+
+    [Test]
+    public void GetGpuInstances_PreservesInputNodeTransforms()
+    {
+        // Build an input GLB with per-node transforms (2 nodes, one translated) and 2 logical meshes.
+        var boxModel = ModelRoot.Load("./testfixtures/Box.glb");
+        var meshBuilder1 = boxModel.LogicalMeshes[0].ToMeshBuilder();
+        var meshBuilder2 = boxModel.LogicalMeshes[0].ToMeshBuilder();
+
+        var inputScene = new SceneBuilder();
+        inputScene.AddRigidMesh(meshBuilder1, new AffineTransform(Matrix4x4.Identity));
+        inputScene.AddRigidMesh(meshBuilder2, new AffineTransform(Matrix4x4.CreateTranslation(10, 0, 0)));
+
+        var inputModel = inputScene.ToGltf2();
+        var inputPath = Path.Combine(TestContext.CurrentContext.WorkDirectory, "node_transform_input.glb");
+        inputModel.SaveGLB(inputPath);
+
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = inputPath;
+        instances.Add(instance);
+
+        var tile = GPUTileHandler.GetGPUTile(instances, UseScaleNonUniform: false);
+
+        var outputModel = ModelRoot.ParseGLB(tile);
+        var meshNodes = outputModel.LogicalNodes.Where(n => n.Mesh != null).ToList();
+        Assert.That(meshNodes.Count, Is.EqualTo(2));
+
+        var translations = meshNodes
+            .Select(n => n.GetExtension<MeshGpuInstancing>())
+            .Select(e => e.GetLocalTransform(0).Translation)
+            .Distinct()
+            .ToList();
+
+        Assert.That(translations.Count, Is.EqualTo(2));
     }
 
     [Test]

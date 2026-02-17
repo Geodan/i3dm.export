@@ -150,18 +150,23 @@ public static class GPUTileHandler
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
         var pointId = 0;
 
-        var meshbuilders = new List<IMeshBuilder<MaterialBuilder>>();
-        foreach (var mesh in modelRoot.LogicalMeshes)
+        // Preserve per-node transforms from the source glTF scene graph.
+        var meshNodes = new List<(IMeshBuilder<MaterialBuilder> MeshBuilder, Matrix4x4 NodeWorldMatrix)>();
+
+        foreach (var scene in modelRoot.LogicalScenes)
         {
-            var meshBuilder = mesh.ToMeshBuilder();
-            meshbuilders.Add(meshBuilder);
+            foreach (var rootNode in scene.VisualChildren)
+            {
+                CollectNodesWithMeshes(rootNode, meshNodes);
+            }
         }
+
 
         foreach (var instance in modelInstances)
         {
-            foreach (var meshBuilder in meshbuilders)
+            foreach (var (meshBuilder, nodeWorldMatrix) in meshNodes)
             {
-                var sceneBuilderModel = GetSceneBuilder(meshBuilder, instance, UseScaleNonUniform, translation, pointId);
+                var sceneBuilderModel = GetSceneBuilder(meshBuilder, nodeWorldMatrix, instance, UseScaleNonUniform, translation, pointId);
                 sceneBuilder.AddScene(sceneBuilderModel, Matrix4x4.Identity);
             }
 
@@ -169,12 +174,28 @@ public static class GPUTileHandler
         }
     }
 
-    private static SceneBuilder GetSceneBuilder(IMeshBuilder<MaterialBuilder> meshBuilder, Instance instance, bool UseScaleNonUniform, Point translation, int pointId)
+    private static void CollectNodesWithMeshes(Node node, List<(IMeshBuilder<MaterialBuilder> MeshBuilder, Matrix4x4 NodeWorldMatrix)> meshNodes)
     {
-        var transformation = GetInstanceTransform(instance, UseScaleNonUniform, translation);
+        if (node.Mesh != null)
+        {
+            meshNodes.Add((node.Mesh.ToMeshBuilder(), node.WorldMatrix));
+        }
+
+        foreach (var child in node.VisualChildren)
+        {
+            CollectNodesWithMeshes(child, meshNodes);
+        }
+    }
+
+    private static SceneBuilder GetSceneBuilder(IMeshBuilder<MaterialBuilder> meshBuilder, Matrix4x4 nodeWorldMatrix, Instance instance, bool UseScaleNonUniform, Point translation, int pointId)
+    {
+        var instanceTransform = GetInstanceTransform(instance, UseScaleNonUniform, translation);
+        var nodeTransform = new AffineTransform(nodeWorldMatrix);
+        var combinedTransform = AffineTransform.Multiply(in nodeTransform, in instanceTransform);
+
         var json = "{\"_FEATURE_ID_0\":" + pointId + "}";
         var sceneBuilder = new SceneBuilder();
-        sceneBuilder.AddRigidMesh(meshBuilder, transformation).WithExtras(JsonNode.Parse(json));
+        sceneBuilder.AddRigidMesh(meshBuilder, combinedTransform).WithExtras(JsonNode.Parse(json));
         return sceneBuilder;
     }
 
@@ -221,7 +242,8 @@ public static class GPUTileHandler
         forward = Vector3.Normalize(forward);
         var m4 = GetTransformationMatrix(enu, forward);
 
-        var instanceQuaternion = Quaternion.CreateFromYawPitchRoll((float)instance.Yaw, (float)instance.Pitch, (float)instance.Roll);
+        // Match Cesium/I3DM heading convention: positive angles rotate clockwise when viewed from above.
+        var instanceQuaternion = Quaternion.CreateFromYawPitchRoll((float)-instance.Yaw, (float)instance.Pitch, (float)instance.Roll);
         var res = Quaternion.CreateFromRotationMatrix(m4);
 
         var position2 = new Vector3((float)(position.X - translation.X), (float)(position.Y - translation.Y), (float)(position.Z - translation.Z));
