@@ -256,26 +256,22 @@ public static class GPUTileHandler
         // roll  : rotation around local Forward axis
         var positionVector3 = new Vector3((float)point.X, (float)point.Y, (float)point.Z);
 
-        var enu = EnuCalculator.GetLocalEnu(instance.Yaw, positionVector3);
+        var enu = EnuCalculator.GetLocalEnuCesium(positionVector3, instance.Yaw, instance.Pitch, instance.Roll);
+
         var east = Vector3.Normalize(enu.East);
         var up = Vector3.Normalize(enu.Up);
-        var forward = Vector3.Normalize(Vector3.Cross(east, up));
+        var forward = Vector3.Normalize(enu.North);
 
-        if (instance.Pitch != 0)
-        {
-            forward = Vector3.Normalize(Cesium.Rotator.RotateVector(forward, east, instance.Pitch));
-            up = Vector3.Normalize(Cesium.Rotator.RotateVector(up, east, instance.Pitch));
-        }
+        // Convert basis from ECEF to glTF Y-up and build the quaternion in that coordinate system.
+        var eastYUp = Vector3.Normalize(ToYUp(east));
+        var upYUp = Vector3.Normalize(ToYUp(up));
+        var forwardYUp = Vector3.Normalize(ToYUp(forward));
 
-        if (instance.Roll != 0)
-        {
-            east = Vector3.Normalize(Cesium.Rotator.RotateVector(east, forward, instance.Roll));
-            up = Vector3.Normalize(Cesium.Rotator.RotateVector(up, forward, instance.Roll));
-        }
+        // Orthonormalize (numerical stability).
+        forwardYUp = Vector3.Normalize(Vector3.Cross(eastYUp, upYUp));
+        upYUp = Vector3.Normalize(Vector3.Cross(forwardYUp, eastYUp));
 
-        forward = Vector3.Normalize(Vector3.Cross(east, up));
-
-        var m4 = GetTransformationMatrix((east, new Vector3(0, 0, 0), up), forward);
+        var m4 = GetTransformationMatrix((eastYUp, new Vector3(0, 0, 0), upYUp), forwardYUp);
         var res = Quaternion.CreateFromRotationMatrix(m4);
 
         var position2 = new Vector3((float)(position.X - translation.X), (float)(position.Y - translation.Y), (float)(position.Z - translation.Z));
@@ -286,7 +282,7 @@ public static class GPUTileHandler
 
         var transformation = new AffineTransform(
             scale,
-            new Quaternion(-res.X, -res.Z, res.Y, res.W),
+            res,
             position2);
         return transformation;
     }
@@ -337,22 +333,34 @@ public static class GPUTileHandler
 
     private static Matrix4x4 GetTransformationMatrix((Vector3 East, Vector3 North, Vector3 Up) enu, Vector3 forward)
     {
+        // System.Numerics uses row-vector semantics (v * M). To map local axes (X,Y,Z) -> world axes,
+        // the world basis vectors must be stored in the matrix rows.
         var m4 = new Matrix4x4();
+
         m4.M11 = enu.East.X;
-        m4.M21 = enu.East.Y;
-        m4.M31 = enu.East.Z;
+        m4.M12 = enu.East.Y;
+        m4.M13 = enu.East.Z;
 
-        m4.M12 = enu.Up.X;
+        m4.M21 = enu.Up.X;
         m4.M22 = enu.Up.Y;
-        m4.M32 = enu.Up.Z;
+        m4.M23 = enu.Up.Z;
 
-        m4.M13 = forward.X;
-        m4.M23 = forward.Y;
+        m4.M31 = forward.X;
+        m4.M32 = forward.Y;
         m4.M33 = forward.Z;
+
+        m4.M44 = 1;
         return m4;
     }
+
     private static Point ToYUp(Point position)
     {
         return new Point((double)position.X, (double)position.Z, (double)position.Y * -1);
     }
+
+    private static Vector3 ToYUp(Vector3 v)
+    {
+        return new Vector3(v.X, v.Z, -v.Y);
+    }
+
 }
