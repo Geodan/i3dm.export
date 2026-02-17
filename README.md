@@ -58,10 +58,11 @@ Input database table contains following columns:
 
 . scale - double with instance scale (all directions);
 
-. rotation - double with horizontal rotation angle (0 - 360 degrees) (legacy, used in i3dm / non-GPU mode);
 . yaw - double with yaw/heading in degrees (clockwise-positive);
 . pitch - double with pitch in degrees;
 . roll - double with roll in degrees;
+
+Breaking change: legacy column `rotation` has been removed; non-GPU (i3dm) mode now also uses yaw/pitch/roll.
 
 . tags - json with instance attribute information;
 
@@ -296,15 +297,15 @@ The following features should work:
 
 - Positioning, Rotation (roll, pitch, yaw) and Scaling of instances.
 
-To use this option, the input table should contain columns 'roll', 'pitch' and 'yaw' (column 'rotation' is not used).
+To use this option, the input table should contain columns 'roll', 'pitch' and 'yaw'.
 
-Sql script to create the columns:
+Sql script to add the columns (and remove legacy rotation if present):
 
 ```
-alter table instances add yaw decimal default 0
-alter table instances add pitch decimal default 0
-alter table instances add roll decimal default 0
-alter table instances drop column rotation
+alter table instances add column if not exists yaw decimal default 0;
+alter table instances add column if not exists pitch decimal default 0;
+alter table instances add column if not exists roll decimal default 0;
+alter table instances drop column if exists rotation;
 ```
 
 ### External textures

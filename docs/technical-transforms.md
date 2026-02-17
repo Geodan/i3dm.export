@@ -180,11 +180,13 @@ In i3dm, per-instance orientation is encoded via two vectors:
 
 The client derives the final orientation from these vectors.
 
-Current behavior:
-- The non-GPU path currently uses the legacy single **horizontal rotation** value (`rotation`) as a heading angle.
-- It derives `NORMAL_RIGHT` and `NORMAL_UP` from the ENU basis.
+Current behavior (breaking change):
+- The non-GPU path uses **yaw/pitch/roll** (degrees, clockwise-positive) just like GPU mode.
+- It computes the ENU basis at the ECEF position, applies yaw/pitch/roll, and writes:
+  - `NORMAL_RIGHT` = East (local +X) in **ECEF**
+  - `NORMAL_UP`    = North in **ECEF**
 
-(If/when full yaw/pitch/roll is enabled for i3dm, the same ENU + swizzle principles apply; only the storage format differs.)
+This choice yields a right-handed frame because `East × North = Up`, which avoids the 90° pitch offset in Cesium's i3dm pipeline.
 
 ## 6) Common pitfalls / why models can look “tilted”
 

@@ -24,7 +24,9 @@ public class ClusteringTests
             {
                 Position = new Wkx.Point(x, y, 0),
                 Scale = 1,
-                Rotation = 0
+                Yaw = 0,
+                Pitch = 0,
+                Roll = 0
             });
         }
 

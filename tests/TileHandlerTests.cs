@@ -439,6 +439,91 @@ public class TileHandlerTests
     }
 
     [Test]
+    public void GetI3dmNormals_ZeroAngles_MatchEnuBasis()
+    {
+        var p = new Vector3(1214947.2f, -4736379, 4081540.8f);
+
+        var instance = new Instance
+        {
+            Position = new Wkx.Point(p.X, p.Y, p.Z),
+            Scale = 1,
+            Model = "./testfixtures/Box.glb",
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var (normalRight, normalUp) = GetI3dmNormals(instance);
+
+        var enu = EnuCalculator.GetLocalEnuCesium(p, heading: 0, pitch: 0, roll: 0);
+        AssertVector3Close(normalRight, Vector3.Normalize(enu.East), 1e-5f);
+        AssertVector3Close(normalUp, Vector3.Normalize(enu.North), 1e-5f);
+    }
+
+    [Test]
+    public void GetI3dmNormals_WithYaw_ChangesNormalRightAndNormalUp()
+    {
+        var p = new Vector3(1214947.2f, -4736379, 4081540.8f);
+
+        var baseInstance = new Instance
+        {
+            Position = new Wkx.Point(p.X, p.Y, p.Z),
+            Scale = 1,
+            Model = "./testfixtures/Box.glb",
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var yawInstance = new Instance
+        {
+            Position = baseInstance.Position,
+            Scale = baseInstance.Scale,
+            Model = baseInstance.Model,
+            Yaw = 10,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var (right0, up0) = GetI3dmNormals(baseInstance);
+        var (rightYaw, upYaw) = GetI3dmNormals(yawInstance);
+
+        Assert.That(Vector3.Dot(up0, upYaw), Is.LessThan(0.9999f));
+        Assert.That(Vector3.Dot(right0, rightYaw), Is.LessThan(0.9999f));
+    }
+
+    [Test]
+    public void GetI3dmNormals_WithPitch_ChangesNormalUp()
+    {
+        var p = new Vector3(1214947.2f, -4736379, 4081540.8f);
+
+        var baseInstance = new Instance
+        {
+            Position = new Wkx.Point(p.X, p.Y, p.Z),
+            Scale = 1,
+            Model = "./testfixtures/Box.glb",
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var pitchInstance = new Instance
+        {
+            Position = baseInstance.Position,
+            Scale = baseInstance.Scale,
+            Model = baseInstance.Model,
+            Yaw = 0,
+            Pitch = 10,
+            Roll = 0
+        };
+
+        var (_, up0) = GetI3dmNormals(baseInstance);
+        var (_, upPitch) = GetI3dmNormals(pitchInstance);
+
+        Assert.That(Vector3.Dot(up0, upPitch), Is.LessThan(0.9999f));
+    }
+
+    [Test]
     public void GetTileTest()
     {
         // arrange
@@ -460,6 +545,21 @@ public class TileHandlerTests
         Assert.That(tile.Length > 0);
         Assert.That(i3dm.Positions.Count == 1);
         Assert.That(i3dm.Positions[0] == new Vector3(0, 0, 0));
+    }
+
+    private static (Vector3 NormalRight, Vector3 NormalUp) GetI3dmNormals(Instance instance)
+    {
+        var tile = TileHandler.GetCmptTile(new List<Instance> { instance }, UseExternalModel: false, UseScaleNonUniform: false);
+        var cmpt = CmptReader.Read(new MemoryStream(tile));
+        var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
+        return (i3dm.NormalRights[0], i3dm.NormalUps[0]);
+    }
+
+    private static void AssertVector3Close(Vector3 actual, Vector3 expected, float eps)
+    {
+        Assert.That(System.Math.Abs(actual.X - expected.X), Is.LessThan(eps));
+        Assert.That(System.Math.Abs(actual.Y - expected.Y), Is.LessThan(eps));
+        Assert.That(System.Math.Abs(actual.Z - expected.Z), Is.LessThan(eps));
     }
 
     [Test]

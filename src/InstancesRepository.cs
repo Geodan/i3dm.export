@@ -50,14 +50,8 @@ public static class InstancesRepository
             $"SELECT ST_ASBinary(st_force3d({geometryColumn})) as position, scale, {scaleNonUniform} model, tags":
             $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {target_epsg})) as position, scale, {scaleNonUniform} model, tags";
 
-        if (useGpuInstancing)
-        {
-            select += ", yaw, pitch, roll";
-        }
-        else
-        {
-            select += ", rotation";
-        }
+        // Breaking change: both GPU and non-GPU paths use yaw/pitch/roll.
+        select += ", yaw, pitch, roll";
 
         var sql = FormattableString.Invariant($"{select} FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg, keepProjection)}");
         var res = conn.Query<Instance>(sql).AsList();
