@@ -76,7 +76,8 @@ public static class GPUTileHandler
         var firstPosition = (Point)instances[0].Position;
         var translation = ToYUp(firstPosition);
 
-        var sceneBuilder = AddModels(instances, translation, UseScaleNonUniform, externalTextures);
+        var meshNodeCountsByModel = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var sceneBuilder = AddModels(instances, translation, UseScaleNonUniform, externalTextures, meshNodeCountsByModel);
 
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
@@ -85,16 +86,27 @@ public static class GPUTileHandler
         if (instances.Any(s => s.Tags != null))
         {
             var schema = AddMetadataSchema(model);
-            var distinctModels = instances.Select(s => s.Model).Distinct();
+            var distinctModels = instances.Select(s => s.Model).Distinct().ToList();
 
-            var i = 0;
+            var instancingNodes = model.LogicalNodes
+                .Where(n => n.GetExtension<MeshGpuInstancing>() != null)
+                .ToList();
+
+            var nodeIndex = 0;
             foreach (var distinctModel in distinctModels)
             {
+                var modelPath = (string)distinctModel;
                 var modelInstances = instances.Where(s => s.Model.Equals(distinctModel)).ToList();
                 var featureIdBuilder = GetFeatureIdBuilder(schema, modelInstances);
-                var node = model.LogicalNodes[i];
-                node.AddInstanceFeatureIds(featureIdBuilder);
-                i++;
+
+                if (!meshNodeCountsByModel.TryGetValue(modelPath, out var nodeCount)) nodeCount = 1;
+
+                for (var n = 0; n < nodeCount && nodeIndex + n < instancingNodes.Count; n++)
+                {
+                    instancingNodes[nodeIndex + n].AddInstanceFeatureIds(featureIdBuilder);
+                }
+
+                nodeIndex += nodeCount;
             }
         }
 
@@ -126,7 +138,7 @@ public static class GPUTileHandler
         return schemaClass;
     }
 
-    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null)
+    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null, Dictionary<string, int> meshNodeCountsByModel = null)
     {
         var sceneBuilder = new SceneBuilder();
 
@@ -139,13 +151,14 @@ public static class GPUTileHandler
 
             CollectExternalTextures(externalTextures, modelPath, modelRoot);
 
-            AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot);
+            var meshNodeCount = AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot);
+            if (meshNodeCountsByModel != null) meshNodeCountsByModel[modelPath] = meshNodeCount;
         }
 
         return sceneBuilder;
     }
 
-    private static void AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model, ModelRoot modelRoot)
+    private static int AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model, ModelRoot modelRoot)
     {
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
         var pointId = 0;
@@ -160,8 +173,6 @@ public static class GPUTileHandler
                 CollectNodesWithMeshes(rootNode, meshNodes);
             }
         }
-
-
         foreach (var instance in modelInstances)
         {
             foreach (var (meshBuilder, nodeWorldMatrix) in meshNodes)
@@ -172,6 +183,8 @@ public static class GPUTileHandler
 
             pointId++;
         }
+
+        return meshNodes.Count;
     }
 
     private static void CollectNodesWithMeshes(Node node, List<(IMeshBuilder<MaterialBuilder> MeshBuilder, Matrix4x4 NodeWorldMatrix)> meshNodes)

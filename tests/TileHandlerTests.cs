@@ -72,6 +72,43 @@ public class TileHandlerTests
     }
 
     [Test]
+    public void GetGpuTile_WithMultipleMeshNodes_AddsInstanceFeatureIdsToAllNodes()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        // Input model: 2 nodes with meshes.
+        var boxModel = ModelRoot.Load("./testfixtures/Box.glb");
+        var meshBuilder1 = boxModel.LogicalMeshes[0].ToMeshBuilder();
+        var meshBuilder2 = boxModel.LogicalMeshes[0].ToMeshBuilder();
+
+        var inputScene = new SceneBuilder();
+        inputScene.AddRigidMesh(meshBuilder1, new AffineTransform(Matrix4x4.Identity));
+        inputScene.AddRigidMesh(meshBuilder2, new AffineTransform(Matrix4x4.CreateTranslation(10, 0, 0)));
+
+        var inputModel = inputScene.ToGltf2();
+        var inputPath = Path.Combine(TestContext.CurrentContext.WorkDirectory, "node_transform_input_with_tags.glb");
+        inputModel.SaveGLB(inputPath);
+
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = inputPath;
+        instance.Tags = JArray.Parse("[{'id':123},{'name': 'test'}]");
+        instances.Add(instance);
+
+        var tile = GPUTileHandler.GetGPUTile(instances, UseScaleNonUniform: false);
+        var outputModel = ModelRoot.ParseGLB(tile);
+
+        var instancingNodes = outputModel.LogicalNodes
+            .Where(n => n.GetExtension<MeshGpuInstancing>() != null)
+            .ToList();
+
+        Assert.That(instancingNodes.Count, Is.EqualTo(2));
+        Assert.That(instancingNodes.All(n => n.GetExtension<MeshExtInstanceFeatures>() != null), Is.True);
+    }
+
+    [Test]
     public void GetGpuInstanceTransform_WithPitch_AffectsRotation()
     {
         Tiles3DExtensions.RegisterExtensions();
