@@ -1,5 +1,6 @@
 ﻿using Cmpt.Tile;
 using I3dm.Tile;
+using i3dm.export.Cesium;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SharpGLTF.Schema2;
@@ -167,17 +168,139 @@ public class TileHandlerTests
         var q0 = GetFirstGpuInstanceRotation(baseInstance);
         var qRoll = GetFirstGpuInstanceRotation(rollInstance);
 
-        Assert.That(Quaternion.Dot(q0, qRoll), Is.LessThan(0.999f));
+        Assert.That(Math.Abs(Quaternion.Dot(q0, qRoll)), Is.LessThan(0.999f));
+    }
+
+    [Test]
+    public void GetGpuInstanceTransform_RollIsNotYaw()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        var yaw90 = new Instance
+        {
+            Position = new Wkx.Point(1, 2, 0),
+            Scale = 1,
+            Model = "./testfixtures/Box.glb",
+            Yaw = 90,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var roll90 = new Instance
+        {
+            Position = yaw90.Position,
+            Scale = yaw90.Scale,
+            Model = yaw90.Model,
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 90
+        };
+
+        var qYaw = GetFirstGpuInstanceRotation(yaw90);
+        var qRoll = GetFirstGpuInstanceRotation(roll90);
+
+        Assert.That(Math.Abs(Quaternion.Dot(qYaw, qRoll)), Is.LessThan(0.999f));
+    }
+
+    [Test]
+    public void GetGpuInstanceTransform_ZeroAngles_IsUpright()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        // Use a model with identity node transform (Box.glb in fixtures is not guaranteed identity).
+        var boxModel = ModelRoot.Load("./testfixtures/Box.glb");
+        var meshBuilder = boxModel.LogicalMeshes[0].ToMeshBuilder();
+
+        var inputScene = new SceneBuilder();
+        inputScene.AddRigidMesh(meshBuilder, new AffineTransform(Matrix4x4.Identity));
+
+        var inputModel = inputScene.ToGltf2();
+        var inputPath = Path.Combine(TestContext.CurrentContext.WorkDirectory, "upright_identity_input.glb");
+        inputModel.SaveGLB(inputPath);
+
+        // A realistic ECEF position (from CesiumTransformerTests) to avoid degenerate ENU frames.
+        var p = new Vector3(1214947.2f, -4736379f, 4081540.8f);
+
+        var instance = new Instance
+        {
+            Position = new Wkx.Point(p.X, p.Y, p.Z),
+            Scale = 1,
+            Model = inputPath,
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var q = GetFirstGpuInstanceRotation(instance);
+        var actualUp = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, q));
+
+        var enu = SpatialConverter.EcefToEnu(p);
+        var upEcef = Vector3.Normalize(new Vector3(enu.M31, enu.M32, enu.M33));
+        var expectedUp = Vector3.Normalize(new Vector3(upEcef.X, upEcef.Z, -upEcef.Y)); // ECEF -> glTF Y-up
+
+        Assert.That(Vector3.Dot(actualUp, expectedUp), Is.GreaterThan(0.99f));
+    }
+
+    [Test]
+    public void GetGpuInstanceTransform_OrientationTest_WithRoll_AffectsRotation()
+    {
+        Tiles3DExtensions.RegisterExtensions();
+
+        var baseInstance = new Instance
+        {
+            Position = new Wkx.Point(1, 2, 0),
+            Scale = 1,
+            Model = "./testfixtures/OrientationTest.glb",
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 0
+        };
+
+        var rollInstance = new Instance
+        {
+            Position = baseInstance.Position,
+            Scale = baseInstance.Scale,
+            Model = baseInstance.Model,
+            Yaw = 0,
+            Pitch = 0,
+            Roll = 90
+        };
+
+        var r0 = GetGpuInstanceRotations(baseInstance);
+        var rRoll = GetGpuInstanceRotations(rollInstance);
+
+        Assert.That(r0.Count, Is.EqualTo(rRoll.Count));
+
+        var anyDifferent = false;
+        for (var i = 0; i < r0.Count; i++)
+        {
+            var dot = Math.Abs(Quaternion.Dot(r0[i], rRoll[i]));
+            if (dot < 0.999f)
+            {
+                anyDifferent = true;
+                break;
+            }
+        }
+
+        Assert.That(anyDifferent, Is.True);
     }
 
     private static Quaternion GetFirstGpuInstanceRotation(Instance instance)
     {
+        return GetGpuInstanceRotations(instance).First();
+    }
+
+    private static List<Quaternion> GetGpuInstanceRotations(Instance instance)
+    {
         var tile = GPUTileHandler.GetGPUTile(new List<Instance> { instance }, UseScaleNonUniform: false);
         var outputModel = ModelRoot.ParseGLB(tile);
 
-        var nodeWithMesh = outputModel.LogicalNodes.First(n => n.Mesh != null);
-        var gpu = nodeWithMesh.GetExtension<MeshGpuInstancing>();
-        return gpu.GetLocalTransform(0).Rotation;
+        return outputModel.LogicalNodes
+            .Where(n => n.Mesh != null)
+            .Select(n => n.GetExtension<MeshGpuInstancing>())
+            .Where(gpu => gpu != null)
+            .Select(gpu => gpu.GetLocalTransform(0).Rotation)
+            .ToList();
     }
 
     [Test]
