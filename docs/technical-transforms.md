@@ -109,9 +109,25 @@ With row-vector semantics that means:
 
 This is why `GPUTileHandler.GetTransformationMatrix(...)` writes basis vectors into the **rows**.
 
-## 4) Export mode: `--use_gpu_instancing=true` (EXT_mesh_gpu_instancing)
+## 4) Common workflow (both modes)
 
-### 4.1 What glTF applies at runtime
+Both output modes start from the same conceptual steps:
+
+1) Compute the local **ENU** basis at the instance ECEF position.
+2) Apply **yaw/pitch/roll** rotations in that local frame (degrees, clockwise-positive).
+3) Build a **3×3 orientation matrix** from the resulting basis vectors.
+
+From that point on, the modes diverge only in how the orientation is **encoded**:
+
+- GPU mode converts the basis to **glTF Y-up**, converts the matrix to a **quaternion**, and writes instance TRS via `EXT_mesh_gpu_instancing`.
+- Non-GPU mode keeps the basis in **ECEF** and derives the i3dm `NORMAL_RIGHT` / `NORMAL_UP` vectors from that same basis.
+
+Implementation pointers:
+- Basis + yaw/pitch/roll: `EnuCalculator.GetLocalEnuCesium(position, yaw, pitch, roll)`
+
+## 5) Export mode: `--use_gpu_instancing=true` (EXT_mesh_gpu_instancing)
+
+### 5.1 What glTF applies at runtime
 In glTF, each mesh node has a node transform (TRS or matrix). With `EXT_mesh_gpu_instancing`, each instance adds its own TRS.
 
 Conceptually (glTF / column vector notation):
@@ -122,7 +138,7 @@ worldVertex = NodeWorld * InstanceTRS * vertex
 
 (Where `NodeWorld` includes the full scene graph above the mesh node.)
 
-### 4.2 Preserving node transforms from the input model
+### 5.2 Preserving node transforms from the input model
 Many models (including Blender exports) include **axis-correction** or other transforms in the scene graph.
 If we drop them, some nodes will be misplaced or rotated.
 
@@ -134,7 +150,7 @@ Code path:
   - the mesh geometry
   - the node’s `WorldMatrix`
 
-### 4.3 Instance TRS calculation
+### 5.3 Instance TRS calculation
 For each instance we compute:
 
 1) **Position** (ECEF) → **glTF Y-up** using `ToYUp(Point)`.
@@ -151,7 +167,7 @@ For each instance we compute:
    - Uniform: `Scale`
    - Non-uniform: `ScaleNonUniform[3]` when `--use_scale_non_uniform=true`.
 
-### 4.4 Combining node and instance transforms
+### 5.4 Combining node and instance transforms
 Each output mesh node uses:
 
 - `nodeTransform = node.WorldMatrix` (from the input model)
@@ -163,7 +179,7 @@ And we create a combined transform:
 
 (Exact multiplication order is handled by `AffineTransform.Multiply(...)` in SharpGLTF; the intended effect is “apply node’s authored transform, then apply instance TRS”.)
 
-### 4.5 RTC (relative-to-center) translation
+### 5.5 RTC (relative-to-center) translation
 To keep numbers small, we use the first instance position as a per-tile translation anchor.
 
 - We subtract this anchor from each instance translation.
@@ -171,24 +187,23 @@ To keep numbers small, we use the first instance position as a per-tile translat
 
 This improves numerical precision in clients.
 
-## 5) Export mode: `--use_gpu_instancing=false` (i3dm)
+## 6) Export mode: `--use_gpu_instancing=false` (i3dm)
 
-In i3dm, per-instance orientation is encoded via two vectors:
+In i3dm, per-instance orientation is encoded via two vectors derived from the same rotated ENU basis:
 
-- `NORMAL_RIGHT` (local +X)
-- `NORMAL_UP` (local +Y)
+- `NORMAL_RIGHT` (derived from the transform matrix; represents the instance local +X direction)
+- `NORMAL_UP` (derived from the transform matrix; represents the instance local +Y direction)
 
-The client derives the final orientation from these vectors.
-
-Current behavior (breaking change):
-- The non-GPU path uses **yaw/pitch/roll** (degrees, clockwise-positive) just like GPU mode.
-- It computes the ENU basis at the ECEF position, applies yaw/pitch/roll, and writes:
-  - `NORMAL_RIGHT` = East (local +X) in **ECEF**
+Current behavior:
+- The non-GPU path uses **yaw/pitch/roll** (degrees, clockwise-positive).
+- Backwards compatibility: if the input table does not contain yaw/pitch/roll but does contain legacy `rotation`, the exporter will read `rotation` as yaw/heading and assumes pitch/roll = 0 (and prints a deprecation warning).
+- We first compute the rotated ENU basis (conceptually a 3×3 orientation matrix), then derive i3dm vectors:
+  - `NORMAL_RIGHT` = East in **ECEF**
   - `NORMAL_UP`    = North in **ECEF**
 
-This choice yields a right-handed frame because `East × North = Up`, which avoids the 90° pitch offset in Cesium's i3dm pipeline.
+(Non-GPU does not do the ECEF→Y-up swizzle; the vectors are stored in ECEF.)
 
-## 6) Common pitfalls / why models can look “tilted”
+## 7) Common pitfalls / why models can look “tilted”
 
 1) **Mixing handedness or sign conventions**
    - Clockwise-positive vs right-hand-rule is easy to flip.
@@ -202,7 +217,7 @@ This choice yields a right-handed frame because `East × North = Up`, which avoi
 4) **Non-orthonormal basis drift**
    - Small floating point errors can accumulate; we re-orthonormalize the basis before creating quaternions.
 
-## 7) Code pointers
+## 8) Code pointers
 
 - ENU basis: `src\Cesium\SpatialConverter.cs` (`EcefToEnu`)
 - Y-up swizzle: `src\GPUTileHandler.cs` (`ToYUp`)

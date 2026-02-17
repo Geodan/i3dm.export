@@ -9,6 +9,7 @@ namespace i3dm.export;
 
 public static class InstancesRepository
 {
+    private static bool _rotationDeprecatedWarningWritten;
     internal static int CountFeaturesInBox(NpgsqlConnection conn, string geometryTable, string geometryColumn, BoundingBox bbox, string where, int source_epsg, bool keepProjection= false)
     {
         var fromX = bbox.XMin.ToString(CultureInfo.InvariantCulture);
@@ -50,8 +51,8 @@ public static class InstancesRepository
             $"SELECT ST_ASBinary(st_force3d({geometryColumn})) as position, scale, {scaleNonUniform} model, tags":
             $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {target_epsg})) as position, scale, {scaleNonUniform} model, tags";
 
-        // Breaking change: both GPU and non-GPU paths use yaw/pitch/roll.
-        select += ", yaw, pitch, roll";
+        var orientationSelect = GetOrientationSelect(conn, geometryTable, useGpuInstancing);
+        select += orientationSelect;
 
         var sql = FormattableString.Invariant($"{select} FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg, keepProjection)}");
         var res = conn.Query<Instance>(sql).AsList();
@@ -101,6 +102,77 @@ public static class InstancesRepository
 
         var bbox = new BoundingBox(xmin, ymin, xmax, ymax);
         return (bbox, zmin, zmax);
+    }
+
+    private static string GetOrientationSelect(NpgsqlConnection conn, string geometryTable, bool useGpuInstancing)
+    {
+        var columns = GetColumns(conn, geometryTable);
+        var select = GetOrientationSelectFromColumns(columns, useGpuInstancing, geometryTable, out var usesDeprecatedRotation);
+
+        if (usesDeprecatedRotation)
+        {
+            WriteRotationDeprecatedWarning(geometryTable);
+        }
+
+        return select;
+    }
+
+    private static HashSet<string> GetColumns(NpgsqlConnection conn, string geometryTable)
+    {
+        var (schema, table) = SplitSchemaAndTable(geometryTable);
+
+        const string sql = "select column_name from information_schema.columns where table_schema = @schema and table_name = @table";
+        var res = conn.Query<string>(sql, new { schema, table });
+        return new HashSet<string>(res, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static (string Schema, string Table) SplitSchemaAndTable(string geometryTable)
+    {
+        var cleaned = geometryTable.Replace("\"", string.Empty);
+        var parts = cleaned.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 2)
+        {
+            return (parts[0], parts[1]);
+        }
+
+        return ("public", parts[0]);
+    }
+
+    private static string GetOrientationSelectFromColumns(HashSet<string> columns, bool useGpuInstancing, string geometryTable, out bool usesDeprecatedRotation)
+    {
+        usesDeprecatedRotation = false;
+
+        if (columns.Contains("yaw") && columns.Contains("pitch") && columns.Contains("roll"))
+        {
+            return ", yaw, pitch, roll";
+        }
+
+        if (!useGpuInstancing && columns.Contains("rotation"))
+        {
+            usesDeprecatedRotation = true;
+            return ", rotation as yaw, 0.0 as pitch, 0.0 as roll";
+        }
+
+        var mode = useGpuInstancing ? "GPU (--use_gpu_instancing=true)" : "non-GPU (--use_gpu_instancing=false)";
+        throw new InvalidOperationException($"Missing orientation columns for {mode}. Expected columns yaw/pitch/roll. For non-GPU you can use legacy rotation (deprecated).\n\nMigration example:\n  alter table {geometryTable} add column if not exists yaw double precision default 0;\n  alter table {geometryTable} add column if not exists pitch double precision default 0;\n  alter table {geometryTable} add column if not exists roll double precision default 0;\n  update {geometryTable} set yaw = rotation where rotation is not null;");
+    }
+
+    private static void WriteRotationDeprecatedWarning(string geometryTable)
+    {
+        if (_rotationDeprecatedWarningWritten) return;
+
+        _rotationDeprecatedWarningWritten = true;
+        Console.WriteLine("----------------------------------------------------------------------------------");
+        Console.WriteLine("Warning: column 'rotation' is deprecated and will be removed in a future release.");
+        Console.WriteLine("Non-GPU mode is reading 'rotation' as yaw/heading; pitch and roll are assumed 0.");
+        Console.WriteLine("Migration script (example):");
+        Console.WriteLine($"alter table {geometryTable} add column if not exists yaw double precision default 0;");
+        Console.WriteLine($"alter table {geometryTable} add column if not exists pitch double precision default 0;");
+        Console.WriteLine($"alter table {geometryTable} add column if not exists roll double precision default 0;");
+        Console.WriteLine($"update {geometryTable} set yaw = rotation where rotation is not null;");
+        Console.WriteLine("-- optional cleanup (breaking): alter table <table> drop column rotation;");
+        Console.WriteLine("----------------------------------------------------------------------------------");
     }
 
     private static string ToInvariantCulture(double value) {
