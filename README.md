@@ -2,7 +2,7 @@
 
 Console tool for exporting Instanced 3D Models (i3dm's or glb's with EXT_mesh_gpu_instancing), i3dm composites (cmpt), subtree files and tileset.json from PostGIS table. 
 
-The input table contains instance information like location (epsg:4326), binary glTF model (glb), scale, rotation and instance attributes. 
+The input table contains instance information like location (epsg:4326), binary glTF model (glb), scale, yaw/pitch/roll (or legacy rotation) and instance attributes. 
 
 The 3D tiles created by this tool are tested in Cesium JS.
 
@@ -58,10 +58,11 @@ Input database table contains following columns:
 
 . scale - double with instance scale (all directions);
 
-. rotation - double with horizontal rotation angle (0 - 360 degrees) (legacy, used in i3dm / non-GPU mode);
 . yaw - double with yaw/heading in degrees (clockwise-positive);
 . pitch - double with pitch in degrees;
 . roll - double with roll in degrees;
+
+Non-GPU (i3dm) mode supports yaw/pitch/roll. For backwards compatibility, if `yaw/pitch/roll` columns are missing the tool will fall back to legacy `rotation` (deprecated) and print a warning (rotation is treated as yaw; pitch/roll = 0).
 
 . tags - json with instance attribute information;
 
@@ -296,15 +297,20 @@ The following features should work:
 
 - Positioning, Rotation (roll, pitch, yaw) and Scaling of instances.
 
-To use this option, the input table should contain columns 'roll', 'pitch' and 'yaw' (column 'rotation' is not used).
+To use this option, the input table should contain columns 'roll', 'pitch' and 'yaw'.
 
-Sql script to create the columns:
+Sql script to add the columns (and migrate legacy rotation if present):
 
 ```
-alter table instances add yaw decimal default 0
-alter table instances add pitch decimal default 0
-alter table instances add roll decimal default 0
-alter table instances drop column rotation
+alter table instances add column if not exists yaw double precision default 0;
+alter table instances add column if not exists pitch double precision default 0;
+alter table instances add column if not exists roll double precision default 0;
+
+-- rotation was historically used as heading/yaw
+update instances set yaw = rotation where rotation is not null;
+
+-- optional cleanup (breaking):
+-- alter table instances drop column if exists rotation;
 ```
 
 ### External textures

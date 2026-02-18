@@ -15,8 +15,6 @@ public class Instance
 
     public double[] ScaleNonUniform { get; set; }
 
-    public double Rotation { get; set; }
-
     public JArray Tags { get; set; }
 
     public object Model { get; set; }
