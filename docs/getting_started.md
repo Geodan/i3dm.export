@@ -67,9 +67,9 @@ We create a new view, with
 
 - randomized scales;
 
-- randomized horizontal rotations;
+- randomized yaw (pitch/roll = 0);
 
-- for tags use fields 'id' and 'bevestiging' . 
+- for tags use fields 'id' and 'bevestiging' .
 
 Create the view:
 
@@ -78,7 +78,9 @@ postgres=# CREATE view traffic_signs_instances as (
 	SELECT ogc_fid as id, 
 	wkb_geometry as geom,
 	1 +  random() as scale,
-	random()*360 as rotation,
+	random()*360 as yaw,
+	0 as pitch,
+	0 as roll,
 	'Box.glb' as model,
 	json_build_array(json_build_object('id',ogc_fid), json_build_object('bevestiging',bevestiging)) as tags
 	from traffic_signs

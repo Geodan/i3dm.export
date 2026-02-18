@@ -1,95 +1,43 @@
 ﻿using i3dm.export.Cesium;
 using NUnit.Framework;
-using System;
 using System.Numerics;
 
 namespace i3dm.export.tests.Cesium;
 
-class CesiumTransformerTests
+class EnuCalculatorTests
 {
     [Test]
-    public void TestGetEnuAnglesOnPosition()
+    public void GetLocalEnuCesium_WithHeading_MatchesManualRotationAroundUp()
     {
-        // arrange
         var position = new Vector3(1214947.2f, -4736379, 4081540.8f);
-        var enu = CesiumTransformer.GetEastUp(position, 90); // rotate to east
-        var up = enu.Up;
-        var east = enu.East;
+        var baseEnu = SpatialConverter.EcefToEnu(position);
 
-        Assert.That(east.X == 0.159852028f);
-        Assert.That(east.Y == -0.6231709f);
-        Assert.That(east.Z == -0.76557523f);
+        var east0 = Vector3.Normalize(new Vector3(baseEnu.M11, baseEnu.M12, baseEnu.M13));
+        var north0 = Vector3.Normalize(new Vector3(baseEnu.M21, baseEnu.M22, baseEnu.M23));
+        var up0 = Vector3.Normalize(new Vector3(baseEnu.M31, baseEnu.M32, baseEnu.M33));
 
-        // assert
-        Assert.That(up.X == 0.968639731f);
-        Assert.That(up.Y == 0.248469591f);
-        Assert.That(Math.Round(up.Z, 2) == 0);
-    }
+        var (east90, north90, up90) = EnuCalculator.GetLocalEnuCesium(position, heading: 90, pitch: 0, roll: 0);
 
+        var eastManual = Vector3.Normalize(Rotator.RotateVector(east0, up0, 90));
+        var northManual = Vector3.Normalize(Rotator.RotateVector(north0, up0, 90));
 
-    [Test]
-    public void RotateNorthTest()
-    {
-        // arrange
-        var angle = 0;
-        var expectedLocalEast = new Vector3(1, 0, 0);
-        var expectectedLocalUp = new Vector3(0, 1, 0);
-
-        // act
-        var localEU = CesiumTransformer.GetLocalEnuCesium(angle);
-
-        // assert
-        Assert.That(localEU.East.Equals(expectedLocalEast));
-        Assert.That(localEU.Up.Equals(expectectedLocalUp));
-        Assert.That(Vector3.Cross(localEU.East, localEU.Up).Equals(localEU.North));
+        Assert.That(Vector3.Dot(east90, eastManual), Is.GreaterThan(0.9999f));
+        Assert.That(Vector3.Dot(north90, northManual), Is.GreaterThan(0.9999f));
+        Assert.That(Vector3.Dot(up90, up0), Is.GreaterThan(0.9999f));
     }
 
     [Test]
-    public void RotateEastTest()
+    public void GetLocalEnuCesium_ReturnsOrthonormalBasis()
     {
-        // arrange
-        var angle = 90;
-        var expectedLocalEast = new Vector3(0, -1, 0);
-        var expectedLocalUp = new Vector3(1, 0, 0);
+        var position = new Vector3(1214947.2f, -4736379, 4081540.8f);
+        var (east, north, up) = EnuCalculator.GetLocalEnuCesium(position, heading: 12, pitch: 3, roll: 4);
 
-        // act
-        var localEU = CesiumTransformer.GetLocalEnuCesium(angle);
+        Assert.That(System.Math.Abs(east.Length() - 1), Is.LessThan(1e-5));
+        Assert.That(System.Math.Abs(north.Length() - 1), Is.LessThan(1e-5));
+        Assert.That(System.Math.Abs(up.Length() - 1), Is.LessThan(1e-5));
 
-        // assert
-        Assert.That(localEU.East.Equals(expectedLocalEast));
-        Assert.That(localEU.Up.Equals(expectedLocalUp));
-    }
-
-    [Test]
-    public void RotateSouthTest()
-    {
-        // arrange
-        var angle = 180;
-        var expectedLocalEast = new Vector3(-1, 0, 0);
-        var expectedLocalUp = new Vector3(0, -1, 0);
-
-        // act
-        var localEU = CesiumTransformer.GetLocalEnuCesium(angle);
-
-        // assert
-        Assert.That(localEU.East.Equals(expectedLocalEast));
-        Assert.That(localEU.Up.Equals(expectedLocalUp));
-    }
-
-    [Test]
-    public void RotateWestTest()
-    {
-        // arrange
-        var angle = 270;
-
-        var expectedLocalEast = new Vector3(0, 1, 0);
-        var expectedLocalUp = new Vector3(-1, 0, 0);
-
-        // act
-        var localEU = CesiumTransformer.GetLocalEnuCesium(angle);
-
-        // assert
-        Assert.That(localEU.East.Equals(expectedLocalEast));
-        Assert.That(localEU.Up.Equals(expectedLocalUp));
+        Assert.That(System.Math.Abs(Vector3.Dot(east, up)), Is.LessThan(1e-5));
+        Assert.That(System.Math.Abs(Vector3.Dot(east, north)), Is.LessThan(1e-5));
+        Assert.That(System.Math.Abs(Vector3.Dot(north, up)), Is.LessThan(1e-5));
     }
 }

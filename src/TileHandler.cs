@@ -68,9 +68,13 @@ public static class TileHandler
             {
                 scalesNonUniform.Add(new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]));
             }
-            var (East, North, Up) = EnuCalculator.GetLocalEnu(instance.Rotation, positionVector3);
-            normalUps.Add(Up);
-            normalRights.Add(East);
+            var (east, north, _) = EnuCalculator.GetLocalEnuCesium(positionVector3, instance.Yaw, instance.Pitch, instance.Roll);
+
+            // i3dm uses NORMAL_RIGHT (local +X) and NORMAL_UP.
+            // In Cesium's i3dm pipeline, using ENU East for RIGHT and ENU North for UP yields an upright frame:
+            // East × North = Up.
+            normalRights.Add(Vector3.Normalize(east));
+            normalUps.Add(Vector3.Normalize(north));
             tags.Add(instance.Tags);
         }
     }
