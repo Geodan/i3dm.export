@@ -1,6 +1,8 @@
-﻿using Cmpt.Tile;
+using Cmpt.Tile;
 using I3dm.Tile;
 using Newtonsoft.Json.Linq;
+using SharpGLTF.Schema2;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -85,7 +87,7 @@ public static class TileHandler
         {
             if (!UseExternalModel)
             {
-                var glbBytes = File.ReadAllBytes((string)model);
+                var glbBytes = GetEmbeddedGlbBytesWithRewrittenExternalImageUris((string)model);
                 i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
             }
             else
@@ -117,6 +119,109 @@ public static class TileHandler
         }
 
         return i3dm;
+    }
+
+    public static void CopyExternalTexturesForEmbeddedModels(string outputDirectory, IEnumerable<Instance> instances)
+    {
+        if (string.IsNullOrWhiteSpace(outputDirectory))
+        {
+            throw new ArgumentException("Output directory is required.", nameof(outputDirectory));
+        }
+
+        var copiedDestinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var modelPaths = instances
+            .Select(i => i.Model)
+            .OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var modelPath in modelPaths)
+        {
+            var modelRoot = ModelRoot.Load(modelPath);
+            var modelName = Path.GetFileNameWithoutExtension(modelPath);
+            var modelDirectory = Path.GetDirectoryName(modelPath) ?? string.Empty;
+
+            foreach (var image in modelRoot.LogicalImages)
+            {
+                if (image.Content.IsEmpty) continue;
+                var sourcePath = image.Content.SourcePath;
+                if (string.IsNullOrWhiteSpace(sourcePath)) continue;
+
+                var absoluteSourcePath = GetAbsoluteTexturePath(sourcePath, modelDirectory);
+                var destination = Path.Combine(outputDirectory, "textures", modelName, Path.GetFileName(absoluteSourcePath));
+
+                if (!copiedDestinations.Add(destination)) continue;
+
+                var destinationDirectory = Path.GetDirectoryName(destination);
+                if (!string.IsNullOrWhiteSpace(destinationDirectory))
+                {
+                    Directory.CreateDirectory(destinationDirectory);
+                }
+
+                if (!File.Exists(destination))
+                {
+                    File.Copy(absoluteSourcePath, destination);
+                }
+            }
+        }
+    }
+
+    private static string GetAbsoluteTexturePath(string sourcePath, string modelDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(sourcePath)) return sourcePath;
+        if (Path.IsPathRooted(sourcePath)) return Path.GetFullPath(sourcePath);
+        if (string.IsNullOrEmpty(modelDirectory)) return Path.GetFullPath(sourcePath);
+        return Path.GetFullPath(Path.Combine(modelDirectory, sourcePath));
+    }
+
+    private static byte[] GetEmbeddedGlbBytesWithRewrittenExternalImageUris(string modelPath)
+    {
+        var modelRoot = ModelRoot.Load(modelPath);
+        var modelName = Path.GetFileNameWithoutExtension(modelPath);
+        var modelDirectory = Path.GetDirectoryName(modelPath) ?? string.Empty;
+        var hasExternalImages = false;
+
+        foreach (var image in modelRoot.LogicalImages)
+        {
+            if (image.Content.IsEmpty) continue;
+            var sourcePath = image.Content.SourcePath;
+            if (string.IsNullOrWhiteSpace(sourcePath)) continue;
+
+            var absoluteSourcePath = GetAbsoluteTexturePath(sourcePath, modelDirectory);
+            image.AlternateWriteFileName = $"textures/{modelName}/{Path.GetFileName(absoluteSourcePath)}";
+            hasExternalImages = true;
+        }
+
+        if (!hasExternalImages)
+        {
+            return File.ReadAllBytes(modelPath);
+        }
+        
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), $"i3dm_export_{Guid.NewGuid():N}");
+        var temporaryGlbPath = Path.Combine(temporaryDirectory, "model.glb");
+        Directory.CreateDirectory(temporaryDirectory);
+        foreach (var image in modelRoot.LogicalImages)
+        {
+            if (string.IsNullOrWhiteSpace(image.AlternateWriteFileName)) continue;
+            var relativePath = image.AlternateWriteFileName.Replace('/', Path.DirectorySeparatorChar);
+            var imageDirectory = Path.GetDirectoryName(Path.Combine(temporaryDirectory, relativePath));
+            if (!string.IsNullOrWhiteSpace(imageDirectory))
+            {
+                Directory.CreateDirectory(imageDirectory);
+            }
+        }
+        try
+        {
+            var writeSettings = new WriteSettings { ImageWriting = ResourceWriteMode.SatelliteFile };
+            modelRoot.SaveGLB(temporaryGlbPath, writeSettings);
+            return File.ReadAllBytes(temporaryGlbPath);
+        }
+        finally
+        {
+            if (Directory.Exists(temporaryDirectory))
+            {
+                Directory.Delete(temporaryDirectory, true);
+            }
+        }
     }
 
     private static Vector3 GetRelativePosition(Point p, Point p_0)

@@ -61,7 +61,7 @@ public static class ImplicitTiling
                 else
                 {
                     var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
-                    SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
+                    SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm, instances, (bool)o.UseExternalModel);
                 }
             }
             else
@@ -99,8 +99,9 @@ public static class ImplicitTiling
             }
             else
             {
-                var bytes = CreateTile(o, conn, bbox, source_epsg, where, useGpuInstancing, useI3dm, keepProjection);
-                SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
+                var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
+                var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
+                SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm, instances, (bool)o.UseExternalModel);
             }
 
             var t1 = new Tile(tile.Z, tile.X, tile.Y);
@@ -118,7 +119,7 @@ public static class ImplicitTiling
         GPUTileHandler.SaveGPUTile(file, instances, useScaleNonUniform);
     }
 
-    private static void SaveTile(string contentDirectory, Tile tile, byte[] bytes, bool useGpuInstancing, bool useI3dm)
+    private static void SaveTile(string contentDirectory, Tile tile, byte[] bytes, bool useGpuInstancing, bool useI3dm, List<Instance> instances = null, bool useExternalModel = false)
     {
         var extension = useGpuInstancing ? "glb" : "cmpt";
         if (useI3dm)
@@ -129,12 +130,11 @@ public static class ImplicitTiling
         Console.Write($"\rCreating tile: {file}  ");
 
         File.WriteAllBytes(file, bytes);
-    }
 
-    private static byte[] CreateTile(Options o, NpgsqlConnection conn, BoundingBox tileBounds, int source_epsg, string where, bool useGpuInstancing = false, bool useI3dm = false, bool keepProjection = false)
-    {
-        var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, tileBounds, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
-        return CreateTile(o, instances, useGpuInstancing, useI3dm);
+        if (!useGpuInstancing && !useExternalModel && instances != null && instances.Count > 0)
+        {
+            TileHandler.CopyExternalTexturesForEmbeddedModels(contentDirectory, instances);
+        }
     }
 
     private static byte[] CreateTile(Options o, List<Instance> instances, bool useGpuInstancing, bool useI3dm)
