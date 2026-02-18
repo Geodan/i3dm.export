@@ -25,21 +25,6 @@ internal static class ExternalTextureHelper
         return CreateSatelliteWriteSettings(suppressSatelliteWrite);
     }
 
-    public static WriteSettings ConfigureExternalTextureUris(ModelRoot model, IReadOnlyDictionary<int, string> externalImageUrisByIndex, string outputDirectory, bool suppressSatelliteWrite = false)
-    {
-        var relativeUrisUsed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var kvp in externalImageUrisByIndex)
-        {
-            if (kvp.Key < 0 || kvp.Key >= model.LogicalImages.Count) continue;
-            model.LogicalImages[kvp.Key].AlternateWriteFileName = kvp.Value;
-            relativeUrisUsed.Add(kvp.Value);
-        }
-
-        EnsureOutputDirectories(outputDirectory, relativeUrisUsed);
-        return CreateSatelliteWriteSettings(suppressSatelliteWrite);
-    }
-
     public static MemoryStream WriteGlbToStream(ModelRoot model, WriteSettings writeSettings)
     {
         var stream = new MemoryStream();
@@ -118,6 +103,16 @@ internal static class ExternalTextureHelper
         if (!File.Exists(destination))
         {
             File.Copy(absoluteSourcePath, destination);
+        }
+    }
+
+    public static void CopyExternalTextures(string outputDirectory, IReadOnlyDictionary<string, string> externalTextures, ISet<string> copiedDestinations = null)
+    {
+        foreach (var texture in externalTextures)
+        {
+            var destination = Path.Combine(outputDirectory, texture.Value.Replace('/', Path.DirectorySeparatorChar));
+            if (copiedDestinations != null && !copiedDestinations.Add(destination)) continue;
+            CopyTextureIfMissing(outputDirectory, texture.Key, texture.Value);
         }
     }
 

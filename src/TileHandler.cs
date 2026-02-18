@@ -87,7 +87,27 @@ public static class TileHandler
         {
             if (!UseExternalModel)
             {
-                var glbBytes = GetEmbeddedGlbBytesWithRewrittenExternalImageUris((string)model, outputDirectory);
+                var modelPath = (string)model;
+                var modelRoot = ModelRoot.Load(modelPath);
+                var externalTextures = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
+
+                byte[] glbBytes;
+                if (externalTextures.Count == 0)
+                {
+                    glbBytes = File.ReadAllBytes(modelPath);
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(outputDirectory))
+                    {
+                        ExternalTextureHelper.CopyExternalTextures(outputDirectory, externalTextures);
+                    }
+
+                    var writeSettings = ExternalTextureHelper.ConfigureExternalTextureUris(modelRoot, externalTextures, outputDirectory, suppressSatelliteWrite: true);
+                    using var stream = ExternalTextureHelper.WriteGlbToStream(modelRoot, writeSettings);
+                    glbBytes = stream.ToArray();
+                }
                 i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
             }
             else
@@ -139,52 +159,8 @@ public static class TileHandler
             var modelRoot = ModelRoot.Load(modelPath);
             var externalTextures = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
-
-            foreach (var texture in externalTextures)
-            {
-                var destination = Path.Combine(outputDirectory, texture.Value.Replace('/', Path.DirectorySeparatorChar));
-
-                if (!copiedDestinations.Add(destination)) continue;
-
-                var destinationDirectory = Path.GetDirectoryName(destination);
-                if (!string.IsNullOrWhiteSpace(destinationDirectory))
-                {
-                    Directory.CreateDirectory(destinationDirectory);
-                }
-
-                if (!File.Exists(destination))
-                {
-                    File.Copy(texture.Key, destination);
-                }
-            }
+            ExternalTextureHelper.CopyExternalTextures(outputDirectory, externalTextures, copiedDestinations);
         }
-    }
-
-    private static byte[] GetEmbeddedGlbBytesWithRewrittenExternalImageUris(string modelPath, string outputDirectory = null)
-    {
-        var modelRoot = ModelRoot.Load(modelPath);
-        var externalImageUrisByIndex = new Dictionary<int, string>();
-
-        for (var i = 0; i < modelRoot.LogicalImages.Count; i++)
-        {
-            var image = modelRoot.LogicalImages[i];
-            if (!ExternalTextureHelper.TryGetExternalTextureReference(image, modelPath, out var absoluteSourcePath, out var relativeTextureUri)) continue;
-            externalImageUrisByIndex[i] = relativeTextureUri;
-
-            if (!string.IsNullOrWhiteSpace(outputDirectory))
-            {
-                ExternalTextureHelper.CopyTextureIfMissing(outputDirectory, absoluteSourcePath, relativeTextureUri);
-            }
-        }
-
-        if (externalImageUrisByIndex.Count == 0)
-        {
-            return File.ReadAllBytes(modelPath);
-        }
-
-        var writeSettings = ExternalTextureHelper.ConfigureExternalTextureUris(modelRoot, externalImageUrisByIndex, outputDirectory, suppressSatelliteWrite: true);
-        using var stream = ExternalTextureHelper.WriteGlbToStream(modelRoot, writeSettings);
-        return stream.ToArray();
     }
 
     private static Vector3 GetRelativePosition(Point p, Point p_0)
