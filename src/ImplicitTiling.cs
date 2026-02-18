@@ -60,8 +60,8 @@ public static class ImplicitTiling
                 }
                 else
                 {
-                    var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
-                    SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm, instances, (bool)o.UseExternalModel);
+                    var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm, contentDirectory);
+                    SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
                 }
             }
             else
@@ -100,8 +100,8 @@ public static class ImplicitTiling
             else
             {
                 var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
-                var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm);
-                SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm, instances, (bool)o.UseExternalModel);
+                var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm, contentDirectory);
+                SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
             }
 
             var t1 = new Tile(tile.Z, tile.X, tile.Y);
@@ -119,7 +119,7 @@ public static class ImplicitTiling
         GPUTileHandler.SaveGPUTile(file, instances, useScaleNonUniform);
     }
 
-    private static void SaveTile(string contentDirectory, Tile tile, byte[] bytes, bool useGpuInstancing, bool useI3dm, List<Instance> instances = null, bool useExternalModel = false)
+    private static void SaveTile(string contentDirectory, Tile tile, byte[] bytes, bool useGpuInstancing, bool useI3dm)
     {
         var extension = useGpuInstancing ? "glb" : "cmpt";
         if (useI3dm)
@@ -130,14 +130,9 @@ public static class ImplicitTiling
         Console.Write($"\rCreating tile: {file}  ");
 
         File.WriteAllBytes(file, bytes);
-
-        if (!useGpuInstancing && !useExternalModel && instances != null && instances.Count > 0)
-        {
-            TileHandler.CopyExternalTexturesForEmbeddedModels(contentDirectory, instances);
-        }
     }
 
-    private static byte[] CreateTile(Options o, List<Instance> instances, bool useGpuInstancing, bool useI3dm)
+    private static byte[] CreateTile(Options o, List<Instance> instances, bool useGpuInstancing, bool useI3dm, string contentDirectory = null)
     {
         byte[] tile;
 
@@ -148,12 +143,12 @@ public static class ImplicitTiling
         else if(!useI3dm)
         {
             // create cmpt
-            tile = TileHandler.GetCmptTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform);
+            tile = TileHandler.GetCmptTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, contentDirectory);
         }
         else
         {
             // take the first model for i3dm
-            tile = TileHandler.GetI3dmTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, instances.First().Model);
+            tile = TileHandler.GetI3dmTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, instances.First().Model, contentDirectory);
         }
 
         return tile;

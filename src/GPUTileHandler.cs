@@ -30,38 +30,8 @@ public static class GPUTileHandler
             return;
         }
 
-        var relativeUrisUsed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var image in model.LogicalImages)
-        {
-            if (image.Content.IsEmpty) continue;
-
-            var sourcePath = image.Content.SourcePath;
-            if (string.IsNullOrWhiteSpace(sourcePath)) continue; // embedded images stay embedded
-
-            var fileName = Path.GetFileName(sourcePath);
-
-            var matches = externalTextures
-                .Where(kvp => Path.GetFileName(kvp.Key).Equals(fileName, StringComparison.OrdinalIgnoreCase))
-                .Select(kvp => kvp.Value)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            var relativeUri = matches.Count == 1 ? matches[0] : $"textures/_shared/{fileName}";
-
-            image.AlternateWriteFileName = relativeUri;
-            relativeUrisUsed.Add(relativeUri);
-        }
-
         var outputDirectory = Path.GetDirectoryName(filePath) ?? string.Empty;
-        foreach (var rel in relativeUrisUsed)
-        {
-            var fsRel = rel.Replace('/', Path.DirectorySeparatorChar);
-            var dir = Path.GetDirectoryName(Path.Combine(outputDirectory, fsRel));
-            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-        }
-
-        var writeSettings = new WriteSettings { ImageWriting = ResourceWriteMode.SatelliteFile };
+        var writeSettings = ExternalTextureHelper.ConfigureExternalTextureUris(model, externalTextures, outputDirectory);
         model.SaveGLB(filePath, writeSettings);
     }
 
@@ -149,7 +119,7 @@ public static class GPUTileHandler
             var modelPath = (string)model;
             var modelRoot = ModelRoot.Load(modelPath);
 
-            CollectExternalTextures(externalTextures, modelPath, modelRoot);
+            ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
 
             var meshNodeCount = AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot);
             if (meshNodeCountsByModel != null) meshNodeCountsByModel[modelPath] = meshNodeCount;
@@ -210,38 +180,6 @@ public static class GPUTileHandler
         var sceneBuilder = new SceneBuilder();
         sceneBuilder.AddRigidMesh(meshBuilder, combinedTransform).WithExtras(JsonNode.Parse(json));
         return sceneBuilder;
-    }
-
-    private static void CollectExternalTextures(Dictionary<string, string> externalTextures, string modelPath, ModelRoot modelRoot)
-    {
-        if (externalTextures == null) return;
-
-        var modelName = Path.GetFileNameWithoutExtension(modelPath);
-        var modelDirectory = Path.GetDirectoryName(modelPath) ?? string.Empty;
-
-        foreach (var image in modelRoot.LogicalImages)
-        {
-            if (image.Content.IsEmpty) continue;
-            var sourcePath = image.Content.SourcePath;
-            if (string.IsNullOrWhiteSpace(sourcePath)) continue;
-
-            var absoluteSourcePath = GetAbsoluteTexturePath(sourcePath, modelDirectory);
-            var fileName = Path.GetFileName(absoluteSourcePath);
-
-            externalTextures[absoluteSourcePath] = $"textures/{modelName}/{fileName}";
-        }
-    }
-
-
-    private static string GetAbsoluteTexturePath(string sourcePath, string modelDirectory)
-    {
-        if (string.IsNullOrWhiteSpace(sourcePath)) return sourcePath;
-
-        if (Path.IsPathRooted(sourcePath)) return Path.GetFullPath(sourcePath);
-
-        if (string.IsNullOrEmpty(modelDirectory)) return Path.GetFullPath(sourcePath);
-
-        return Path.GetFullPath(Path.Combine(modelDirectory, sourcePath));
     }
 
     private static AffineTransform GetInstanceTransform(Instance instance, bool UseScaleNonUniform, Point translation)
