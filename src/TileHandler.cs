@@ -182,7 +182,7 @@ public static class TileHandler
             return File.ReadAllBytes(modelPath);
         }
 
-        var writeSettings = ExternalTextureHelper.ConfigureExternalTextureUris(modelRoot, externalImageUrisByIndex, outputDirectory);
+        var writeSettings = ExternalTextureHelper.ConfigureExternalTextureUris(modelRoot, externalImageUrisByIndex, outputDirectory, suppressSatelliteWrite: true);
         using var stream = ExternalTextureHelper.WriteGlbToStream(modelRoot, writeSettings);
         return stream.ToArray();
     }

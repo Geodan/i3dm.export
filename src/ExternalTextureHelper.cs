@@ -8,7 +8,7 @@ namespace i3dm.export;
 
 internal static class ExternalTextureHelper
 {
-    public static WriteSettings ConfigureExternalTextureUris(ModelRoot model, Dictionary<string, string> externalTextures, string outputDirectory)
+    public static WriteSettings ConfigureExternalTextureUris(ModelRoot model, Dictionary<string, string> externalTextures, string outputDirectory, bool suppressSatelliteWrite = false)
     {
         var relativeUrisUsed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -22,10 +22,10 @@ internal static class ExternalTextureHelper
         }
 
         EnsureOutputDirectories(outputDirectory, relativeUrisUsed);
-        return CreateSatelliteWriteSettings();
+        return CreateSatelliteWriteSettings(suppressSatelliteWrite);
     }
 
-    public static WriteSettings ConfigureExternalTextureUris(ModelRoot model, IReadOnlyDictionary<int, string> externalImageUrisByIndex, string outputDirectory)
+    public static WriteSettings ConfigureExternalTextureUris(ModelRoot model, IReadOnlyDictionary<int, string> externalImageUrisByIndex, string outputDirectory, bool suppressSatelliteWrite = false)
     {
         var relativeUrisUsed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -37,7 +37,7 @@ internal static class ExternalTextureHelper
         }
 
         EnsureOutputDirectories(outputDirectory, relativeUrisUsed);
-        return CreateSatelliteWriteSettings();
+        return CreateSatelliteWriteSettings(suppressSatelliteWrite);
     }
 
     public static MemoryStream WriteGlbToStream(ModelRoot model, WriteSettings writeSettings)
@@ -121,13 +121,19 @@ internal static class ExternalTextureHelper
         }
     }
 
-    private static WriteSettings CreateSatelliteWriteSettings()
+    private static WriteSettings CreateSatelliteWriteSettings(bool suppressSatelliteWrite)
     {
-        return new WriteSettings
+        var settings = new WriteSettings
         {
-            ImageWriting = ResourceWriteMode.SatelliteFile,
-            ImageWriteCallback = (ctx, assetName, image) => assetName
+            ImageWriting = ResourceWriteMode.SatelliteFile
         };
+
+        if (suppressSatelliteWrite)
+        {
+            settings.ImageWriteCallback = (ctx, assetName, image) => assetName;
+        }
+
+        return settings;
     }
 
     private static string GetAbsoluteTexturePath(string sourcePath, string modelDirectory)
