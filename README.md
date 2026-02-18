@@ -384,6 +384,8 @@ Press F5 to start debugging.
 
 ## History
 
+2026-02-19: release 2.16.0: add support for yaw, roll, pitch rotations in no GPU instancing mode (legacy rotation is deprecated but will be treated as yaw)
+
 2026-02-17: release 2.15.0: improve gpu instancing picking for multi node model and fix for pitch, roll, yaw rotations
 
 2026-02-13: release 2.14.1: fix for keep_projection option
