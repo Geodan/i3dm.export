@@ -373,6 +373,25 @@ public class TileHandlerTests
     }
 
     [Test]
+    public void NonGpuTileWithExternalTextures_CopiesTextureFiles()
+    {
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "./testfixtures/external_textures/Lov_asp_1_cr.glb";
+        instances.Add(instance);
+
+        var contentDir = Path.Combine(TestContext.CurrentContext.WorkDirectory, "content_external_textures_non_gpu");
+        Directory.CreateDirectory(contentDir);
+
+        TileHandler.CopyExternalTexturesForEmbeddedModels(contentDir, instances);
+
+        var texturePath = Path.Combine(contentDir, "textures", "Lov_asp_1_cr", "Lov_asp_1_cr.png");
+        Assert.That(File.Exists(texturePath), Is.True);
+    }
+
+    [Test]
     public void GetGpuTileWithoutTagsTest()
     {
         Tiles3DExtensions.RegisterExtensions();
