@@ -401,7 +401,10 @@ public class TileHandlerTests
         instance.Model = "./testfixtures/external_textures/Lov_asp_1_cr.glb";
         instances.Add(instance);
 
-        var tile = TileHandler.GetCmptTile(instances, UseExternalModel: false);
+        var contentDir = Path.Combine(TestContext.CurrentContext.WorkDirectory, "content_external_textures_non_gpu_uri");
+        Directory.CreateDirectory(contentDir);
+
+        var tile = TileHandler.GetCmptTile(instances, UseExternalModel: false, outputDirectory: contentDir);
         var cmpt = CmptReader.Read(new MemoryStream(tile));
         var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
 

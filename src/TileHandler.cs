@@ -13,7 +13,7 @@ namespace i3dm.export;
 
 public static class TileHandler
 {
-    public static byte[] GetCmptTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false)
+    public static byte[] GetCmptTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false, string outputDirectory = null)
     {
         var uniqueModels = instances.Select(s => s.Model).Distinct();
 
@@ -21,7 +21,7 @@ public static class TileHandler
 
         foreach (var model in uniqueModels)
         {
-            var bytesI3dm = GetI3dmTile(instances, UseExternalModel, UseScaleNonUniform, model);
+            var bytesI3dm = GetI3dmTile(instances, UseExternalModel, UseScaleNonUniform, model, outputDirectory);
             tiles.Add(bytesI3dm);
         }
 
@@ -29,7 +29,7 @@ public static class TileHandler
         return bytes;
     }
 
-    public static byte[] GetI3dmTile(List<Instance> instances, bool UseExternalModel, bool UseScaleNonUniform, object model)
+    public static byte[] GetI3dmTile(List<Instance> instances, bool UseExternalModel, bool UseScaleNonUniform, object model, string outputDirectory = null)
     {
         var positions = new List<Vector3>();
         var scales = new List<float>();
@@ -43,7 +43,7 @@ public static class TileHandler
 
         CalculateArrays(modelInstances, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
 
-        var i3dm = GetI3dm(model, positions, firstPosition, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform);
+        var i3dm = GetI3dm(model, positions, firstPosition, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform, outputDirectory);
         var bytesI3dm = I3dmWriter.Write(i3dm);
         return bytesI3dm;
     }
@@ -79,7 +79,7 @@ public static class TileHandler
         }
     }
 
-    internal static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, Point rtcCenter, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false)
+    internal static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, Point rtcCenter, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false, string outputDirectory = null)
     {
         I3dm.Tile.I3dm i3dm = null;
 
@@ -87,7 +87,27 @@ public static class TileHandler
         {
             if (!UseExternalModel)
             {
-                var glbBytes = GetEmbeddedGlbBytesWithRewrittenExternalImageUris((string)model);
+                var modelPath = (string)model;
+                var modelRoot = ModelRoot.Load(modelPath);
+                var externalTextures = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
+
+                byte[] glbBytes;
+                if (externalTextures.Count == 0)
+                {
+                    glbBytes = File.ReadAllBytes(modelPath);
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(outputDirectory))
+                    {
+                        ExternalTextureHelper.CopyExternalTextures(outputDirectory, externalTextures);
+                    }
+
+                    var writeSettings = ExternalTextureHelper.ConfigureExternalTextureUris(modelRoot, externalTextures, outputDirectory, suppressSatelliteWrite: true);
+                    using var stream = ExternalTextureHelper.WriteGlbToStream(modelRoot, writeSettings);
+                    glbBytes = stream.ToArray();
+                }
                 i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
             }
             else
@@ -137,90 +157,9 @@ public static class TileHandler
         foreach (var modelPath in modelPaths)
         {
             var modelRoot = ModelRoot.Load(modelPath);
-            var modelName = Path.GetFileNameWithoutExtension(modelPath);
-            var modelDirectory = Path.GetDirectoryName(modelPath) ?? string.Empty;
-
-            foreach (var image in modelRoot.LogicalImages)
-            {
-                if (image.Content.IsEmpty) continue;
-                var sourcePath = image.Content.SourcePath;
-                if (string.IsNullOrWhiteSpace(sourcePath)) continue;
-
-                var absoluteSourcePath = GetAbsoluteTexturePath(sourcePath, modelDirectory);
-                var destination = Path.Combine(outputDirectory, "textures", modelName, Path.GetFileName(absoluteSourcePath));
-
-                if (!copiedDestinations.Add(destination)) continue;
-
-                var destinationDirectory = Path.GetDirectoryName(destination);
-                if (!string.IsNullOrWhiteSpace(destinationDirectory))
-                {
-                    Directory.CreateDirectory(destinationDirectory);
-                }
-
-                if (!File.Exists(destination))
-                {
-                    File.Copy(absoluteSourcePath, destination);
-                }
-            }
-        }
-    }
-
-    private static string GetAbsoluteTexturePath(string sourcePath, string modelDirectory)
-    {
-        if (string.IsNullOrWhiteSpace(sourcePath)) return sourcePath;
-        if (Path.IsPathRooted(sourcePath)) return Path.GetFullPath(sourcePath);
-        if (string.IsNullOrEmpty(modelDirectory)) return Path.GetFullPath(sourcePath);
-        return Path.GetFullPath(Path.Combine(modelDirectory, sourcePath));
-    }
-
-    private static byte[] GetEmbeddedGlbBytesWithRewrittenExternalImageUris(string modelPath)
-    {
-        var modelRoot = ModelRoot.Load(modelPath);
-        var modelName = Path.GetFileNameWithoutExtension(modelPath);
-        var modelDirectory = Path.GetDirectoryName(modelPath) ?? string.Empty;
-        var hasExternalImages = false;
-
-        foreach (var image in modelRoot.LogicalImages)
-        {
-            if (image.Content.IsEmpty) continue;
-            var sourcePath = image.Content.SourcePath;
-            if (string.IsNullOrWhiteSpace(sourcePath)) continue;
-
-            var absoluteSourcePath = GetAbsoluteTexturePath(sourcePath, modelDirectory);
-            image.AlternateWriteFileName = $"textures/{modelName}/{Path.GetFileName(absoluteSourcePath)}";
-            hasExternalImages = true;
-        }
-
-        if (!hasExternalImages)
-        {
-            return File.ReadAllBytes(modelPath);
-        }
-        
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), $"i3dm_export_{Guid.NewGuid():N}");
-        var temporaryGlbPath = Path.Combine(temporaryDirectory, "model.glb");
-        Directory.CreateDirectory(temporaryDirectory);
-        foreach (var image in modelRoot.LogicalImages)
-        {
-            if (string.IsNullOrWhiteSpace(image.AlternateWriteFileName)) continue;
-            var relativePath = image.AlternateWriteFileName.Replace('/', Path.DirectorySeparatorChar);
-            var imageDirectory = Path.GetDirectoryName(Path.Combine(temporaryDirectory, relativePath));
-            if (!string.IsNullOrWhiteSpace(imageDirectory))
-            {
-                Directory.CreateDirectory(imageDirectory);
-            }
-        }
-        try
-        {
-            var writeSettings = new WriteSettings { ImageWriting = ResourceWriteMode.SatelliteFile };
-            modelRoot.SaveGLB(temporaryGlbPath, writeSettings);
-            return File.ReadAllBytes(temporaryGlbPath);
-        }
-        finally
-        {
-            if (Directory.Exists(temporaryDirectory))
-            {
-                Directory.Delete(temporaryDirectory, true);
-            }
+            var externalTextures = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
+            ExternalTextureHelper.CopyExternalTextures(outputDirectory, externalTextures, copiedDestinations);
         }
     }
 
