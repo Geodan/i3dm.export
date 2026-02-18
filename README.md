@@ -314,19 +314,22 @@ update instances set yaw = rotation where rotation is not null;
 ```
 
 ### External textures
-When the input model (GLB/GLTF) references external image textures (for example `*.png`), GPU instancing tiles are written as GLB files that reference those textures externally instead of embedding them in every tile.
+When the input model (GLB/GLTF) references external image textures (for example `*.png`), exported tiles keep those textures external in both modes:
+
+- GPU instancing (`--use_gpu_instancing=true`)
+- non-GPU instancing (`--use_gpu_instancing=false`) when using embedded model payloads (`--use_external_model=false`)
 
 On export, textures are written once to:
 
-- `output\\content\\textures\\<modelName>\\<textureFile>`
+- `output/content/textures/<modelName>/<textureFile>`
 
-and each generated tile GLB references them via a relative URI:
+and each generated tile payload references them via a relative URI:
 
 - `textures/<modelName>/<textureFile>`
 
 This significantly reduces dataset size when many tiles share the same model + textures.
 
-If the input model has embedded images, they remain embedded in each exported tile GLB.
+If the input model has embedded images, they remain embedded in each exported tile.
 
 ### Known limits
 

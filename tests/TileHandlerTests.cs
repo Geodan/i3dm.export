@@ -392,6 +392,26 @@ public class TileHandlerTests
     }
 
     [Test]
+    public void NonGpuTileWithExternalTextures_RewritesImageUriToTexturesFolder()
+    {
+        var instances = new List<Instance>();
+        var instance = new Instance();
+        instance.Position = new Wkx.Point(1, 2, 0);
+        instance.Scale = 1;
+        instance.Model = "./testfixtures/external_textures/Lov_asp_1_cr.glb";
+        instances.Add(instance);
+
+        var tile = TileHandler.GetCmptTile(instances, UseExternalModel: false);
+        var cmpt = CmptReader.Read(new MemoryStream(tile));
+        var i3dm = I3dmReader.Read(new MemoryStream(cmpt.Tiles.First()));
+
+        var json = ReadGlbJson(i3dm.GlbData);
+        var gltf = JObject.Parse(json);
+        var uri = gltf["images"]?[0]?["uri"]?.ToString();
+        Assert.That(uri, Is.EqualTo("textures/Lov_asp_1_cr/Lov_asp_1_cr.png"));
+    }
+
+    [Test]
     public void GetGpuTileWithoutTagsTest()
     {
         Tiles3DExtensions.RegisterExtensions();
@@ -699,6 +719,11 @@ public class TileHandlerTests
     private static string ReadGlbJson(string path)
     {
         var bytes = File.ReadAllBytes(path);
+        return ReadGlbJson(bytes);
+    }
+
+    private static string ReadGlbJson(byte[] bytes)
+    {
         var jsonChunkLength = BitConverter.ToInt32(bytes, 12);
         return Encoding.UTF8.GetString(bytes, 20, jsonChunkLength);
     }
