@@ -1,16 +1,43 @@
 # Technical notes: coordinate systems & transforms
 
-This document explains how `i3dm.export` computes **translation**, **rotation**, and **scale** for instances in both output modes:
+This document explains how `i3dm.export` computes **translation**, **rotation**, and **scale** for instances in multiple modes:
 
 - `--use_gpu_instancing=true`: outputs a `.glb` that uses `EXT_mesh_gpu_instancing`.
 - `--use_gpu_instancing=false`: outputs `i3dm` (or `cmpt` containing `i3dm`) using `NORMAL_UP` / `NORMAL_RIGHT`.
+- `--keep_projection=true`: uses Cartesian projection (local XYZ coordinates) instead of ECEF.
 
 It also documents the coordinate-system conversions between **ECEF (EPSG:4978)** and **glTF Y-up**, and clarifies the **matrix conventions** used by glTF vs `System.Numerics`.
 
 ## 1) Coordinate systems
 
+### 1.0 Cartesian projection mode (`--keep_projection=true`)
+
+When `--keep_projection=true` is enabled, the exporter uses **Cartesian coordinates** instead of ECEF. This mode is designed for use with viewers like **Giro3D** that expect local coordinate systems.
+
+**Cartesian coordinate system:**
+- Right-handed coordinate system
+- Units: meters (from source projection)
+- Axes:
+  - +X: East
+  - +Y: North
+  - +Z: Up
+
+**Key differences from ECEF mode:**
+- No transformation to EPSG:4978
+- No ECEF or ENU calculations
+- Positions are used directly from the source projection
+- Model is rotated to align with Cartesian Z-up convention:
+  - 90° rotation around X-axis (to align Z-up)
+  - 180° rotation around Z-axis (yaw correction)
+
+**Current limitations (Cartesian mode):**
+- Only supported with `--use_gpu_instancing=false` (i3dm tiles)
+- Yaw, pitch, and roll are set to 0 (no per-instance rotation)
+- NORMAL_RIGHT is fixed to (1, 0, 0) - East
+- NORMAL_UP is fixed to (0, 1, 0) - North
+
 ### 1.1 ECEF (EPSG:4978)
-Internally, instance positions are converted to **ECEF** (Earth-Centered, Earth-Fixed) coordinates.
+In standard mode (`--keep_projection=false`), instance positions are converted to **ECEF** (Earth-Centered, Earth-Fixed) coordinates.
 
 - Right-handed coordinate system.
 - Units: meters.
@@ -20,7 +47,7 @@ Internally, instance positions are converted to **ECEF** (Earth-Centered, Earth-
   - +Z: north pole.
 
 ### 1.2 Local tangent frame (ENU)
-For each instance position we derive a local tangent basis:
+For each instance position in ECEF mode we derive a local tangent basis:
 
 - **E**: East (tangent)
 - **N**: North (tangent)
@@ -46,7 +73,7 @@ glTF uses a **right-handed** coordinate system with:
 The exporter outputs **Y-up** glTF.
 
 ### 1.4 ECEF → glTF Y-up swizzle
-The exporter maps vectors/points from ECEF to glTF Y-up using the same swizzle in both position and orientation code:
+In ECEF mode, the exporter maps vectors/points from ECEF to glTF Y-up using the same swizzle in both position and orientation code:
 
 ```
 ToYUp(x, y, z) = ( x,  z, -y )
@@ -189,19 +216,32 @@ This improves numerical precision in clients.
 
 ## 6) Export mode: `--use_gpu_instancing=false` (i3dm)
 
-In i3dm, per-instance orientation is encoded via two vectors derived from the same rotated ENU basis:
+In i3dm, per-instance orientation is encoded via two vectors derived from the transform matrix:
 
-- `NORMAL_RIGHT` (derived from the transform matrix; represents the instance local +X direction)
-- `NORMAL_UP` (derived from the transform matrix; represents the instance local +Y direction)
+- `NORMAL_RIGHT` (represents the instance local +X direction)
+- `NORMAL_UP` (represents the instance local +Y direction)
 
-Current behavior:
+### 6.1 ECEF mode (`--keep_projection=false`)
+
+In standard ECEF mode:
 - The non-GPU path uses **yaw/pitch/roll** (degrees, clockwise-positive).
 - Backwards compatibility: if the input table does not contain yaw/pitch/roll but does contain legacy `rotation`, the exporter will read `rotation` as yaw/heading and assumes pitch/roll = 0 (and prints a deprecation warning).
 - We first compute the rotated ENU basis (conceptually a 3×3 orientation matrix), then derive i3dm vectors:
   - `NORMAL_RIGHT` = East in **ECEF**
   - `NORMAL_UP`    = North in **ECEF**
 
-(Non-GPU does not do the ECEF→Y-up swizzle; the vectors are stored in ECEF.)
+### 6.2 Cartesian mode (`--keep_projection=true`)
+
+In Cartesian projection mode:
+- No ECEF or ENU transformations are applied
+- Positions are used directly from the source projection (in XYZ meters)
+- The input model is rotated to align with Cartesian Z-up convention:
+  - 90° rotation around X-axis (transforms Y-up to Z-up)
+  - 180° rotation around Z-axis (yaw correction for proper orientation)
+- Per-instance orientation is fixed (yaw/pitch/roll are not yet supported):
+  - `NORMAL_RIGHT` = (1, 0, 0) - East direction
+  - `NORMAL_UP`    = (0, 1, 0) - North direction
+- This mode is designed for viewers like **Giro3D** that use local Cartesian coordinate systems
 
 ## 7) Common pitfalls / why models can look “tilted”
 
@@ -217,10 +257,20 @@ Current behavior:
 4) **Non-orthonormal basis drift**
    - Small floating point errors can accumulate; we re-orthonormalize the basis before creating quaternions.
 
+5) **Using wrong projection mode**
+   - Using `--keep_projection=false` (ECEF mode) when the viewer expects Cartesian coordinates
+   - Using `--keep_projection=true` (Cartesian mode) with WGS84 data without proper setup
+
 ## 8) Code pointers
 
+### ECEF mode
 - ENU basis: `src\Cesium\SpatialConverter.cs` (`EcefToEnu`)
 - Y-up swizzle: `src\GPUTileHandler.cs` (`ToYUp`)
 - Instance TRS (GPU): `src\GPUTileHandler.cs` (`GetInstanceTransform`)
 - Node transform preservation: `src\GPUTileHandler.cs` (`CollectNodesWithMeshes`)
 - Yaw/pitch/roll application: `src\EnuCalculator.cs`
+
+### Cartesian mode
+- Model rotation: `src\TileHandler.cs` (`RotateModelForCartesian`)
+- i3dm generation with Cartesian coordinates: `src\TileHandler.cs` (`CalculateArrays`, `GetI3dm`)
+- Tile creation: `src\ImplicitTiling.cs` (`CreateTile`)

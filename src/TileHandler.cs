@@ -13,7 +13,30 @@ namespace i3dm.export;
 
 public static class TileHandler
 {
-    public static byte[] GetCmptTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false, string outputDirectory = null)
+    private static byte[] RotateModelForCartesian(byte[] glbBytes)
+    {
+        var model = ModelRoot.ParseGLB(glbBytes);
+        
+        // Rotate 90° around X-axis (to align Z-up)
+        var rotX = Matrix4x4.CreateRotationX((float)(-Math.PI / 2.0));
+        
+        // Rotate 180° around Z-axis (yaw)
+        var rotZ = Matrix4x4.CreateRotationZ((float)Math.PI);
+        
+        // Combine rotations: first X, then Z
+        var combinedRotation = rotX * rotZ;
+
+        foreach (var scene in model.LogicalScenes)
+        {
+            foreach (var node in scene.VisualChildren)
+            {
+                node.LocalMatrix = node.LocalMatrix * combinedRotation;
+            }
+        }
+
+        return model.WriteGLB().Array;
+    }
+    public static byte[] GetCmptTile(List<Instance> instances, bool UseExternalModel = false, bool UseScaleNonUniform = false, string outputDirectory = null, bool keepProjection = false)
     {
         var uniqueModels = instances.Select(s => s.Model).Distinct();
 
@@ -21,7 +44,7 @@ public static class TileHandler
 
         foreach (var model in uniqueModels)
         {
-            var bytesI3dm = GetI3dmTile(instances, UseExternalModel, UseScaleNonUniform, model, outputDirectory);
+            var bytesI3dm = GetI3dmTile(instances, UseExternalModel, UseScaleNonUniform, model, outputDirectory, keepProjection);
             tiles.Add(bytesI3dm);
         }
 
@@ -29,7 +52,7 @@ public static class TileHandler
         return bytes;
     }
 
-    public static byte[] GetI3dmTile(List<Instance> instances, bool UseExternalModel, bool UseScaleNonUniform, object model, string outputDirectory = null)
+    public static byte[] GetI3dmTile(List<Instance> instances, bool UseExternalModel, bool UseScaleNonUniform, object model, string outputDirectory = null, bool keepProjection = false)
     {
         var positions = new List<Vector3>();
         var scales = new List<float>();
@@ -41,14 +64,14 @@ public static class TileHandler
         var tags = new List<JArray>();
         var firstPosition = (Point)modelInstances[0].Position;
 
-        CalculateArrays(modelInstances, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags);
+        CalculateArrays(modelInstances, UseScaleNonUniform, positions, scales, scalesNonUniform, normalUps, normalRights, tags, keepProjection);
 
-        var i3dm = GetI3dm(model, positions, firstPosition, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform, outputDirectory);
+        var i3dm = GetI3dm(model, positions, firstPosition, scales, scalesNonUniform, normalUps, normalRights, tags, UseExternalModel, UseScaleNonUniform, outputDirectory, keepProjection);
         var bytesI3dm = I3dmWriter.Write(i3dm);
         return bytesI3dm;
     }
 
-    internal static void CalculateArrays(List<Instance> instances, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags)
+    internal static void CalculateArrays(List<Instance> instances, bool UseScaleNonUniform, List<Vector3> positions, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool keepProjection = false)
     {
         var firstPosition = (Point)instances[0].Position;
 
@@ -68,18 +91,31 @@ public static class TileHandler
             {
                 scalesNonUniform.Add(new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]));
             }
-            var (east, north, _) = EnuCalculator.GetLocalEnuCesium(positionVector3, instance.Yaw, instance.Pitch, instance.Roll);
 
-            // i3dm uses NORMAL_RIGHT (local +X) and NORMAL_UP.
-            // In Cesium's i3dm pipeline, using ENU East for RIGHT and ENU North for UP yields an upright frame:
-            // East × North = Up.
-            normalRights.Add(Vector3.Normalize(east));
-            normalUps.Add(Vector3.Normalize(north));
+            if (keepProjection)
+            {
+                // Cartesian projection: X=East, Y=North, Z=Up
+                // For i3dm: NORMAL_RIGHT = local +X direction, NORMAL_UP = local +Y direction
+                // In Cartesian mode with no rotation (yaw/pitch/roll = 0):
+                normalRights.Add(new Vector3(1, 0, 0)); // X = East
+                normalUps.Add(new Vector3(0, 1, 0));    // Y = North
+            }
+            else
+            {
+                // ECEF mode: use ENU transformation
+                var (east, north, _) = EnuCalculator.GetLocalEnuCesium(positionVector3, instance.Yaw, instance.Pitch, instance.Roll);
+
+                // i3dm uses NORMAL_RIGHT (local +X) and NORMAL_UP.
+                // In Cesium's i3dm pipeline, using ENU East for RIGHT and ENU North for UP yields an upright frame:
+                // East × North = Up.
+                normalRights.Add(Vector3.Normalize(east));
+                normalUps.Add(Vector3.Normalize(north));
+            }
             tags.Add(instance.Tags);
         }
     }
 
-    internal static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, Point rtcCenter, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false, string outputDirectory = null)
+    internal static I3dm.Tile.I3dm GetI3dm(object model, List<Vector3> positions, Point rtcCenter, List<float> scales, List<Vector3> scalesNonUniform, List<Vector3> normalUps, List<Vector3> normalRights, List<JArray> tags, bool UseExternalModel = false, bool UseScaleNonUniform = false, string outputDirectory = null, bool keepProjection = false)
     {
         I3dm.Tile.I3dm i3dm = null;
 
@@ -108,6 +144,13 @@ public static class TileHandler
                     using var stream = ExternalTextureHelper.WriteGlbToStream(modelRoot, writeSettings);
                     glbBytes = stream.ToArray();
                 }
+
+                // Apply Cartesian rotation if needed
+                if (keepProjection)
+                {
+                    glbBytes = RotateModelForCartesian(glbBytes);
+                }
+
                 i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
             }
             else
@@ -117,7 +160,15 @@ public static class TileHandler
         }
         if (model is byte[])
         {
-            i3dm = new I3dm.Tile.I3dm(positions, (byte[])model);
+            var glbBytes = (byte[])model;
+            
+            // Apply Cartesian rotation if needed
+            if (keepProjection)
+            {
+                glbBytes = RotateModelForCartesian(glbBytes);
+            }
+            
+            i3dm = new I3dm.Tile.I3dm(positions, glbBytes);
         }
 
         if (!UseScaleNonUniform)

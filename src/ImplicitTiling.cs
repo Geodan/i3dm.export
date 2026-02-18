@@ -60,7 +60,7 @@ public static class ImplicitTiling
                 }
                 else
                 {
-                    var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm, contentDirectory);
+                    var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm, contentDirectory, keepProjection);
                     SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
                 }
             }
@@ -100,7 +100,7 @@ public static class ImplicitTiling
             else
             {
                 var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
-                var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm, contentDirectory);
+                var bytes = CreateTile(o, instances, useGpuInstancing, useI3dm, contentDirectory, keepProjection);
                 SaveTile(contentDirectory, tile, bytes, useGpuInstancing, useI3dm);
             }
 
@@ -132,7 +132,7 @@ public static class ImplicitTiling
         File.WriteAllBytes(file, bytes);
     }
 
-    private static byte[] CreateTile(Options o, List<Instance> instances, bool useGpuInstancing, bool useI3dm, string contentDirectory = null)
+    private static byte[] CreateTile(Options o, List<Instance> instances, bool useGpuInstancing, bool useI3dm, string contentDirectory = null, bool keepProjection = false)
     {
         byte[] tile;
 
@@ -143,12 +143,12 @@ public static class ImplicitTiling
         else if(!useI3dm)
         {
             // create cmpt
-            tile = TileHandler.GetCmptTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, contentDirectory);
+            tile = TileHandler.GetCmptTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, contentDirectory, keepProjection);
         }
         else
         {
             // take the first model for i3dm
-            tile = TileHandler.GetI3dmTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, instances.First().Model, contentDirectory);
+            tile = TileHandler.GetI3dmTile(instances, (bool)o.UseExternalModel, (bool)o.UseScaleNonUniform, instances.First().Model, contentDirectory, keepProjection);
         }
 
         return tile;
