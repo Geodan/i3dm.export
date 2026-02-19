@@ -1,276 +1,98 @@
-# Technical notes: coordinate systems & transforms
+# Technical: Coordinate Systems & Transforms
 
-This document explains how `i3dm.export` computes **translation**, **rotation**, and **scale** for instances in multiple modes:
+This document explains how `i3dm.export` computes translation, rotation, and scale for instances, covering coordinate transformations and matrix conventions.
 
-- `--use_gpu_instancing=true`: outputs a `.glb` that uses `EXT_mesh_gpu_instancing`.
-- `--use_gpu_instancing=false`: outputs `i3dm` (or `cmpt` containing `i3dm`) using `NORMAL_UP` / `NORMAL_RIGHT`.
-- `--keep_projection=true`: uses Cartesian projection (local XYZ coordinates) instead of ECEF.
+## Coordinate Systems
 
-It also documents the coordinate-system conversions between **ECEF (EPSG:4978)** and **glTF Y-up**, and clarifies the **matrix conventions** used by glTF vs `System.Numerics`.
+### ECEF Mode (Default)
+Standard mode converts positions to **ECEF (EPSG:4978)** - Earth-Centered, Earth-Fixed coordinates:
+- Right-handed, meters
+- +X: equator/prime meridian, +Y: 90° east, +Z: north pole
+- Derives **ENU** (East/North/Up) tangent basis at each position: `E × N = U`
+- Applies yaw/pitch/roll in local frame
 
-## 1) Coordinate systems
+### Cartesian Mode (`--keep_projection=true`)
+Uses local XYZ coordinates for viewers like Giro3D:
+- Right-handed, meters (from source projection)
+- +X: East, +Y: North, +Z: Up
+- No ECEF/ENU transformations
+- Model rotated: 90° around X (Z-up), 180° around Z (orientation)
+- **Limitations**: i3dm only, no per-instance rotation, fixed NORMAL_RIGHT/UP
 
-### 1.0 Cartesian projection mode (`--keep_projection=true`)
+### glTF Y-up Space
+Output format uses right-handed: +X right, +Y up, +Z forward
 
-When `--keep_projection=true` is enabled, the exporter uses **Cartesian coordinates** instead of ECEF. This mode is designed for use with viewers like **Giro3D** that expect local coordinate systems.
+**ECEF → glTF swizzle**: `ToYUp(x, y, z) = (x, z, -y)`
 
-**Cartesian coordinate system:**
-- Right-handed coordinate system
-- Units: meters (from source projection)
-- Axes:
-  - +X: East
-  - +Y: North
-  - +Z: Up
+## Rotation Conventions
 
-**Key differences from ECEF mode:**
-- No transformation to EPSG:4978
-- No ECEF or ENU calculations
-- Positions are used directly from the source projection
-- Model is rotated to align with Cartesian Z-up convention:
-  - 90° rotation around X-axis (to align Z-up)
-  - 180° rotation around Z-axis (yaw correction)
+Angles in **degrees**, **clockwise-positive**:
+- **Yaw**: around Up axis (heading)
+- **Pitch**: around East axis
+- **Roll**: around North/Forward axis
 
-**Current limitations (Cartesian mode):**
-- Only supported with `--use_gpu_instancing=false` (i3dm tiles)
-- Yaw, pitch, and roll are set to 0 (no per-instance rotation)
-- NORMAL_RIGHT is fixed to (1, 0, 0) - East
-- NORMAL_UP is fixed to (0, 1, 0) - North
+`Rotator.RotateVector` converts clockwise to right-hand-rule using `360 - angle`.
 
-### 1.1 ECEF (EPSG:4978)
-In standard mode (`--keep_projection=false`), instance positions are converted to **ECEF** (Earth-Centered, Earth-Fixed) coordinates.
+## Matrix Conventions
 
-- Right-handed coordinate system.
-- Units: meters.
-- Axes (typical convention):
-  - +X: intersection of equator and prime meridian.
-  - +Y: 90° east on equator.
-  - +Z: north pole.
+**glTF**: Column-major, column vectors → `world = M * local`  
+**System.Numerics**: Row-vector semantics → `world = local * M`
 
-### 1.2 Local tangent frame (ENU)
-For each instance position in ECEF mode we derive a local tangent basis:
+This repo stores world basis vectors in matrix **rows** for row-vector semantics:
+- `(1,0,0) * M = East`, `(0,1,0) * M = Up`, `(0,0,1) * M = Forward`
 
-- **E**: East (tangent)
-- **N**: North (tangent)
-- **U**: Up (surface normal / ellipsoid normal)
+## Transform Pipeline
 
-This ENU basis is right-handed:
+**Common workflow** (ECEF mode):
+1. Compute ENU basis at ECEF position
+2. Apply yaw/pitch/roll (clockwise-positive)
+3. Build 3×3 orientation matrix
 
-```
-E × N = U
-```
+**Encoding diverges**:
+- **GPU mode**: Convert to glTF Y-up → quaternion → `EXT_mesh_gpu_instancing` TRS
+- **i3dm mode**: Keep ECEF → extract `NORMAL_RIGHT`/`NORMAL_UP` vectors
 
-Implementation note:
-- `SpatialConverter.EcefToEnu(position)` computes an orthonormal E/N/U basis at that ECEF position.
-- `EnuCalculator.GetLocalEnuCesium(position, heading, pitch, roll)` starts from that base frame and applies yaw/pitch/roll.
+## GPU Instancing Mode (`--use_gpu_instancing=true`)
 
-### 1.3 glTF space (Y-up)
-glTF uses a **right-handed** coordinate system with:
+Outputs `.glb` with `EXT_mesh_gpu_instancing`: `worldVertex = NodeWorld * InstanceTRS * vertex`
 
-- +X right
-- +Y up
-- +Z forward
+**Node transforms preserved**: Uses `node.WorldMatrix` from input model (e.g., Blender axis corrections)
 
-The exporter outputs **Y-up** glTF.
+**Instance TRS**:
+1. **Translation**: ECEF → glTF Y-up via `ToYUp(Point)`
+2. **Rotation**: ENU basis + yaw/pitch/roll → swizzle to Y-up → re-orthonormalize → quaternion
+3. **Scale**: Uniform or non-uniform (`--use_scale_non_uniform`)
 
-### 1.4 ECEF → glTF Y-up swizzle
-In ECEF mode, the exporter maps vectors/points from ECEF to glTF Y-up using the same swizzle in both position and orientation code:
+**RTC optimization**: First instance position as tile anchor, improving precision
 
-```
-ToYUp(x, y, z) = ( x,  z, -y )
-```
+## i3dm Mode (`--use_gpu_instancing=false`)
 
-So:
-- ECEF +Z (up-ish) becomes glTF +Y.
-- ECEF +Y becomes glTF -Z.
+Encodes orientation via `NORMAL_RIGHT` (local +X) and `NORMAL_UP` (local +Y)
 
-This keeps the resulting glTF basis right-handed.
+**ECEF mode**:
+- Compute rotated ENU basis → `NORMAL_RIGHT` = East, `NORMAL_UP` = North (in ECEF)
+- Legacy `rotation` field supported as yaw (with deprecation warning)
 
-## 2) Angle conventions (Yaw / Pitch / Roll)
+**Cartesian mode**:
+- Direct XYZ positions, model rotated 90° (X-axis) + 180° (Z-axis)
+- Fixed: `NORMAL_RIGHT` = (1,0,0), `NORMAL_UP` = (0,1,0)
+- No per-instance rotation yet
 
-Angles are in **degrees**.
+## Common Issues
 
-For GPU instancing, the instance record provides:
+1. **Handedness/sign confusion**: Clockwise-positive vs right-hand-rule
+2. **Row vs column vectors**: Basis in wrong dimension for `Vector3.Transform`
+3. **Dropped node transforms**: Missing axis corrections from input model
+4. **Numerical drift**: Re-orthonormalization needed before quaternion conversion
+5. **Wrong projection mode**: ECEF vs Cartesian mismatch with viewer expectations
 
-- **Yaw**: rotation around local **Up** axis (heading)
-- **Pitch**: rotation around local **East** axis
-- **Roll**: rotation around local **North/Forward** axis
+## Code References
 
-Important: the code uses the same convention as the legacy non-GPU rotation: **clockwise-positive** (as seen from the positive axis direction).
+**ECEF mode**:
+- `SpatialConverter.cs`: `EcefToEnu` - ENU basis computation
+- `GPUTileHandler.cs`: `ToYUp`, `GetInstanceTransform`, `CollectNodesWithMeshes`
+- `EnuCalculator.cs`: Yaw/pitch/roll application
 
-Implementation note:
-- `Rotator.RotateVector(...)` converts clockwise-positive degrees into the standard right-hand-rule rotation by using `360 - angle` internally.
-
-## 3) Matrix conventions: glTF vs System.Numerics
-
-### 3.1 glTF convention
-- Matrices are stored **column-major** in the file.
-- Transforms conceptually use **column vectors**:
-
-```
-world = M * local
-```
-
-### 3.2 System.Numerics convention
-`System.Numerics.Matrix4x4` + `Vector3.Transform(v, M)` uses **row-vector semantics**:
-
-```
-world = local * M
-```
-
-This is the single biggest source of confusion when converting between math written for glTF/Cesium (column vectors) and code using `System.Numerics`.
-
-### 3.3 How this repo constructs rotation matrices
-When we build a rotation matrix from a basis, we intentionally store the **world basis vectors in the matrix rows** so that:
-
-- local X maps to East
-- local Y maps to Up
-- local Z maps to Forward
-
-With row-vector semantics that means:
-
-```
-(1,0,0) * M = East
-(0,1,0) * M = Up
-(0,0,1) * M = Forward
-```
-
-This is why `GPUTileHandler.GetTransformationMatrix(...)` writes basis vectors into the **rows**.
-
-## 4) Common workflow (both modes)
-
-Both output modes start from the same conceptual steps:
-
-1) Compute the local **ENU** basis at the instance ECEF position.
-2) Apply **yaw/pitch/roll** rotations in that local frame (degrees, clockwise-positive).
-3) Build a **3×3 orientation matrix** from the resulting basis vectors.
-
-From that point on, the modes diverge only in how the orientation is **encoded**:
-
-- GPU mode converts the basis to **glTF Y-up**, converts the matrix to a **quaternion**, and writes instance TRS via `EXT_mesh_gpu_instancing`.
-- Non-GPU mode keeps the basis in **ECEF** and derives the i3dm `NORMAL_RIGHT` / `NORMAL_UP` vectors from that same basis.
-
-Implementation pointers:
-- Basis + yaw/pitch/roll: `EnuCalculator.GetLocalEnuCesium(position, yaw, pitch, roll)`
-
-## 5) Export mode: `--use_gpu_instancing=true` (EXT_mesh_gpu_instancing)
-
-### 5.1 What glTF applies at runtime
-In glTF, each mesh node has a node transform (TRS or matrix). With `EXT_mesh_gpu_instancing`, each instance adds its own TRS.
-
-Conceptually (glTF / column vector notation):
-
-```
-worldVertex = NodeWorld * InstanceTRS * vertex
-```
-
-(Where `NodeWorld` includes the full scene graph above the mesh node.)
-
-### 5.2 Preserving node transforms from the input model
-Many models (including Blender exports) include **axis-correction** or other transforms in the scene graph.
-If we drop them, some nodes will be misplaced or rotated.
-
-This exporter preserves per-node transforms by collecting all nodes with meshes and using their `node.WorldMatrix`.
-
-Code path:
-- `GPUTileHandler.CollectNodesWithMeshes(...)`
-- Each mesh node contributes:
-  - the mesh geometry
-  - the node’s `WorldMatrix`
-
-### 5.3 Instance TRS calculation
-For each instance we compute:
-
-1) **Position** (ECEF) → **glTF Y-up** using `ToYUp(Point)`.
-
-2) **Orientation**:
-   - Compute ENU basis at the ECEF position.
-   - Apply yaw/pitch/roll in ENU.
-   - Swizzle each basis vector to glTF Y-up: `ToYUp(Vector3)`.
-   - Re-orthonormalize to reduce numerical drift.
-   - Build a rotation matrix whose rows are `{East, Up, Forward}`.
-   - Convert to quaternion with `Quaternion.CreateFromRotationMatrix`.
-
-3) **Scale**:
-   - Uniform: `Scale`
-   - Non-uniform: `ScaleNonUniform[3]` when `--use_scale_non_uniform=true`.
-
-### 5.4 Combining node and instance transforms
-Each output mesh node uses:
-
-- `nodeTransform = node.WorldMatrix` (from the input model)
-- `instanceTransform = TRS` computed above
-
-And we create a combined transform:
-
-- `combined = nodeTransform * instanceTransform`
-
-(Exact multiplication order is handled by `AffineTransform.Multiply(...)` in SharpGLTF; the intended effect is “apply node’s authored transform, then apply instance TRS”.)
-
-### 5.5 RTC (relative-to-center) translation
-To keep numbers small, we use the first instance position as a per-tile translation anchor.
-
-- We subtract this anchor from each instance translation.
-- At the end, the anchor is applied back to nodes.
-
-This improves numerical precision in clients.
-
-## 6) Export mode: `--use_gpu_instancing=false` (i3dm)
-
-In i3dm, per-instance orientation is encoded via two vectors derived from the transform matrix:
-
-- `NORMAL_RIGHT` (represents the instance local +X direction)
-- `NORMAL_UP` (represents the instance local +Y direction)
-
-### 6.1 ECEF mode (`--keep_projection=false`)
-
-In standard ECEF mode:
-- The non-GPU path uses **yaw/pitch/roll** (degrees, clockwise-positive).
-- Backwards compatibility: if the input table does not contain yaw/pitch/roll but does contain legacy `rotation`, the exporter will read `rotation` as yaw/heading and assumes pitch/roll = 0 (and prints a deprecation warning).
-- We first compute the rotated ENU basis (conceptually a 3×3 orientation matrix), then derive i3dm vectors:
-  - `NORMAL_RIGHT` = East in **ECEF**
-  - `NORMAL_UP`    = North in **ECEF**
-
-### 6.2 Cartesian mode (`--keep_projection=true`)
-
-In Cartesian projection mode:
-- No ECEF or ENU transformations are applied
-- Positions are used directly from the source projection (in XYZ meters)
-- The input model is rotated to align with Cartesian Z-up convention:
-  - 90° rotation around X-axis (transforms Y-up to Z-up)
-  - 180° rotation around Z-axis (yaw correction for proper orientation)
-- Per-instance orientation is fixed (yaw/pitch/roll are not yet supported):
-  - `NORMAL_RIGHT` = (1, 0, 0) - East direction
-  - `NORMAL_UP`    = (0, 1, 0) - North direction
-- This mode is designed for viewers like **Giro3D** that use local Cartesian coordinate systems
-
-## 7) Common pitfalls / why models can look “tilted”
-
-1) **Mixing handedness or sign conventions**
-   - Clockwise-positive vs right-hand-rule is easy to flip.
-
-2) **Row-vectors vs column-vectors**
-   - A basis written into columns will be wrong when used with `Vector3.Transform(v, M)`.
-
-3) **Dropping input node transforms**
-   - Some models rely on an axis-correction node; if ignored, the model will be sideways or parts won’t move.
-
-4) **Non-orthonormal basis drift**
-   - Small floating point errors can accumulate; we re-orthonormalize the basis before creating quaternions.
-
-5) **Using wrong projection mode**
-   - Using `--keep_projection=false` (ECEF mode) when the viewer expects Cartesian coordinates
-   - Using `--keep_projection=true` (Cartesian mode) with WGS84 data without proper setup
-
-## 8) Code pointers
-
-### ECEF mode
-- ENU basis: `src\Cesium\SpatialConverter.cs` (`EcefToEnu`)
-- Y-up swizzle: `src\GPUTileHandler.cs` (`ToYUp`)
-- Instance TRS (GPU): `src\GPUTileHandler.cs` (`GetInstanceTransform`)
-- Node transform preservation: `src\GPUTileHandler.cs` (`CollectNodesWithMeshes`)
-- Yaw/pitch/roll application: `src\EnuCalculator.cs`
-
-### Cartesian mode
-- Model rotation: `src\TileHandler.cs` (`RotateModelForCartesian`)
-- i3dm generation with Cartesian coordinates: `src\TileHandler.cs` (`CalculateArrays`, `GetI3dm`)
-- Tile creation: `src\ImplicitTiling.cs` (`CreateTile`)
+**Cartesian mode**:
+- `TileHandler.cs`: `RotateModelForCartesian`, `CalculateArrays`, `GetI3dm`
+- `ImplicitTiling.cs`: `CreateTile`
