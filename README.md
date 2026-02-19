@@ -133,10 +133,10 @@ displaying the Instanced 3D Tiles, like 3DTilesRenderer/Giro3D/ITowns/QGIS Web C
 When using `--keep_projection=true`, the following limitations apply:
 
 - **Scale**: Works correctly in both GPU and non-GPU modes
-- **With `--use_gpu_instancing=true`**: Incorrect rotation (ECEF rotation is still applied, which is wrong for Cartesian coordinates)
+- **Rotation (yaw/pitch/roll)**: Fully supported with `--use_gpu_instancing=true` (release 2.x.x and higher)
 - **With `--use_gpu_instancing=false`**: Yaw, pitch, and roll are not supported (all set to 0). Only the base model rotation (90° X-axis + 180° Z-axis) is applied.
 
-For Cartesian projection mode, it is recommended to use `--use_gpu_instancing=false` until full rotation support is implemented.
+For Cartesian projection mode with rotation support, use `--use_gpu_instancing=true`.
 
 ## Docker
 
