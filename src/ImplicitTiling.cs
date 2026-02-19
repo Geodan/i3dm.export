@@ -56,7 +56,7 @@ public static class ImplicitTiling
                 instances = TileClustering.Cluster(instances, o.MaxFeaturesPerTile);
                 if (useGpuInstancing)
                 {
-                    SaveGpuTile(contentDirectory, tile, instances, (bool)o.UseScaleNonUniform);
+                    SaveGpuTile(contentDirectory, tile, instances, (bool)o.UseScaleNonUniform, keepProjection);
                 }
                 else
                 {
@@ -95,7 +95,7 @@ public static class ImplicitTiling
             if (useGpuInstancing)
             {
                 var instances = InstancesRepository.GetInstances(conn, o.Table, o.GeometryColumn, bbox, source_epsg, where, (bool)o.UseScaleNonUniform, useGpuInstancing, keepProjection);
-                SaveGpuTile(contentDirectory, tile, instances, (bool)o.UseScaleNonUniform);
+                SaveGpuTile(contentDirectory, tile, instances, (bool)o.UseScaleNonUniform, keepProjection);
             }
             else
             {
@@ -112,11 +112,11 @@ public static class ImplicitTiling
         return tiles;
     }
 
-    private static void SaveGpuTile(string contentDirectory, Tile tile, List<Instance> instances, bool useScaleNonUniform)
+    private static void SaveGpuTile(string contentDirectory, Tile tile, List<Instance> instances, bool useScaleNonUniform, bool keepProjection)
     {
         var file = $"{contentDirectory}{Path.AltDirectorySeparatorChar}{tile.Z}_{tile.X}_{tile.Y}.glb";
         Console.Write($"\rCreating tile: {file}  ");
-        GPUTileHandler.SaveGPUTile(file, instances, useScaleNonUniform);
+        GPUTileHandler.SaveGPUTile(file, instances, useScaleNonUniform, keepProjection);
     }
 
     private static void SaveTile(string contentDirectory, Tile tile, byte[] bytes, bool useGpuInstancing, bool useI3dm)
@@ -138,7 +138,7 @@ public static class ImplicitTiling
 
         if (useGpuInstancing)
         {
-            tile = GPUTileHandler.GetGPUTile(instances, (bool)o.UseScaleNonUniform);
+            tile = GPUTileHandler.GetGPUTile(instances, (bool)o.UseScaleNonUniform, keepProjection);
         }
         else if(!useI3dm)
         {

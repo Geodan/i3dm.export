@@ -16,11 +16,11 @@ using Wkx;
 namespace i3dm.export;
 public static class GPUTileHandler
 {
-    public static void SaveGPUTile(string filePath, List<Instance> instances, bool UseScaleNonUniform)
+    public static void SaveGPUTile(string filePath, List<Instance> instances, bool UseScaleNonUniform, bool keepProjection = false)
     {
         var externalTextures = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        var model = BuildGpuModel(instances, UseScaleNonUniform, externalTextures);
+        var model = BuildGpuModel(instances, UseScaleNonUniform, externalTextures, keepProjection);
 
         // If textures are embedded in the input model, keep them embedded in the output GLB.
         var hasEmbeddedImages = model.LogicalImages.Any(i => !i.Content.IsEmpty && string.IsNullOrWhiteSpace(i.Content.SourcePath));
@@ -35,19 +35,20 @@ public static class GPUTileHandler
         model.SaveGLB(filePath, writeSettings);
     }
 
-    public static byte[] GetGPUTile(List<Instance> instances, bool UseScaleNonUniform)
+    public static byte[] GetGPUTile(List<Instance> instances, bool UseScaleNonUniform, bool keepProjection = false)
     {
-        var model = BuildGpuModel(instances, UseScaleNonUniform);
+        var model = BuildGpuModel(instances, UseScaleNonUniform, null, keepProjection);
         return model.WriteGLB().Array;
     }
 
-    private static ModelRoot BuildGpuModel(List<Instance> instances, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null)
+    private static ModelRoot BuildGpuModel(List<Instance> instances, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null, bool keepProjection = false)
     {
         var firstPosition = (Point)instances[0].Position;
+        // Always convert to Y-up for glTF, regardless of keepProjection
         var translation = ToYUp(firstPosition);
 
         var meshNodeCountsByModel = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var sceneBuilder = AddModels(instances, translation, UseScaleNonUniform, externalTextures, meshNodeCountsByModel);
+        var sceneBuilder = AddModels(instances, translation, UseScaleNonUniform, externalTextures, meshNodeCountsByModel, keepProjection);
 
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
@@ -82,6 +83,7 @@ public static class GPUTileHandler
 
         foreach (var node in model.LogicalNodes)
         {
+            // glTF always uses Y-up, so translation is already in Y-up format
             var tra = new Vector3((float)translation.X, (float)translation.Y, (float)translation.Z);
             node.LocalTransform *= Matrix4x4.CreateTranslation(tra);
         }
@@ -108,7 +110,7 @@ public static class GPUTileHandler
         return schemaClass;
     }
 
-    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null, Dictionary<string, int> meshNodeCountsByModel = null)
+    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null, Dictionary<string, int> meshNodeCountsByModel = null, bool keepProjection = false)
     {
         var sceneBuilder = new SceneBuilder();
 
@@ -121,14 +123,14 @@ public static class GPUTileHandler
 
             ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
 
-            var meshNodeCount = AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot);
+            var meshNodeCount = AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot, keepProjection);
             if (meshNodeCountsByModel != null) meshNodeCountsByModel[modelPath] = meshNodeCount;
         }
 
         return sceneBuilder;
     }
 
-    private static int AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model, ModelRoot modelRoot)
+    private static int AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model, ModelRoot modelRoot, bool keepProjection = false)
     {
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
         var pointId = 0;
@@ -147,7 +149,7 @@ public static class GPUTileHandler
         {
             foreach (var (meshBuilder, nodeWorldMatrix) in meshNodes)
             {
-                var sceneBuilderModel = GetSceneBuilder(meshBuilder, nodeWorldMatrix, instance, UseScaleNonUniform, translation, pointId);
+                var sceneBuilderModel = GetSceneBuilder(meshBuilder, nodeWorldMatrix, instance, UseScaleNonUniform, translation, pointId, keepProjection);
                 sceneBuilder.AddScene(sceneBuilderModel, Matrix4x4.Identity);
             }
 
@@ -170,9 +172,9 @@ public static class GPUTileHandler
         }
     }
 
-    private static SceneBuilder GetSceneBuilder(IMeshBuilder<MaterialBuilder> meshBuilder, Matrix4x4 nodeWorldMatrix, Instance instance, bool UseScaleNonUniform, Point translation, int pointId)
+    private static SceneBuilder GetSceneBuilder(IMeshBuilder<MaterialBuilder> meshBuilder, Matrix4x4 nodeWorldMatrix, Instance instance, bool UseScaleNonUniform, Point translation, int pointId, bool keepProjection = false)
     {
-        var instanceTransform = GetInstanceTransform(instance, UseScaleNonUniform, translation);
+        var instanceTransform = GetInstanceTransform(instance, UseScaleNonUniform, translation, keepProjection);
         var nodeTransform = new AffineTransform(nodeWorldMatrix);
         var combinedTransform = AffineTransform.Multiply(in nodeTransform, in instanceTransform);
 
@@ -182,37 +184,78 @@ public static class GPUTileHandler
         return sceneBuilder;
     }
 
-    private static AffineTransform GetInstanceTransform(Instance instance, bool UseScaleNonUniform, Point translation)
+    private static AffineTransform GetInstanceTransform(Instance instance, bool UseScaleNonUniform, Point translation, bool keepProjection = false)
     {
         var point = (Point)instance.Position;
 
-        var position = ToYUp(point);
+        Vector3 position2;
+        Quaternion res;
 
-        // Use the same angle convention as non-GPU instancing (I3DM): degrees, clockwise-positive.
-        // yaw   : rotation around local Up axis ("heading")
-        // pitch : rotation around local East/Right axis
-        // roll  : rotation around local Forward axis
-        var positionVector3 = new Vector3((float)point.X, (float)point.Y, (float)point.Z);
+        if (keepProjection)
+        {
+            // Cartesian mode: positions are in local XYZ coordinates (X=East, Y=North, Z=Up)
+            // Transform to glTF Y-up space
+            
+            // Position: transform from Cartesian XYZ to Y-up, then compute offset from RTC
+            var cartesianPos = new Vector3(
+                (float)point.X, 
+                (float)point.Y, 
+                (float)point.Z.GetValueOrDefault());
+            
+            var cartesianPosYUp = ToYUp(cartesianPos);
+            
+            // translation is already in Y-up format (ToYUp applied in BuildGpuModel)
+            position2 = new Vector3(
+                cartesianPosYUp.X - (float)translation.X,
+                cartesianPosYUp.Y - (float)translation.Y, 
+                cartesianPosYUp.Z - (float)translation.Z);
 
-        var enu = EnuCalculator.GetLocalEnuCesium(positionVector3, instance.Yaw, instance.Pitch, instance.Roll);
+            // Rotation: apply yaw/pitch/roll in local Cartesian frame
+            var (east, north, up) = EnuCalculator.GetLocalCartesianBasis(instance.Yaw, instance.Pitch, instance.Roll);
 
-        var east = Vector3.Normalize(enu.East);
-        var up = Vector3.Normalize(enu.Up);
-        var forward = Vector3.Normalize(enu.North);
+            // Convert Cartesian basis (Z-up) to glTF Y-up space
+            var eastYUp = Vector3.Normalize(ToYUp(east));
+            var northYUp = Vector3.Normalize(ToYUp(north));
+            var upYUp = Vector3.Normalize(ToYUp(up));
 
-        // Convert basis from ECEF to glTF Y-up and build the quaternion in that coordinate system.
-        var eastYUp = Vector3.Normalize(ToYUp(east));
-        var upYUp = Vector3.Normalize(ToYUp(up));
-        var forwardYUp = Vector3.Normalize(ToYUp(forward));
+            // Re-orthonormalize for numerical stability
+            var forwardYUp = Vector3.Normalize(Vector3.Cross(eastYUp, upYUp));
+            upYUp = Vector3.Normalize(Vector3.Cross(forwardYUp, eastYUp));
 
-        // Orthonormalize (numerical stability).
-        forwardYUp = Vector3.Normalize(Vector3.Cross(eastYUp, upYUp));
-        upYUp = Vector3.Normalize(Vector3.Cross(forwardYUp, eastYUp));
+            var m4 = GetTransformationMatrix((eastYUp, new Vector3(0, 0, 0), upYUp), forwardYUp);
+            res = Quaternion.CreateFromRotationMatrix(m4);
+        }
+        else
+        {
+            // ECEF mode: convert to glTF Y-up space
+            var position = ToYUp(point);
 
-        var m4 = GetTransformationMatrix((eastYUp, new Vector3(0, 0, 0), upYUp), forwardYUp);
-        var res = Quaternion.CreateFromRotationMatrix(m4);
+            // Use the same angle convention as non-GPU instancing (I3DM): degrees, clockwise-positive.
+            // yaw   : rotation around local Up axis ("heading")
+            // pitch : rotation around local East/Right axis
+            // roll  : rotation around local Forward axis
+            var positionVector3 = new Vector3((float)point.X, (float)point.Y, (float)point.Z);
 
-        var position2 = new Vector3((float)(position.X - translation.X), (float)(position.Y - translation.Y), (float)(position.Z - translation.Z));
+            var enu = EnuCalculator.GetLocalEnuCesium(positionVector3, instance.Yaw, instance.Pitch, instance.Roll);
+
+            var east = Vector3.Normalize(enu.East);
+            var up = Vector3.Normalize(enu.Up);
+            var forward = Vector3.Normalize(enu.North);
+
+            // Convert basis from ECEF to glTF Y-up and build the quaternion in that coordinate system.
+            var eastYUp = Vector3.Normalize(ToYUp(east));
+            var upYUp = Vector3.Normalize(ToYUp(up));
+            var forwardYUp = Vector3.Normalize(ToYUp(forward));
+
+            // Orthonormalize (numerical stability).
+            forwardYUp = Vector3.Normalize(Vector3.Cross(eastYUp, upYUp));
+            upYUp = Vector3.Normalize(Vector3.Cross(forwardYUp, eastYUp));
+
+            var m4 = GetTransformationMatrix((eastYUp, new Vector3(0, 0, 0), upYUp), forwardYUp);
+            res = Quaternion.CreateFromRotationMatrix(m4);
+
+            position2 = new Vector3((float)(position.X - translation.X), (float)(position.Y - translation.Y), (float)(position.Z - translation.Z));
+        }
 
         var scale = UseScaleNonUniform ?
             new Vector3((float)instance.ScaleNonUniform[0], (float)instance.ScaleNonUniform[1], (float)instance.ScaleNonUniform[2]) :

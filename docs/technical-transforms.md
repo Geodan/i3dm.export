@@ -16,8 +16,8 @@ Uses local XYZ coordinates for viewers like Giro3D:
 - Right-handed, meters (from source projection)
 - +X: East, +Y: North, +Z: Up
 - No ECEF/ENU transformations
-- Model rotated: 90° around X (Z-up), 180° around Z (orientation)
-- **Limitations**: i3dm only, no per-instance rotation, fixed NORMAL_RIGHT/UP
+- **GPU instancing mode**: Supports per-instance rotation (yaw/pitch/roll) in Cartesian frame
+- **i3dm mode**: Model rotated 90° around X (Z-up), 180° around Z (orientation); no per-instance rotation, fixed NORMAL_RIGHT/UP
 
 ### glTF Y-up Space
 Output format uses right-handed: +X right, +Y up, +Z forward
@@ -59,8 +59,15 @@ Outputs `.glb` with `EXT_mesh_gpu_instancing`: `worldVertex = NodeWorld * Instan
 **Node transforms preserved**: Uses `node.WorldMatrix` from input model (e.g., Blender axis corrections)
 
 **Instance TRS**:
+
+**ECEF mode** (`--keep_projection=false`):
 1. **Translation**: ECEF → glTF Y-up via `ToYUp(Point)`
 2. **Rotation**: ENU basis + yaw/pitch/roll → swizzle to Y-up → re-orthonormalize → quaternion
+3. **Scale**: Uniform or non-uniform (`--use_scale_non_uniform`)
+
+**Cartesian mode** (`--keep_projection=true`):
+1. **Translation**: Direct XYZ offset from RTC center (no Y-up swizzle)
+2. **Rotation**: Apply yaw/pitch/roll to Cartesian basis (East=X, North=Y, Up=Z) → map to glTF space → re-orthonormalize → quaternion
 3. **Scale**: Uniform or non-uniform (`--use_scale_non_uniform`)
 
 **RTC optimization**: First instance position as tile anchor, improving precision
@@ -95,4 +102,6 @@ Encodes orientation via `NORMAL_RIGHT` (local +X) and `NORMAL_UP` (local +Y)
 
 **Cartesian mode**:
 - `TileHandler.cs`: `RotateModelForCartesian`, `CalculateArrays`, `GetI3dm`
+- `GPUTileHandler.cs`: `GetInstanceTransform` (Cartesian rotation logic)
+- `EnuCalculator.cs`: `GetLocalCartesianBasis` - yaw/pitch/roll in XYZ frame
 - `ImplicitTiling.cs`: `CreateTile`
