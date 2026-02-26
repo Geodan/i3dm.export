@@ -234,7 +234,7 @@ public static class GPUTileHandler
             // yaw   : rotation around local Up axis ("heading")
             // pitch : rotation around local East/Right axis
             // roll  : rotation around local Forward axis
-            var positionVector3 = new Vector3((float)point.X, (float)point.Y, (float)point.Z);
+            var positionVector3 = new Vector3((float)point.X, (float)point.Y, (float)point.Z.GetValueOrDefault());
 
             var enu = EnuCalculator.GetLocalEnuCesium(positionVector3, instance.Yaw, instance.Pitch, instance.Roll);
 
