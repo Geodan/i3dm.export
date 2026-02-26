@@ -392,6 +392,8 @@ Press F5 to start debugging.
 
 ## History
 
+2026-02-26: release 2.18.0: add support for yaw/roll/pitch rotations in GPU instancing and keep_projection mode
+
 2026-02-19: release 2.17.0: fix for initial rotation when keep_projection=true and use_gpu_instancing=false
 
 2026-02-19: release 2.16.0: add support for yaw, roll, pitch rotations in no GPU instancing mode (legacy rotation is deprecated but will be treated as yaw)
