@@ -62,7 +62,7 @@ Input database table contains following columns:
 . pitch - double with pitch in degrees;
 . roll - double with roll in degrees;
 
-Non-GPU (i3dm) mode supports yaw/pitch/roll. For backwards compatibility, if `yaw/pitch/roll` columns are missing the tool will fall back to legacy `rotation` (deprecated) and print a warning (rotation is treated as yaw; pitch/roll = 0).
+For backwards compatibility, if `yaw/pitch/roll` columns are missing the tool will fall back to legacy `rotation` (deprecated) and print a warning (rotation is treated as yaw; pitch/roll = 0).
 
 . tags - json with instance attribute information;
 
@@ -133,10 +133,8 @@ displaying the Instanced 3D Tiles, like 3DTilesRenderer/Giro3D/ITowns/QGIS Web C
 When using `--keep_projection=true`, the following limitations apply:
 
 - **Scale**: Works correctly in both GPU and non-GPU modes
-- **With `--use_gpu_instancing=true`**: Incorrect rotation (ECEF rotation is still applied, which is wrong for Cartesian coordinates)
+- **Rotation (yaw/pitch/roll)**: Only supported with `--use_gpu_instancing=true`.
 - **With `--use_gpu_instancing=false`**: Yaw, pitch, and roll are not supported (all set to 0). Only the base model rotation (90° X-axis + 180° Z-axis) is applied.
-
-For Cartesian projection mode, it is recommended to use `--use_gpu_instancing=false` until full rotation support is implemented.
 
 ## Docker
 
