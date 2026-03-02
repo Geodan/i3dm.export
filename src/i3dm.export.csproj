@@ -21,10 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
     <PackageReference Include="cmpt-tile" Version="0.2.4" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="HdbscanSharp" Version="3.0.1" />
 	  <PackageReference Include="i3dm.tile" Version="1.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Npgsql" Version="10.0.1" />

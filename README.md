@@ -360,18 +360,29 @@ https://community.cesium.com/t/upgrade-3d-tileset-with-composite-cmpt-tile-to-1-
 
 There is an experimental option to create 3D Tiles using clustering: --use_clustering (default false).
 
-When this option is off, dense tiles with number of instances exceeding `max_features_per_tile` aren't rendered. With this option such tiles are rendered with number of instances that is exactly equal to `max_features_per_tile`. Number of instances is reduced in the following way:
+When this option is off, dense tiles with number of instances exceeding `max_features_per_tile` aren't rendered. With this option such tiles are rendered with a reduced number of instances (up to `max_features_per_tile`). Number of instances is reduced in the following way:
 
-- tile instances are clustered with MiniBatchKMeans algorithm with number of clusters equal to `max_features_per_tile`;
-- from each cluster single instance is picked randomly.
+- tile instances are clustered using **HDBSCAN** (Hierarchical Density-Based Spatial Clustering of Applications with Noise) via [HdbscanSharp](https://github.com/doxakis/HdbscanSharp);
+- the minimum cluster size is derived from the ratio of total instances to `max_features_per_tile`;
+- from each discovered cluster one representative instance is picked;
+- noise points (instances that do not belong to any cluster) are discarded.
 
-### Performance benchmark
+HDBSCAN is a density-based algorithm that discovers clusters of arbitrary shape without requiring a fixed number of clusters. This makes it well suited for geographic/spatial data where instance density varies across a tile. Compared to the previous MiniBatchKMeans approach, HDBSCAN:
+
+- does not require specifying an exact number of clusters upfront;
+- handles outliers explicitly (noise label) instead of forcing every instance into a cluster;
+- produces more natural cluster boundaries that respect geographic density patterns.
+
+### Performance
+
 number of instances: 2500<br>
 max_features_per_tile: 100<br>
 
 tileset generation time:
-- without clustering : 0h 0m 0s 539ms
-- with clustering: 0h 0m 1s 238ms
+- without clustering: 0h 0m 0s 539ms
+- with clustering (HDBSCAN): comparable to previous MiniBatchKMeans for typical tile sizes (100–2500 instances)
+
+HDBSCAN has O(n²) worst-case complexity but performs close to O(n log n) on average. For the small datasets typical in a single tile, the difference vs MiniBatchKMeans is negligible. The main gain is cluster quality: density-based grouping gives better visual results for non-uniform geographic distributions.
 ## Developing
 
 Run from source code:

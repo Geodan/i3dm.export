@@ -1,8 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
-using Accord.MachineLearning;
+using HdbscanSharp.Runner;
 using Wkx;
 
 namespace i3dm.export;
@@ -14,32 +13,50 @@ public static class TileClustering
         var data = instances.Select(instance => instance.Position)
             .OfType<Point>()
             .Select(pt => new double[] { (double)pt.X, (double)pt.Y, (double)pt.Z })
-            .ToList();
-        double[][] matrix = data.ToArray();
-        KMeans kmeans = new MiniBatchKMeans(k: size, batchSize: 10) // this batchSize is optimal in terms of performance
+            .ToArray();
+
+        int minClusterSize = Math.Max(2, instances.Count / size);
+        var result = HdbscanRunner.Run(
+            datasetCount: data.Length,
+            minPoints: minClusterSize,
+            minClusterSize: minClusterSize,
+            distanceFunc: (i, j) => EuclideanDistance(data[i], data[j]),
+            constraints: null
+        );
+
+        // label 0 = noise (unclustered), positive integers = cluster IDs
+        var clustered = new Dictionary<int, Instance>();
+        var noiseInstances = new List<Instance>();
+        for (int i = 0; i < instances.Count; i++)
         {
-            MaxIterations = 100,
-            Tolerance = 1e-3,
-            // based on https://scikit-learn.org/dev/modules/generated/sklearn.cluster.MiniBatchKMeans.html
-            // without this parameter Learn method sometimes hangs
-            InitializationBatchSize = size * 3 
-        };
-        KMeansClusterCollection clusters = kmeans.Learn(matrix);
-        int[] labels = clusters.Decide(matrix);
-        Instance[] result = new Instance[size];
-        int count = 0;
-        foreach (var (instance, label) in instances.Zip(labels))
-        {
-            if (result[label] == null)
+            int label = result.Labels[i];
+            if (label > 0)
             {
-                result[label] = instance;
-                count++;
-                if (count == size)
-                {
-                    break;
-                }
+                if (!clustered.ContainsKey(label))
+                    clustered[label] = instances[i];
+            }
+            else
+            {
+                noiseInstances.Add(instances[i]);
             }
         }
-        return result.ToList();
+
+        // Supplement cluster representatives with noise points if needed
+        var output = clustered.Values.ToList();
+        if (output.Count < size)
+            output.AddRange(noiseInstances.Take(size - output.Count));
+
+        return output.Take(size).ToList();
+    }
+
+    private static double EuclideanDistance(double[] a, double[] b)
+    {
+        double sum = 0;
+        for (int i = 0; i < a.Length; i++)
+        {
+            double d = a[i] - b[i];
+            sum += d * d;
+        }
+        return Math.Sqrt(sum);
     }
 }
