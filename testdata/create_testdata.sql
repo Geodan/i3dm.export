@@ -7,9 +7,9 @@ CREATE TABLE mydata(
   geom geometry(POINTZ, 4326),
   scale double precision,
   scale_non_uniform double precision[3],
-  yaw numeric default 0,
-  pitch numeric default 0,
-  roll numeric default 0,
+  0::numeric AS yaw,
+	0::numeric AS pitch,
+	0::numeric AS roll,
   model varchar,
   tags json
 );
