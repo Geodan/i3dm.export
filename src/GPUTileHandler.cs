@@ -14,6 +14,7 @@ using System.Text.Json.Nodes;
 using Wkx;
 
 namespace i3dm.export;
+
 public static class GPUTileHandler
 {
     public static void SaveGPUTile(string filePath, List<Instance> instances, bool UseScaleNonUniform, bool keepProjection = false)
@@ -119,12 +120,25 @@ public static class GPUTileHandler
         foreach (var model in distinctModels)
         {
             var modelPath = (string)model;
-            var modelRoot = ModelRoot.Load(modelPath);
 
-            ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
+            try
+            {
+                var modelRoot = ModelRoot.Load(modelPath);
 
-            var meshNodeCount = AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot, keepProjection);
-            if (meshNodeCountsByModel != null) meshNodeCountsByModel[modelPath] = meshNodeCount;
+                ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
+
+                var meshNodeCount = AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot, keepProjection);
+                if (meshNodeCountsByModel != null) meshNodeCountsByModel[modelPath] = meshNodeCount;
+            }
+            catch (SharpGLTF.Validation.LinkException ex)
+            {
+                if (ex.Message.Contains("draco"))
+                {
+                    throw new InvalidOperationException($"The model '{modelPath}' uses Draco compression, which is not supported for GPU instancing. Please re-export the model without Draco compression and try again.", ex);
+                }
+
+                throw ex;
+            }
         }
 
         return sceneBuilder;
@@ -195,19 +209,19 @@ public static class GPUTileHandler
         {
             // Cartesian mode: positions are in local XYZ coordinates (X=East, Y=North, Z=Up)
             // Transform to glTF Y-up space
-            
+
             // Position: transform from Cartesian XYZ to Y-up, then compute offset from RTC
             var cartesianPos = new Vector3(
-                (float)point.X, 
-                (float)point.Y, 
+                (float)point.X,
+                (float)point.Y,
                 (float)point.Z.GetValueOrDefault());
-            
+
             var cartesianPosYUp = ToYUp(cartesianPos);
-            
+
             // translation is already in Y-up format (ToYUp applied in BuildGpuModel)
             position2 = new Vector3(
                 cartesianPosYUp.X - (float)translation.X,
-                cartesianPosYUp.Y - (float)translation.Y, 
+                cartesianPosYUp.Y - (float)translation.Y,
                 cartesianPosYUp.Z - (float)translation.Z);
 
             // Rotation: apply yaw/pitch/roll in local Cartesian frame
