@@ -92,7 +92,7 @@ class Program
             var zmin = bbox1.zmin;
             var zmax = bbox1.zmax;
 
-            Console.WriteLine($"Bounding box for table (WGS84): {Math.Round(bbox.XMin, 4)}, {Math.Round(bbox.YMin, 4)}, {Math.Round(bbox.XMax, 4)}, {Math.Round(bbox.YMax, 4)}");
+            Console.WriteLine($"Bounding box for table ({proj}): {bbox.XMin}, {bbox.YMin}, {bbox.XMax}, {bbox.YMax}");
             Console.WriteLine($"Vertical for table (meters): {zmin}, {zmax}");
 
             var rootBoundingVolumeRegion =
