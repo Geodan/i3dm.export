@@ -59,7 +59,9 @@ Input database table contains following columns:
 . scale - double with instance scale (all directions);
 
 . yaw - double with yaw/heading in degrees (clockwise-positive);
+
 . pitch - double with pitch in degrees;
+
 . roll - double with roll in degrees;
 
 For backwards compatibility, if `yaw/pitch/roll` columns are missing the tool will fall back to legacy `rotation` (deprecated) and print a warning (rotation is treated as yaw; pitch/roll = 0).
