@@ -45,13 +45,14 @@ public static class InstancesRepository
         var toX = ToInvariantCulture(bbox.XMax);
         var toY = ToInvariantCulture(bbox.YMax);
 
-        var scaleNonUniform = useScaleNonUniform ? "scale_non_uniform as scalenonuniform, " : string.Empty;
         conn.Open();
+        var columns = GetColumns(conn, geometryTable);
+        var scaleSelect = GetScaleSelectFromColumns(columns, useScaleNonUniform, geometryTable);
         var select = keepProjection?
-            $"SELECT ST_ASBinary(st_force3d({geometryColumn})) as position, scale, {scaleNonUniform} model, tags":
-            $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {target_epsg})) as position, scale, {scaleNonUniform} model, tags";
+            $"SELECT ST_ASBinary(st_force3d({geometryColumn})) as position, {scaleSelect} model, tags":
+            $"SELECT ST_ASBinary(ST_Transform(st_force3d({geometryColumn}), {target_epsg})) as position, {scaleSelect} model, tags";
 
-        var orientationSelect = GetOrientationSelect(conn, geometryTable, useGpuInstancing);
+        var orientationSelect = GetOrientationSelect(columns, geometryTable, useGpuInstancing);
         select += orientationSelect;
 
         var sql = FormattableString.Invariant($"{select} FROM {geometryTable} where {GetWhere(geometryColumn, where, fromX, fromY, toX, toY, source_epsg, keepProjection)}");
@@ -104,9 +105,8 @@ public static class InstancesRepository
         return (bbox, zmin, zmax);
     }
 
-    private static string GetOrientationSelect(NpgsqlConnection conn, string geometryTable, bool useGpuInstancing)
+    private static string GetOrientationSelect(HashSet<string> columns, string geometryTable, bool useGpuInstancing)
     {
-        var columns = GetColumns(conn, geometryTable);
         var select = GetOrientationSelectFromColumns(columns, useGpuInstancing, geometryTable, out var usesDeprecatedRotation);
 
         if (usesDeprecatedRotation)
@@ -156,6 +156,31 @@ public static class InstancesRepository
 
         var mode = useGpuInstancing ? "GPU (--use_gpu_instancing=true)" : "non-GPU (--use_gpu_instancing=false)";
         throw new InvalidOperationException($"Missing orientation columns for {mode}. Expected columns yaw/pitch/roll. For non-GPU you can use legacy rotation (deprecated).\n\nMigration example:\n  alter table {geometryTable} add column if not exists yaw double precision default 0;\n  alter table {geometryTable} add column if not exists pitch double precision default 0;\n  alter table {geometryTable} add column if not exists roll double precision default 0;\n  update {geometryTable} set yaw = rotation where rotation is not null;");
+    }
+
+    private static string GetScaleSelectFromColumns(HashSet<string> columns, bool useScaleNonUniform, string geometryTable)
+    {
+        var hasScale = columns.Contains("scale");
+        var hasScaleNonUniform = columns.Contains("scale_non_uniform");
+
+        if (useScaleNonUniform)
+        {
+            if (!hasScaleNonUniform)
+            {
+                throw new InvalidOperationException($"Missing column 'scale_non_uniform' on table {geometryTable}. Add it with:\n  alter table {geometryTable} add column if not exists scale_non_uniform double precision[3];");
+            }
+
+            // scale column is optional when using scale_non_uniform
+            var scalePart = hasScale ? "scale, " : string.Empty;
+            return $"{scalePart}scale_non_uniform as scalenonuniform, ";
+        }
+
+        if (!hasScale)
+        {
+            throw new InvalidOperationException($"Missing column 'scale' on table {geometryTable}. Add it with:\n  alter table {geometryTable} add column if not exists scale double precision default 1;");
+        }
+
+        return "scale, ";
     }
 
     private static void WriteRotationDeprecatedWarning(string geometryTable)

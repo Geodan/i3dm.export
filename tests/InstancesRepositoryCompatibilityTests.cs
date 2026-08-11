@@ -60,4 +60,41 @@ public class InstancesRepositoryCompatibilityTests
         var usedRotation = (bool)args[3];
         return (select, usedRotation);
     }
+
+    [Test]
+    public void ScaleSelect_WhenUseScaleNonUniformTrue_AndOnlyScaleNonUniformColumnExists_DoesNotRequireScaleColumn()
+    {
+        // Table only has scale_non_uniform, no scale column
+        var select = InvokeGetScaleSelectFromColumns(new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "scale_non_uniform"
+        }, useScaleNonUniform: true);
+
+        Assert.That(select, Does.Not.Contain("scale,"));
+        Assert.That(select, Does.Contain("scale_non_uniform as scalenonuniform"));
+    }
+
+    [Test]
+    public void ScaleSelect_WhenUseScaleNonUniformFalse_AndScaleColumnMissing_Throws()
+    {
+        Action action = () =>
+            InvokeGetScaleSelectFromColumns(new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "scale_non_uniform"
+            }, useScaleNonUniform: false);
+
+        Assert.Throws<TargetInvocationException>(action);
+    }
+
+    private static string InvokeGetScaleSelectFromColumns(HashSet<string> columns, bool useScaleNonUniform)
+    {
+        var method = typeof(InstancesRepository).GetMethod(
+            "GetScaleSelectFromColumns",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.That(method, Is.Not.Null);
+
+        var args = new object[] { columns, useScaleNonUniform, "public.instances" };
+        return (string)method!.Invoke(null, args)!;
+    }
 }
