@@ -36,13 +36,15 @@ public class InstancesRepositoryCompatibilityTests
     [Test]
     public void OrientationSelect_WhenYawPitchRollMissing_GpuThrows()
     {
-        Assert.Throws<TargetInvocationException>(() =>
-        {
-            InvokeGetOrientationSelectFromColumns(new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "rotation"
-            }, useGpuInstancing: true);
-        });
+        Action action = () =>
+            InvokeGetOrientationSelectFromColumns(
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+            "rotation"
+                },
+                useGpuInstancing: true);
+
+        Assert.Throws<TargetInvocationException>(action);
     }
 
     private static (string Select, bool UsedRotation) InvokeGetOrientationSelectFromColumns(HashSet<string> columns, bool useGpuInstancing)
