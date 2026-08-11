@@ -48,8 +48,20 @@ public static class GPUTileHandler
         // Always convert to Y-up for glTF, regardless of keepProjection
         var translation = ToYUp(firstPosition);
 
+        // Every instance gets a stable, file-wide index (its position in the original
+        // instances list). This index is baked into each instance's mesh as _FEATURE_ID_0
+        // and is also used as the row index in the single, file-wide property table below.
+        // Using one shared table (instead of one table per distinct model) avoids a known
+        // CesiumJS picking bug where the propertyTable referenced by a node/primitive is
+        // not always resolved correctly when a glTF contains many propertyTables
+        // (https://github.com/CesiumGS/cesium/issues/11683). With a single shared table,
+        // there is nothing to mis-resolve, so picking always returns the correct feature.
+        var globalIndexByInstance = instances
+            .Select((instance, index) => (instance, index))
+            .ToDictionary(x => x.instance, x => x.index);
+
         var meshNodeCountsByModel = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var sceneBuilder = AddModels(instances, translation, UseScaleNonUniform, externalTextures, meshNodeCountsByModel, keepProjection);
+        var sceneBuilder = AddModels(instances, translation, UseScaleNonUniform, globalIndexByInstance, externalTextures, meshNodeCountsByModel, keepProjection);
 
         var settings = SceneBuilderSchema2Settings.WithGpuInstancing;
         settings.GpuMeshInstancingMinCount = 0;
@@ -58,6 +70,7 @@ public static class GPUTileHandler
         if (instances.Any(s => s.Tags != null))
         {
             var schema = AddMetadataSchema(model);
+            var propertyTable = GetPropertyTable(schema, instances);
             var distinctModels = instances.Select(s => s.Model).Distinct().ToList();
 
             var instancingNodes = model.LogicalNodes
@@ -69,7 +82,7 @@ public static class GPUTileHandler
             {
                 var modelPath = (string)distinctModel;
                 var modelInstances = instances.Where(s => s.Model.Equals(distinctModel)).ToList();
-                var featureIdBuilder = GetFeatureIdBuilder(schema, modelInstances);
+                var featureIdBuilder = GetFeatureIdBuilder(modelInstances, propertyTable);
 
                 if (!meshNodeCountsByModel.TryGetValue(modelPath, out var nodeCount)) nodeCount = 1;
 
@@ -93,10 +106,8 @@ public static class GPUTileHandler
     }
 
 
-    private static FeatureIDBuilder GetFeatureIdBuilder(StructuralMetadataClass schemaClass, List<Instance> positions)
+    private static FeatureIDBuilder GetFeatureIdBuilder(List<Instance> positions, PropertyTable propertyTable)
     {
-        var propertyTable = GetPropertyTable(schemaClass, positions);
-
         var featureId0 = propertyTable != null ?
             new FeatureIDBuilder(positions.Count, 0, propertyTable) :
             new FeatureIDBuilder(positions.Count, 0);
@@ -111,7 +122,7 @@ public static class GPUTileHandler
         return schemaClass;
     }
 
-    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform, Dictionary<string, string> externalTextures = null, Dictionary<string, int> meshNodeCountsByModel = null, bool keepProjection = false)
+    private static SceneBuilder AddModels(IEnumerable<Instance> instances, Point translation, bool UseScaleNonUniform, Dictionary<Instance, int> globalIndexByInstance, Dictionary<string, string> externalTextures = null, Dictionary<string, int> meshNodeCountsByModel = null, bool keepProjection = false)
     {
         var sceneBuilder = new SceneBuilder();
 
@@ -127,7 +138,7 @@ public static class GPUTileHandler
 
                 ExternalTextureHelper.CollectExternalTextures(externalTextures, modelPath, modelRoot);
 
-                var meshNodeCount = AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot, keepProjection);
+                var meshNodeCount = AddModelInstancesToScene(sceneBuilder, instances, UseScaleNonUniform, translation, modelPath, modelRoot, globalIndexByInstance, keepProjection);
                 if (meshNodeCountsByModel != null) meshNodeCountsByModel[modelPath] = meshNodeCount;
             }
             catch (SharpGLTF.Validation.LinkException ex)
@@ -144,10 +155,9 @@ public static class GPUTileHandler
         return sceneBuilder;
     }
 
-    private static int AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model, ModelRoot modelRoot, bool keepProjection = false)
+    private static int AddModelInstancesToScene(SceneBuilder sceneBuilder, IEnumerable<Instance> instances, bool UseScaleNonUniform, Point translation, string model, ModelRoot modelRoot, Dictionary<Instance, int> globalIndexByInstance, bool keepProjection = false)
     {
         var modelInstances = instances.Where(s => s.Model.Equals(model)).ToList();
-        var pointId = 0;
 
         // Preserve per-node transforms from the source glTF scene graph.
         var meshNodes = new List<(IMeshBuilder<MaterialBuilder> MeshBuilder, Matrix4x4 NodeWorldMatrix)>();
@@ -161,13 +171,13 @@ public static class GPUTileHandler
         }
         foreach (var instance in modelInstances)
         {
+            var pointId = globalIndexByInstance[instance];
+
             foreach (var (meshBuilder, nodeWorldMatrix) in meshNodes)
             {
                 var sceneBuilderModel = GetSceneBuilder(meshBuilder, nodeWorldMatrix, instance, UseScaleNonUniform, translation, pointId, keepProjection);
                 sceneBuilder.AddScene(sceneBuilderModel, Matrix4x4.Identity);
             }
-
-            pointId++;
         }
 
         return meshNodes.Count;
@@ -282,48 +292,43 @@ public static class GPUTileHandler
         return transformation;
     }
 
-    private static PropertyTable GetPropertyTable(StructuralMetadataClass schemaClass, List<Instance> positions)
+    private static PropertyTable GetPropertyTable(StructuralMetadataClass schemaClass, List<Instance> instances)
     {
-        var tags = new List<JArray>();
+        // Build one property table for the entire tile, with a row for every instance
+        // (in the same order as `instances`, so an instance's global index also
+        // identifies its row). Instances without tags get an empty-string row.
+        var tags = instances.Select(i => i.Tags).ToList();
+        var firstTags = tags.FirstOrDefault(t => t != null);
 
-        foreach (var instance in positions)
-        {
-            tags.Add(instance.Tags);
-        }
-
-        if (tags.Count > 0 && tags[0] != null)
-        {
-            PropertyTable propertyTable;
-
-            propertyTable = schemaClass.AddPropertyTable(positions.Count);
-
-            var properties = TinyJson.GetProperties(tags[0]);
-            foreach (var property in properties)
-            {
-                var values = TinyJson.GetValues(tags, property);
-
-                var nameProperty = schemaClass
-                .UseProperty(property)
-                .WithStringType();
-
-                // todo: use other types than string
-                var strings = values.Select(s => s.ToString()).ToArray();
-
-                // if all values are empty strings, then do not add the property
-                if (!strings.All(s => string.IsNullOrEmpty(s)))
-                {
-                    propertyTable
-                        .UseProperty(nameProperty)
-                        .SetValues(strings);
-                }
-            }
-
-            return propertyTable;
-        }
-        else
+        if (firstTags == null)
         {
             return null;
         }
+
+        var propertyTable = schemaClass.AddPropertyTable(instances.Count);
+
+        var properties = TinyJson.GetProperties(firstTags);
+        foreach (var property in properties)
+        {
+            var values = TinyJson.GetValues(tags, property);
+
+            var nameProperty = schemaClass
+            .UseProperty(property)
+            .WithStringType();
+
+            // todo: use other types than string
+            var strings = values.Select(s => s?.ToString() ?? string.Empty).ToArray();
+
+            // if all values are empty strings, then do not add the property
+            if (!strings.All(s => string.IsNullOrEmpty(s)))
+            {
+                propertyTable
+                    .UseProperty(nameProperty)
+                    .SetValues(strings);
+            }
+        }
+
+        return propertyTable;
     }
 
     private static Matrix4x4 GetTransformationMatrix((Vector3 East, Vector3 North, Vector3 Up) enu, Vector3 forward)

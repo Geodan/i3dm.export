@@ -47,18 +47,27 @@ public static class TinyJson
         var res = new List<Object>();
         foreach (var tag in tags)
         {
-            foreach (var parsedObject in tag.Children<JObject>())
-            {
-                foreach (JProperty parsedProperty in parsedObject.Properties())
-                {
-                    string propertyName = parsedProperty.Name;
+            // Keep the result list aligned one-to-one with `tags` (and therefore with the
+            // property table rows), so an instance without this property still gets a slot.
+            // Wrapped in a JValue so existing callers (e.g. TinyJson.ToJson) can keep
+            // casting the result to JValue.
+            object value = new JValue(string.Empty);
 
-                    if (propertyName == prop)
+            if (tag != null)
+            {
+                foreach (var parsedObject in tag.Children<JObject>())
+                {
+                    foreach (JProperty parsedProperty in parsedObject.Properties())
                     {
-                        res.Add(parsedProperty.Value);
+                        if (parsedProperty.Name == prop)
+                        {
+                            value = parsedProperty.Value;
+                        }
                     }
                 }
             }
+
+            res.Add(value);
         }
         return res;
 
